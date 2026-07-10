@@ -1,126 +1,94 @@
-<!DOCTYPE html>
-<html>
+<?php
+require_once "includes/db.php";
 
-<head>
-    <title>
-        Store Ordering System
-    </title>
-    <link rel="stylesheet" href="assets/css/style.css">
-</head>
+$loadScript = true;
 
-<body>
-    <h1>
-        Store Ordering System
-    </h1>
+include "includes/header.php";
 
-    <p id="cart">
-        Cart: 0
-    </p>
+$sql = "SELECT * FROM products WHERE status = 'Active'";
+$result = $conn->query($sql);
 
-    <div id="cart-items">
+?>
 
+<h1>
+    SwiftOrder POS
+</h1>
+
+<div class="main-container">
+    <div class="left-panel">
+
+        <div class="search-area">
+
+            <input type="text" id="search"
+                placeholder="Search meals, drinks, sides, snacks or other items"
+                onkeyup="searchProducts()">
+            <button id="clear-search" onclick="clearSearch()">Clear</button>
+
+        </div>
+
+        <div class="category-filter" id="category-filter">
+            <button class="category-btn active" onclick="filterProducts('All', this)">📃All</button>
+            <button class="category-btn" onclick="filterProducts('Meals', this)">🍔Meals</button>
+            <button class="category-btn" onclick="filterProducts('Drinks', this)">🥤Drinks</button>
+            <button class="category-btn" onclick="filterProducts('Sides', this)">🍟Sides</button>
+            <button class="category-btn" onclick="filterProducts('Snacks', this)">🍬Snacks</button>
+            <button class="category-btn" onclick="filterProducts('Other', this)">👓Other</button>
+        </div>
+
+        <div class="products">
+
+            <?php while ($row = $result->fetch_assoc()) { ?>
+
+                <div class="product" data-category="<?= htmlspecialchars($row['category']) ?>">
+
+                    <img src="./assets/images/products/<?= htmlspecialchars($row['image']) ?>"
+                        alt="<?= htmlspecialchars($row['name']) ?>" class="product-image">
+
+                    <h2><?= htmlspecialchars($row['name']) ?></h2>
+                    <p><?= htmlspecialchars($row['description']) ?></p>
+                    <p>R<?= number_format($row['price'], 2) ?></p>
+
+                    <button onclick="addToCart(
+
+                    <?= $row['id'] ?>, 
+                    '<?= htmlspecialchars($row['name'], ENT_QUOTES) ?>', 
+                    <?= $row['price'] ?>)">Order Now</button>
+
+                </div>
+
+            <?php } ?>
+
+        </div>
     </div>
 
-    <p id="total">
-        Total: R0
-    </p>
+    <div class="cart-section">
 
-    <button onclick="clearCart()">Clear Cart</button>
+        <h2 id="cart-title">
+            🛒Cart
+        </h2>
 
-    <br><br>
+        <p id="cart">
+            Items: 0
+        </p>
 
-    <input type="text" id="customer" placeholder="Your Name">
+        <div id="cart-items">
 
-    <button onclick="placeOrder()">Place Order</button>
+        </div>
 
+        <p id="total">
+            Total: R0.00
+        </p>
+        <br>
 
-</body>
+        <input type="text" id="customer" placeholder="Your Name">
 
-<script>
-    let count = 0;
-    let total = 0;
+        <button id="placeOrderBtn" onclick="placeOrder()">Place Order</button>
 
-    let savedCount = localStorage.getItem('count');
-    let savedItems = localStorage.getItem('items');
-    let savedTotal = localStorage.getItem('total');
+        <br><br>
 
-    if (savedCount) {
-        count = Number(savedCount);
+        <button onclick="clearCart()">Clear Cart</button>
 
-        document.getElementById('cart').innerHTML = 'Cart: ' + count;
-    }
+    </div>
+</div>
 
-    if (savedItems) {
-
-        document.getElementById('cart-items').innerHTML = savedItems;
-    }
-
-    if (savedTotal) {
-        total = Number(savedTotal);
-
-        document.getElementById('total').innerHTML = 'Total: R' + total;
-    }
-
-
-
-    function addToCart(products, price) {
-        count++;
-
-        document.getElementById('cart').innerHTML = 'Cart: ' + count;
-
-        document.getElementById('cart-items').innerHTML = document.getElementById('cart-items').innerHTML + (
-                count > 1 ? " + " : ""
-            ) +
-            products;
-
-        total = total + price;
-
-        document.getElementById('total').innerHTML = 'Total: R' + total;
-
-        localStorage.setItem(
-            'count', count
-        );
-
-        localStorage.setItem(
-            'items', document.getElementById('cart-items').innerHTML
-        );
-
-        localStorage.setItem(
-            'total', total
-        );
-    }
-
-    function clearCart() {
-
-        count = 0;
-        total = 0;
-
-        document.getElementById('cart').innerHTML = 'Cart: 0';
-
-        document.getElementById('cart-items').innerHTML = '';
-
-        document.getElementById('total').innerHTML = 'Total: R0';
-
-        localStorage.clear();
-    }
-
-    function placeOrder() {
-        let customer = document.getElementById('customer').value;
-
-        if (customer == '') {
-            alert('Enter your name');
-
-            return;
-        }
-
-        alert(
-            'Order placed by ' +
-            customer +
-            '\n' +
-            document.getElementById('cart-items').innerHTML + '\nTotal: R' +
-            total
-        );
-    }
-</script>
-
-</html>
+<?php include "includes/footer.php"; ?>
