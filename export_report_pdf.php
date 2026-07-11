@@ -3,9 +3,9 @@ require_once "vendor/autoload.php";
 
 use Dompdf\Dompdf;
 
-/*require_once "includes/auth.php";
+require_once "includes/auth.php";
 require_once "includes/permissions.php";
-requireRole([ROLE_ADMIN, ROLE_MANAGER]);*/
+requireRole([ROLE_ADMIN, ROLE_MANAGER]);
 
 require_once "includes/db.php";
 
@@ -46,12 +46,11 @@ $html = "
 <hr>
 <h3>Summary</h3>
 
-<p><strong>Total Revenue:<strong>R" . number_format($totalRevenue, 2) . "</p>
-<p><strong>Total Orders:<strong>{$totalOrders}</p>
-<p><strong>Completed Orders:<strong>{$completedOrders}</p>
-<p><strong>Cancelled Orders:<strong>{$cancelledOrders}</p>
-<p><strong>Average Order:<strong>R" . number_format($averageOrder, 2) . "</p>
-
+<p><strong>Total Revenue:</strong> R" . number_format($totalRevenue, 2) . "</p>
+<p><strong>Total Orders:</strong>{$totalOrders}</p>
+<p><strong>Completed Orders:</strong>{$completedOrders}</p>
+<p><strong>Cancelled Orders:</strong>{$cancelledOrders}</p>
+<p><strong>Average Order:</strong> R" . number_format($averageOrder, 2) . "</p>
 ";
 
 $dompdf->loadHtml($html);

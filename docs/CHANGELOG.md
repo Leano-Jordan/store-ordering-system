@@ -379,4 +379,30 @@ Navigation now changes based on logged-in user role.
 SwiftOrder now supports Admin, Manager, Cashier and Kitchen accounts.
 Foundation completed for staff permissions and future activity logging.
 
+### Version: 0.7.1-beta
+
+## Date: 2026-07-11
+
+## Inventory Management & Product Improvements
+
+## Added (v0.7.1-beta)
+
+Stock deduction on completed orders. Order Items database integration. Product search. Product search persistence with filters. Low Stock product filter. Out of Stock product filter. Top Selling Products dashboard widget. Stock level indicators (In Stock, Low Stock, Out of Stock). Dashboard Quick Actions. Sales range filtering (7 Days, 30 Days, This Month). Recent Orders dashboard widget.
+
+## Improved (v0.7.1-beta)
+
+Dashboard analytics. Revenue reporting. Product sorting. Product pagination. Product management workflow. Inventory visibility. Sales overview chart. Order completion workflow. Product listing usability. Dashboard navigation.
+
+## Refactored (v0.7.1-beta)
+
+Order processing flow. Stock deduction logic. Dashboard SQL queries. Product sorting queries. Product search queries. Inventory update process. Order item handling. Reporting queries.
+
+## Fixed (v0.7.1-beta)
+
+Stock not decreasing after completed orders. Product name matching during stock deduction. SQL update query for inventory. Order item parsing. Dashboard chart loading. Dashboard revenue calculations. Product pagination issues. Product search filtering. Undefined query variables. Product sorting inconsistencies. Order status inventory update reliability.
+
+### Notes.1
+
+Completed Inventory Management foundation. Stock is now automatically deducted when an order reaches Collected status. Dashboard now provides sales analytics, revenue summaries and top-selling products. Product management now includes search, inventory filters and improved stock visibility. SwiftOrder inventory and reporting foundation is now ready for future stock adjustments, supplier management and purchase order features.
+
 ## Isaac Junior Lehogonolo Maluleka

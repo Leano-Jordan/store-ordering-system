@@ -2,6 +2,7 @@
 require_once "includes/auth.php";
 require_once "includes/permissions.php";
 requireRole([ROLE_ADMIN, ROLE_MANAGER]);
+require_once "includes/logger.php";
 require_once "includes/db.php";
 
 $id = (int)$_POST["id"];
@@ -9,6 +10,7 @@ $name = $_POST["name"];
 $description = $_POST["description"];
 $price = $_POST["price"];
 $category = $_POST["category"];
+$stock = (int)$_POST["stock"];
 
 $currentImage = $_POST["current_image"];
 $image = $currentImage;
@@ -45,24 +47,32 @@ name=?,
 description=?, 
 price=?, 
 image=?, 
-category=? 
+category=?, 
+stock=? 
 WHERE id=?";
 
 $stmt = $conn->prepare($sql);
 
 $stmt->bind_param(
-    "ssdssi",
+    "ssdssii",
     $name,
     $description,
     $price,
     $image,
     $category,
+    $stock,
     $id
 );
 
 if (!$stmt->execute()) {
     die("Execute Error: " . $stmt->error);
 }
+
+logActivity(
+    $conn,
+    $_SESSION["user_id"],
+    "Updated product: " . $name
+);
 
 header("Location: products.php");
 exit();

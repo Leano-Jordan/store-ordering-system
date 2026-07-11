@@ -332,6 +332,18 @@ button[onclick="placeOrder()"] {
     border-bottom: 1px solid #ddd;
 }
 
+.orders-table td:last-child {
+    text-align: center;
+}
+
+.orders-table td:last-child .action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 4px;
+    min-width: 120px;
+}
+
 .reports-table th,
 .reports-table td {
     text-align: left;
@@ -411,6 +423,10 @@ button[onclick="placeOrder()"] {
 
 /*********           ************  PRODUCTS BUTTON  ***********          *********/
 
+.reactivate-btn {
+    min-width: 120px;
+}
+
 .edit-btn {
     background: #257afa;
 }
@@ -420,6 +436,9 @@ button[onclick="placeOrder()"] {
 }
 
 .delete-btn {
+    padding: 8px 14px;
+    min-width: auto;
+    width: auto;
     background: #d84554;
     margin-left: 6px;
 }
@@ -447,6 +466,40 @@ button[onclick="placeOrder()"] {
     color: #fff;
 }
 
+.out-of-stock-btn {
+    background: #d9d9d9;
+    color: #666;
+    border: 1px solid #c5c5c5;
+    cursor: not-allowed;
+    opacity: 1;
+}
+
+.out-of-stock-btn:hover {
+    background: #d9d9d9;
+}
+
+.activity-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    margin: 15px 0;
+}
+
+.activity-legend {
+    display: flex;
+    gap: 18px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.activity-legend span {
+    background: none;
+    padding: 0;
+    border: none;
+    color: #222;
+}
+
 
 /********          ******** PAGE HEADER *********            **************/
 
@@ -462,6 +515,50 @@ button[onclick="placeOrder()"] {
 }
 
 
+/********          ******** FORMS *********            **************/
+
+.form-container {
+    max-width: 650px;
+    margin: 20px auto;
+    background: #fff;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, .08);
+}
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 15px;
+    box-sizing: border-box;
+}
+
+.form-group textarea {
+    min-height: 110px;
+    resize: vertical;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+
 /*********               ************  DASHBOARD **********           ************/
 
 .dashboard-grid {
@@ -472,7 +569,8 @@ button[onclick="placeOrder()"] {
 }
 
 .dashboard-card {
-    background: #ffffff;
+    background: #d8e4f0;
+    border: 1px solid #e5e7eb;
     padding: 20px;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, .1);
@@ -553,7 +651,7 @@ button[onclick="placeOrder()"] {
     /* For testing, reminder to review after test. */
     overflow: hidden;
     background: #fff;
-    margin-top: 3opx;
+    margin-top: 30px;
     padding: 20px;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, .1);
@@ -626,25 +724,15 @@ button[onclick="placeOrder()"] {
     gap: 10px;
 }
 
-@media print {
-    .top-nav,
-    .page-header,
-    .quick-actions,
-    .action-btn {
-        display: none !important;
-    }
-    body {
-        background: whitesmoke;
-    }
-    table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    th,
-    td {
-        border: 1px solid #000;
-        padding: 8px;
-    }
+.search-form {
+    margin-bottom: 20px;
+}
+
+.chart-filter {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
 }
 
 @media print {
@@ -666,17 +754,4 @@ button[onclick="placeOrder()"] {
     h2 {
         margin-top: 20px;
     }
-}
-
-.report-actions {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.report-buttons {
-    display: flex;
-    gap: 10px;
 }

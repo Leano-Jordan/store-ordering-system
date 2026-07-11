@@ -3,6 +3,7 @@ require_once "includes/auth.php";
 require_once "includes/permissions.php";
 requireRole([ROLE_ADMIN]);
 require_once "includes/db.php";
+require_once "includes/logger.php";
 
 /************ ************** DELETE PRODUCT *********** *****************/
 
@@ -25,7 +26,7 @@ if (!$product) {
 include "includes/header.php"; ?>
 
 <h2>
-    Delete Product
+    Deactivate Product
 </h2>
 
 <p>

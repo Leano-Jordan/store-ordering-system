@@ -76,8 +76,31 @@ $row = $result->fetch_assoc();
 
 $monthRevenue = $row["monthRevenue"] ?? 0;
 
+//                                                     LOW STOCK PRODUCTS               //
 
-//                                                          RECENT ORDERS
+$sql = "SELECT COUNT(*) AS lowStock 
+FROM products 
+WHERE status = 'Active' 
+AND stock > 0 
+AND stock <= 10";
+
+$result = $conn->query($sql);
+$row = $result->fetch_assoc();
+$lowStock = $row["lowStock"];
+
+//                                                     OUT OF STOCK PRODUCTS               //
+
+$sql = "SELECT COUNT(*) AS outOfStock 
+FROM products 
+WHERE status = 'Active' 
+AND stock > 0 
+AND stock = 0";
+
+$result = $conn->query($sql);
+$row = $result->fetch_assoc();
+$outOfStock = $row["outOfStock"];
+
+//                                                          RECENT ORDERS                           //
 
 $sql = "SELECT id, order_number, customer_name, total, status, created_at 
         FROM orders ORDER BY created_at DESC LIMIT 10";
@@ -190,6 +213,24 @@ $topProducts = $conn->query($sql);
 
         <h3>This Month's Revenue</h3>
         <p>R<?php echo number_format($monthRevenue, 2) ?></p>
+    </div>
+
+    <div class="dashboard-card">
+
+        <h3>⚠ Low Stock!</h3>
+        <p><a href="products.php?stock=low" class="dashboard-link">
+                <?php echo $lowStock; ?>
+            </a>
+        </p>
+    </div>
+
+    <div class="dashboard-card">
+
+        <h3>🔴 Out of Stock!</h3>
+        <p><a href="products.php?stock=out" class="dashboard-link">
+                <?php echo $outOfStock; ?>
+            </a>
+        </p>
     </div>
 
 </div>

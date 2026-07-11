@@ -5,7 +5,13 @@ $loadScript = true;
 
 include "includes/header.php";
 
-$sql = "SELECT * FROM products WHERE status = 'Active'";
+$sql = "SELECT * FROM products 
+WHERE status ='Active' 
+ORDER BY category ASC,
+stock = 0 ASC,
+name ASC
+";
+
 $result = $conn->query($sql);
 
 ?>
@@ -48,19 +54,27 @@ $result = $conn->query($sql);
                     <p><?= htmlspecialchars($row['description']) ?></p>
                     <p>R<?= number_format($row['price'], 2) ?></p>
 
-                    <button onclick="addToCart(
-
+                    <?php if ($row["stock"] > 0) { ?>
+                        <button onclick="addToCart(
                     <?= $row['id'] ?>, 
                     '<?= htmlspecialchars($row['name'], ENT_QUOTES) ?>', 
-                    <?= $row['price'] ?>)">Order Now</button>
+                    <?= $row['price'] ?>)">
+                            Order Now
+                        </button>
+
+                    <?php } else { ?>
+
+                        <button class="out-of-stock-btn" disabled>
+                            🔴 Out of Stock
+                        </button>
+
+                    <?php } ?>
 
                 </div>
 
             <?php } ?>
-
         </div>
     </div>
-
     <div class="cart-section">
 
         <h2 id="cart-title">

@@ -30,8 +30,9 @@ require_once "includes/permissions.php";
                 <a href="dashboard.php" class="<?php echo $currentPage === 'dashboard.php' ? 'active-nav' : ''; ?>">Dashboard</a>
                 <a href="orders.php" class="<?php echo $currentPage === 'orders.php' ? 'active-nav' : ''; ?>">Orders</a>
                 <a href="products.php" class="<?php echo $currentPage === 'products.php' ? 'active-nav' : ''; ?>">Products</a>
-                <a href="users.php" class="<?php echo $currentPage === 'users.php' ? 'active-nav' : ''; ?>">Staff</a>
+                <a href="users.php" class="<?php echo $currentPage === 'users.php' ? 'active-nav' : ''; ?>">Users</a>
                 <a href="reports.php" class="<?php echo $currentPage === 'reports.php' ? 'active-nav' : ''; ?>">Reports</a>
+                <a href="activity_logs.php">Activity Logs</a>
                 <a href="docs/CHANGELOG.md">About</a>
                 <a href="logout.php" class="<?php echo $currentPage === 'logout.php' ? 'active-nav' : ''; ?>">Logout</a>
             <?php } elseif (isset($_SESSION["role"]) && $_SESSION["role"] === ROLE_MANAGER) { ?>

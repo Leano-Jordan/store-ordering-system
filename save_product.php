@@ -3,6 +3,7 @@ require_once "includes/auth.php";
 require_once "includes/permissions.php";
 requireRole([ROLE_ADMIN, ROLE_MANAGER]);
 require_once "includes/db.php";
+require_once "includes/logger.php";
 
 if ($_SERVER["REQUEST_METHOD"] != "POST") {
     header("Location: products.php");
@@ -13,11 +14,13 @@ $name = trim($_POST["name"]);
 $description = trim($_POST["description"]);
 $price = trim($_POST["price"]);
 $category = trim($_POST["category"]);
+$stock = (int)$_POST["stock"];
 
 if (
     empty($name) ||
     empty($price) ||
-    empty($category)
+    empty($category) ||
+    $stock < 0
 ) {
     die("Please complete all required fields.");
 }
@@ -47,20 +50,28 @@ move_uploaded_file(
 );
 
 
-$sql = "INSERT INTO products (name, description, price, image, category) VALUES(?, ?, ?, ?, ?)";
+$sql = "INSERT INTO products (name, description, price, image, category, stock) VALUES(?, ?, ?, ?, ?, ?)";
 
 $stmt = $conn->prepare($sql);
 
 $stmt->bind_param(
-    "ssdss",
+    "ssdssi",
     $name,
     $description,
     $price,
     $image,
-    $category
+    $category,
+    $stock
 );
 
 if ($stmt->execute()) {
+
+    logActivity(
+        $conn,
+        $_SESSION["user_id"],
+        "Added product: " . $name
+    );
+
     header("Location: products.php");
     exit();
 } else {

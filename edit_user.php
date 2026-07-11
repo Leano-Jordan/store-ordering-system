@@ -24,63 +24,66 @@ include "includes/header.php";
 
 <h2>Edit User</h2>
 
-<form action="update_user.php" method="POST" autocomplete="off">
+<div class="form-container">
+    <form action="update_user.php" method="POST" autocomplete="off">
 
-    <input type="hidden" name="id" value="<?php echo (int)$user["id"]; ?>">
+        <input type="hidden" name="id" value="<?php echo (int)$user["id"]; ?>">
+        <div class="form-group">
+            <label for="full_name">Full Name</label>
+            <input type="text"
+                name="full_name"
+                value="<?php echo htmlspecialchars($user["full_name"], ENT_QUOTES, "UTF-8"); ?>"
+                required>
+            <br><br>
 
-    <label for="full_name">Full Name</label>
-    <input type="text"
-        name="full_name"
-        value="<?php echo htmlspecialchars($user["full_name"], ENT_QUOTES, "UTF-8"); ?>"
-        required>
-    <br><br>
+            <label for="username">Username</label>
+            <input type="text"
+                name="username"
+                value="<?php echo htmlspecialchars($user["username"], ENT_QUOTES, "UTF-8"); ?>"
+                required>
+            <br><br>
 
-    <label for="username">Username</label>
-    <input type="text"
-        name="username"
-        value="<?php echo htmlspecialchars($user["username"], ENT_QUOTES, "UTF-8"); ?>"
-        required>
-    <br><br>
+            <label>Role</label><br>
+            <select name="role" required>
 
-    <label>Role</label><br>
-    <select name="role" required>
+                <option value="<?php echo ROLE_ADMIN; ?>"
+                    <?php if ($user["role"] === ROLE_ADMIN) echo "selected"; ?>>
+                    <?php echo ROLE_ADMIN ?>
+                </option>
 
-        <option value="<?php echo ROLE_ADMIN; ?>"
-            <?php if ($user["role"] === ROLE_ADMIN) echo "selected"; ?>>
-            <?php echo ROLE_ADMIN ?>
-        </option>
+                <option value="<?php echo ROLE_MANAGER; ?>"
+                    <?php if ($user["role"] === ROLE_MANAGER) echo "selected"; ?>>
+                    <?php echo ROLE_MANAGER ?>
+                </option>
 
-        <option value="<?php echo ROLE_MANAGER; ?>"
-            <?php if ($user["role"] === ROLE_MANAGER) echo "selected"; ?>>
-            <?php echo ROLE_MANAGER ?>
-        </option>
+                <option value="<?php echo ROLE_CASHIER; ?>"
+                    <?php if ($user["role"] === ROLE_CASHIER) echo "selected"; ?>>
+                    <?php echo ROLE_CASHIER ?>
+                </option>
 
-        <option value="<?php echo ROLE_CASHIER; ?>"
-            <?php if ($user["role"] === ROLE_CASHIER) echo "selected"; ?>>
-            <?php echo ROLE_CASHIER ?>
-        </option>
+                <option value="<?php echo ROLE_KITCHEN; ?>"
+                    <?php if ($user["role"] === ROLE_KITCHEN) echo "selected"; ?>>
+                    <?php echo ROLE_KITCHEN ?>
+                </option>
 
-        <option value="<?php echo ROLE_KITCHEN; ?>"
-            <?php if ($user["role"] === ROLE_KITCHEN) echo "selected"; ?>>
-            <?php echo ROLE_KITCHEN ?>
-        </option>
+            </select>
 
-    </select>
+            <br><br>
 
-    <br><br>
+            <label for="status">Status</label><br>
+            <select name="status" required>
+                <option value="Active" <?php if ($user["status"] === "Active") echo "selected"; ?>>Active</option>
+                <option value="Inactive" <?php if ($user["status"] === "Inactive") echo "selected"; ?>>Inactive</option>
+            </select>
 
-    <label for="status">Status</label><br>
-    <select name="status" required>
-        <option value="Active" <?php if ($user["status"] === "Active") echo "selected"; ?>>Active</option>
-        <option value="Inactive" <?php if ($user["status"] === "Inactive") echo "selected"; ?>>Inactive</option>
-    </select>
+            <br><br>
+        </div>
 
-    <br><br>
+        <div class="form-actions">
+            <button type="submit" class="action-btn">Update User</button>
+        </div>
+        <a href="users.php" class="action-btn">Cancel/Back to Users</a>
 
-    <button type="submit" class="action-btn">Update User</button>
+    </form>
 
-    <a href="users.php" class="action-btn">Cancel/Back to Users</a>
-
-</form>
-
-<?php include "includes/footer.php"; ?>
+    <?php include "includes/footer.php"; ?>

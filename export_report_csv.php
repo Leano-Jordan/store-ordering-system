@@ -21,11 +21,8 @@ $result = $conn->query("SELECT DATE(created_at) AS sale_date,
 COUNT(*) AS orders, SUM(total) AS revenue FROM orders WHERE $where 
 AND status <> 'Cancelled' GROUP BY DATE(created_at) ORDER BY sale_date DESC");
 
-header("Content-Type: text/csv;
-charset=UTF-8");
-header("Content-Disposition:
-attachment;
-filename=sales_report.csv");
+header("Content-Type: text/csv; charset=UTF-8");
+header("Content-Disposition: attachment; filename=sales_report.csv");
 
 $output = fopen("php://output", "w");
 

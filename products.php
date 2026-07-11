@@ -10,11 +10,76 @@ $page = max(1, (int)($_GET["page"] ?? 1));
 
 $offset = ($page - 1) * $limit;
 
-$sql = "SELECT * FROM products ORDER BY category, name LIMIT $limit OFFSET $offset";
+$stockFilter = $_GET["stock"] ?? "";
+
+$search = trim($_GET["search"] ?? "");
+
+if ($stockFilter === "low") {
+
+    $sql = "SELECT * FROM products 
+    WHERE status = 'Active' 
+    AND stock > 0 
+    AND stock <= 10 
+    ORDER BY category ASC, stock DESC, name ASC 
+    LIMIT $limit OFFSET $offset";
+
+    $totalResult = $conn->query("SELECT COUNT(*) AS total 
+    FROM products 
+    WHERE status = 'Active' 
+    AND stock > 0 
+    AND stock <= 10");
+} elseif ($stockFilter === "out") {
+
+    $sql = "SELECT * FROM products 
+    WHERE status = 'Active' 
+    AND stock = 0 
+    ORDER BY category, name 
+    LIMIT $limit OFFSET $offset";
+
+    $totalResult = $conn->query(
+        "SELECT COUNT(*) AS total 
+    FROM products 
+    WHERE status = 'Active' 
+    AND stock = 0"
+    );
+} else {
+
+    if ($search !== "") {
+
+        $safeSearch = $conn->real_escape_string($search);
+
+        $sql = "SELECT * FROM products 
+        WHERE status = 'Active' AND (name LIKE '%$safeSearch%' OR category LIKE '%$safeSearch%') 
+        ORDER BY status = 'Inactive', category ASC, 
+        CASE 
+        WHEN stock = 0 THEN 2 
+        WHEN stock <= 10 THEN 1 
+        ELSE 0 
+        END, 
+        stock DESC, name ASC 
+        LIMIT $limit OFFSET $offset";
+
+        $totalResult = $conn->query("SELECT COUNT(*) AS total 
+        FROM products 
+        WHERE status = 'Active' AND (name LIKE '%$safeSearch%' OR category LIKE '%$safeSearch%')");
+    } else {
+
+        $sql = "SELECT * FROM products ORDER BY status = 'Inactive', 
+        category ASC,
+        CASE 
+WHEN stock = 0 THEN 2 
+WHEN stock <= 10 THEN 1 
+ELSE 0 
+END, stock DESC, name ASC LIMIT $limit OFFSET $offset";
+        $totalResult = $conn->query("SELECT COUNT(*) AS total FROM products");
+    }
+}
 
 $result = $conn->query($sql);
 
-$totalResult = $conn->query("SELECT COUNT(*) AS total FROM products");
+if (!$result) {
+    die($conn->error);
+}
 
 $totalRows = $totalResult->fetch_assoc()["total"];
 
@@ -25,6 +90,26 @@ include "includes/header.php";
 ?>
 
 <div class="page-header">
+
+    <form method="GET" class="search-form">
+
+        <input type="text"
+            name="search"
+            placeholder="Search Products..."
+            value="<?php echo htmlspecialchars($search); ?>">
+
+        <?php if ($stockFilter !== "") { ?>
+
+            <input type="hidden" name="stock" value="<?php echo htmlspecialchars($stockFilter); ?>">
+        <?php } ?>
+
+        <button type="submit" class="action-btn">
+            Search
+        </button>
+
+        <a href="products.php" class="action-btn">Clear</a>
+
+    </form>
 
     <h2>Products</h2>
 
@@ -40,6 +125,7 @@ include "includes/header.php";
         <th>Price</th>
         <th>Description</th>
         <th>Status</th>
+        <th>Stock</th>
         <th>Actions</th>
     </tr>
 
@@ -61,16 +147,30 @@ include "includes/header.php";
             <td><?php echo htmlspecialchars($row["description"], ENT_QUOTES, 'UTF-8'); ?></td>
             <td><?php echo htmlspecialchars($row["status"]); ?></td>
             <td>
+                <?php
+
+                if ($row["stock"] == 0) {
+
+                    echo '🔴 Out of Stock';
+                } elseif ($row["stock"] <= 10) {
+
+                    echo "🟠 Low Stock (" . (int)$row["stock"] . ")";
+                } else {
+                    echo "🟢 " . (int)$row["stock"] . " in Stock";
+                }
+                ?>
+            </td>
+            <td>
 
                 <a href="edit_product.php?id=<?php echo (int)$row["id"]; ?>" class="action-btn edit-btn">
                     🖋 Edit
                 </a>
                 <?php if ($row["status"] === "Active") { ?>
                     <a href="delete_product.php?id=<?php echo (int)$row["id"]; ?>" class="action-btn delete-btn">
-                        🗑 Deactivate
+                        ❌ Deactivate
                     </a>
-                <?php } else { ?><a href="reactivate_product.php?id=<?php echo (int)$row["id"]; ?>" class="action-btn">
-                        ✅ Reactivate
+                <?php } else { ?><a href="reactivate_product.php?id=<?php echo (int)$row["id"]; ?>" class="action-btn reactivate-btn">
+                        ✔ Reactivate
                     </a><?php } ?>
 
             </td>

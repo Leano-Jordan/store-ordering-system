@@ -1,7 +1,7 @@
 <?php
-/*require_once "includes/auth.php";
+require_once "includes/auth.php";
 require_once "includes/permissions.php";
-requireRole([ROLE_ADMIN, ROLE_MANAGER]);*/
+requireRole([ROLE_ADMIN, ROLE_MANAGER]);
 require_once "includes/db.php";
 
 $loadChart = true;
@@ -162,7 +162,7 @@ require_once "includes/header.php";
             <tr>
                 <td><?php echo date("d M Y", strtotime($row["sale_date"])); ?></td>
                 <td><?php echo (int)$row["order_count"]; ?></td>
-                <td><?php echo number_format($row["daily_total"], 2); ?></td>
+                <td>R<?php echo number_format($row["daily_total"], 2); ?></td>
             </tr>
         <?php } ?>
 
@@ -211,7 +211,7 @@ require_once "includes/header.php";
             <tr>
                 <td><?php echo htmlspecialchars($customer["customer_name"]); ?></td>
                 <td><?php echo (int)$customer["orders"]; ?></td>
-                <td><?php echo number_format($customer["spent"], 2); ?></td>
+                <td>R<?php echo number_format($customer["spent"], 2); ?></td>
             </tr>
         <?php } ?>
 

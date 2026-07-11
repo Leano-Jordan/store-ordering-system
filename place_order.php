@@ -67,7 +67,7 @@ foreach ($cart as $item) {
     $productId = (int)$item["id"];
     $quantity = (int)$item["quantity"];
 
-    $productStmt = $conn->prepare("SELECT name, price FROM products WHERE id = ?");
+    $productStmt = $conn->prepare("SELECT name, price, stock FROM products WHERE id = ?");
     $productStmt->bind_param("i", $productId);
     $productStmt->execute();
 
@@ -86,8 +86,20 @@ foreach ($cart as $item) {
     }
 
     $product = $productResult->fetch_assoc();
+    if ($quantity > $product["stock"]) {
+        header("Content-Type: application/json");
+
+        echo json_encode([
+            "success" => false,
+            "message" => "Only " . $product["stock"] . " " . $product["name"] . "(s) available in stock."
+        ]);
+
+        $productStmt->close();
+        exit();
+    }
 
     $total += $product["price"] * $quantity;
+
     $dbPrices[$productId] = $product["price"];
 
     $items .= $product["name"] . " x " . $quantity . "\n";
