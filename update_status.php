@@ -1,127 +1,192 @@
 <?php
-require_once "includes/auth.php";
 
-require_once "includes/permissions.php";
+require_once 'includes/auth.php';
+require_once 'includes/permissions.php';
 requireRole([ROLE_ADMIN, ROLE_MANAGER, ROLE_CASHIER, ROLE_KITCHEN]);
-require_once "includes/db.php";
-require_once "includes/logger.php";
+require_once 'includes/db.php';
+require_once 'includes/csrf.php';
+verifyCsrfToken();
+require_once 'includes/helpers.php';
+require_once 'includes/logger.php';
 
-if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    die("Invalid request.");
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    exit('Invalid request.');
 }
 
-$id = intval($_POST["id"] ?? 0);
+$id = intval($_POST['id'] ?? 0);
 if ($id <= 0) {
-    die("Invalid order.");
+    exit('Invalid order.');
 }
 
-$status = $_POST["status"] ?? "";
+$status = $_POST['status'] ?? '';
 
-$sql = "SELECT status FROM orders WHERE id = ?";
+$conn->begin_transaction();
 
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $id);
-$stmt->execute();
+try {
+    $orderResult = executeQuery($conn, 'SELECT status, order_number FROM orders WHERE id = ? FOR UPDATE', 'i', [$id]);
 
-$result = $stmt->get_result();
-$currentOrder = $result->fetch_assoc();
+    if (!$orderResult) {
+        throw new Exception('Failed to retrieve order.');
+    }
 
-if (!$currentOrder) {
-    die("Order not found.");
-}
+    $orderData = $orderResult->fetch_assoc();
+    if (!$orderData) {
+        throw new Exception('Order not found.');
+    }
 
-$currentStatus = $currentOrder["status"];
+    $currentStatus = $orderData['status'];
+    $orderNumber = $orderData['order_number'];
 
-$orderStmt = $conn->prepare("SELECT order_number, items FROM orders WHERE id = ?");
-$orderStmt->bind_param("i", $id);
-$orderStmt->execute();
+    if ($currentStatus === 'Collected' || $currentStatus === 'Cancelled') {
+        throw new Exception("Cannot change status of an order that is already $currentStatus.");
+    }
 
-$orderData = $orderStmt->get_result()->fetch_assoc();
-$orderNumber = $orderData["order_number"];
-$orderItems = $orderData["items"];
+    $allowedStatuses = ['Pending', 'Preparing', 'Ready', 'Collected', 'Cancelled'];
 
-$orderStmt->close();
+    if (!in_array($status, $allowedStatuses, true)) {
+        throw new Exception('Invalid status.');
+    }
 
-if ($currentStatus === "Collected" || $currentStatus === "Cancelled") {
-    die("This order can no longer be modified");
-}
+    /***********         ************* ROLE BASED STATUS**********     *********/
 
+    $role = $_SESSION['role'];
 
-$allowedStatuses = ["Pending", "Preparing", "Ready", "Collected", "Cancelled"];
-
-if (!in_array($status, $allowedStatuses)) {
-    die("Invalid status.");
-}
-
-/***********         ************* ROLE BASED STATUS**********     *********/
-
-$role = $_SESSION["role"];
-
-if ($role === ROLE_KITCHEN) {
-
-    if (
-        !(($currentStatus === "Pending" && $status === "Preparing") ||
-            ($currentStatus === "Preparing" && $status === "Ready"))
+    if ($role === ROLE_KITCHEN) {
+        if (
+        !(
+            ($currentStatus === 'Pending' && $status === 'Preparing') || ($currentStatus === 'Preparing' && $status === 'Ready')
+        )
     ) {
-        die("User cannot perform this action.");
+            throw new Exception('User cannot perform this action.');
+        }
     }
-}
 
-if ($role === ROLE_CASHIER) {
-
-    if (!(($currentStatus === "Ready" && $status === "Collected"))) {
-        die("Cashiers can only collect ready orders.");
+    if ($role === ROLE_CASHIER) {
+        if (
+            !($currentStatus === 'Ready' && $status === 'Collected')) {
+            throw new Exception('Cashiers can only collect ready orders.');
+        }
     }
-}
 
+    $allowedTransitions = [
+    'Pending' => ['Preparing', 'Cancelled'],
+    'Preparing' => ['Ready', 'Cancelled'],
+    'Ready' => ['Collected', 'Cancelled'],
+    'Collected' => [],
+    'Cancelled' => [],
+];
 
+    if (!isset($allowedTransitions[$currentStatus])) {
+        throw new Exception('Invalid current status.');
+    }
 
-$sql = "UPDATE orders SET 
-status=? WHERE id=?";
+    if (!in_array($status, $allowedTransitions[$currentStatus], true)) {
+        throw new Exception("Cannot change status from $currentStatus to $status.");
+    }
 
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("si", $status, $id);
+    $orderUpdated = executeStatementAffectedRows(
+        $conn,
+        'UPDATE orders 
+SET status = ? 
+WHERE id = ? AND status = ?',
+        'sis',
+        [$status, $id, $currentStatus]
+    );
 
-if ($stmt->execute()) {
+    if ($orderUpdated !== 1) {
+        throw new Exception('Order status update failed.');
+    }
 
-    if ($status === "Collected") {
+    if ($status === 'Collected') {
+        $orderItemResult = executeQuery($conn, 'SELECT oi.product_id, oi.quantity FROM order_items oi 
+        INNER JOIN products p ON oi.product_id = p.id 
+        WHERE oi.order_id = ? FOR UPDATE', 'i', [$id]);
 
-        $items = explode("\n", trim($orderItems));
+        if (!$orderItemResult) {
+            throw new Exception('Failed to retrieve order items.');
+        }
+        while ($item = $orderItemResult->fetch_assoc()) {
+            $qty = (int) $item['quantity'];
+            $productId = (int) $item['product_id'];
 
-        foreach ($items as $item) {
+            $affected = executeStatementAffectedRows(
+                $conn,
+                'UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?',
+                'iii',
+                [$qty, $productId, $qty]
+            );
 
-            if (preg_match('/^(.*?)\s+x\s+(\d+)$/', trim($item), $matches)) {
+            if ($affected <= 0) {
+                throw new Exception("Unable to deduct stock for product ID $productId");
+            }
 
-                $productName = trim($matches[1]);
-                $quantity = (int)$matches[2];
+            $newStockResult = executeQuery(
+                $conn,
+                'SELECT stock FROM products WHERE id = ?',
+                'i',
+                [$productId]
+            );
 
-                $stockStmt = $conn->prepare("UPDATE products 
-                SET stock = stock - ? WHERE name = ?");
+            if (!$newStockResult) {
+                throw new Exception('Failed to retrieve updated stock for product ID '.$productId);
+            }
 
-                $stockStmt->bind_param("is", $quantity, $productName);
-                $stockStmt->execute();
+            $newStockRow = $newStockResult->fetch_assoc();
 
-                if ($stockStmt->affected_rows == 0) {
-                    error_log("SwiftOrder: Product stock deduction failed: " . $productName . " on " . $orderNumber);
-                }
+            if (!$newStockRow) {
+                throw new Exception('Unable to read updated stock for product ID '.$productId);
+            }
 
-                $stockStmt->close();
+            $newStock = (int)
+                $newStockRow['stock'];
+
+            $adjType = 'Decrease';
+            $adjReason = 'Order Collected';
+            $adjNotes = "Order: $orderNumber";
+
+            $histStmt = executeStatement(
+                $conn,
+                'INSERT INTO stock_adjustments (product_id, 
+                user_id, adjustment_type, 
+                quantity, available_stock, reason, 
+                notes) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                'iisiiss',
+                [$productId,
+                $_SESSION['user_id'],
+                $adjType, $qty, $newStock,
+                $adjReason, $adjNotes, ]
+            );
+
+            if (!$histStmt) {
+                throw new Exception("Failed to create stock history for product ID $productId");
             }
         }
     }
 
-    logActivity(
-        $conn,
-        $_SESSION["user_id"],
-        "Changed Order " . $orderNumber . " from " . $currentStatus . " to " . $status
-    );
-
-    if (($_POST["return_to"] ?? "") === "orders") {
-        header("Location: orders.php");
-    } else {
-        header("Location: order_details.php?id=" . (int)$id);
+    if (!$conn->commit()) {
+        throw new Exception('Failed to commit order status update.');
     }
+} catch (Throwable $e) {
+    $conn->rollback();
+
+    error_log('update_status.php: '.$e->getMessage());
+
+    $_SESSION['flash_error'] = 'Failed to update order status. Please try again.';
+
+    header('Location: order_details.php?id='.(int) $id);
     exit();
-} else {
-    die("Failed to update order status.");
 }
+
+        logActivity(
+            $conn,
+            $_SESSION['user_id'],
+            "Changed Order $orderNumber from $currentStatus to $status"
+        );
+
+    if (($_POST['return_to'] ?? '') === 'orders') {
+        header('Location: orders.php');
+    } else {
+        header('Location: order_details.php?id='.(int) $id);
+    }
+
+    exit();

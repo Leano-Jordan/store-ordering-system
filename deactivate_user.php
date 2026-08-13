@@ -1,18 +1,28 @@
 <?php
-require_once "includes/auth.php";
-require_once "includes/permissions.php";
+
+require_once 'includes/auth.php';
+require_once 'includes/permissions.php';
 requireRole([ROLE_ADMIN]);
-require_once "includes/db.php";
+require_once 'includes/csrf.php';
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header('Location: users.php');
+    exit();
+}
+
+verifyCsrfToken();
+
+require_once 'includes/db.php';
 
 /************ ************** DEACTIVATE USERS *********** *****************/
 
-$id = (int)$_GET["id"];
+$id = (int) ($_POST['id'] ?? 0);
 
 /*********                *******  PREVENT DEACTIVATION MYSELF *******       ****************/
 
-if ($id === (int)$_SESSION["user_id"]) {
-
-    header("Location: users.php?error=self_deactivate");
+if ($id === (int) $_SESSION['user_id']) {
+    $_SESSION['error'] = 'Cannot Deactivate your own account';
+    header('Location: users.php');
     exit();
 }
 
@@ -21,28 +31,28 @@ if ($id === (int)$_SESSION["user_id"]) {
 $check = $conn->prepare("SELECT COUNT(*) AS total FROM users WHERE role = ? AND status = 'Active'");
 
 $adminRole = ROLE_ADMIN;
-$check->bind_param("s", $adminRole);
+$check->bind_param('s', $adminRole);
 $check->execute();
 
-$totalAdmins = $check->get_result()->fetch_assoc()["total"];
+$totalAdmins = $check->get_result()->fetch_assoc()['total'];
 
 /************************************    CHECK IF THIS USER IS ACTIVE ADMIN    ***************************************/
 
-$stmt = $conn->prepare("SELECT role, status FROM users WHERE id = ?");
+$stmt = $conn->prepare('SELECT role, status FROM users WHERE id = ?');
 
-$stmt->bind_param("i", $id);
+$stmt->bind_param('i', $id);
 $stmt->execute();
 
 $user = $stmt->get_result()->fetch_assoc();
 
 if (
     $user &&
-    $user["role"] === ROLE_ADMIN &&
-    $user["status"] === "Active" &&
+    $user['role'] === ROLE_ADMIN &&
+    $user['status'] === 'Active' &&
     $totalAdmins <= 1
 ) {
-
-    header("Location: users.php?error=last_admin");
+    $_SESSION['error'] = 'Cannot Deactivate Last Admin';
+    header('Location: users.php?error=last_admin');
     exit();
 }
 
@@ -54,8 +64,9 @@ $stmt = $conn->prepare(
     WHERE id = ?"
 );
 
-$stmt->bind_param("i", $id);
+$stmt->bind_param('i', $id);
 $stmt->execute();
 
-header("Location: users.php?success=user_deactivated");
+$_SESSION['success'] = 'User deactivated successfully.';
+header('Location: users.php');
 exit();

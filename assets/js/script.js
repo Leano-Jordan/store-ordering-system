@@ -1,47 +1,82 @@
+/* =========================================================
+SwiftOrder POS — script.js  v0.8.4
+   ========================================================= */
+
 let count = 0;
 let total = 0;
 let cart = [];
-cart = JSON.parse(localStorage.getItem("cart")) || [];
+let paymentMethod = 'cash';
 
-let selectedCategory = "All";
+// ── Bootstrap from localStorage (JSON source of truth) ──────────────
+cart = loadCartFromStorage();
 
-let savedCount = localStorage.getItem('count');
-let savedItems = localStorage.getItem('items');
-let savedTotal = localStorage.getItem('total');
+// Restore count + total scalars so they are ready before DOMContentLoaded
+const savedCount = localStorage.getItem('count');
+const savedTotal = localStorage.getItem('total');
 
-if (savedCount) {
-    count = Number(savedCount);
+if (savedCount) count = Number(savedCount);
+if (savedTotal) total = Number(savedTotal);
 
-    const cartElement = document.getElementById('cart');
+let selectedCategory = 'All';
 
-    if (cartElement) {
-        cartElement.innerHTML = 'Items: ' + count;
+/* ─────────────────────────────────────────────────────────────────────
+                                LOAD THE CART FROM STORAGE
+   ───────────────────────────────────────────────────────────────────── */
+
+function loadCartFromStorage() {
+    const raw = localStorage.getItem('cart');
+    if (!raw) return [];
+
+    try {
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+        localStorage.removeItem('cart');
+        return [];
     }
 }
 
-if (savedItems) {
+/* ─────────────────────────────────────────────────────────────────────
+                                ORDER TYPE
+   ───────────────────────────────────────────────────────────────────── */
 
-    const cartItems = document.getElementById('cart-items');
+function setPaymentMethod(method, button) {
+    paymentMethod = method;
+    const hidden = document.getElementById('payment-method');
+    if (hidden) hidden.value = method;
 
-    if (cartItems) {
-        cartItems.innerHTML = savedItems;
-    }
+    document.querySelectorAll('.payment-method-btn').forEach(function(b) {
+        b.classList.remove('active');
+    });
+    button.classList.add('active');
 }
 
-if (savedTotal) {
-    total = Number(savedTotal);
+/* ─────────────────────────────────────────────────────────────────────
+                        CART DISPLAY HELPERS
+   ───────────────────────────────────────────────────────────────────── */
 
-    const totalElement = document.getElementById('total');
+function refreshCartMeta() {
+    const cartEl = document.getElementById('cart');
+    const totalEl = document.getElementById('total');
+    const badgeEl = document.getElementById('cart-badge');
+    const vatEl = document.getElementById('vat');
 
-    if (totalElement) {
-        totalElement.innerHTML = 'Total: R' + total.toFixed(2);
-    }
+    const vat = total - (total / 1.15);
+
+    if (cartEl) cartEl.innerHTML = count;
+    if (totalEl) totalEl.innerHTML = 'R' + total.toFixed(2);
+    if (vatEl) vatEl.innerHTML = 'R' + vat.toFixed(2);
+    if (badgeEl) badgeEl.innerHTML = count + (count === 1 ? ' item' : ' items');
 }
-/*************        ************ ADD TO CART FUNCTION **************          ********/
-function addToCart(id, productName, price) {
+
+/* ─────────────────────────────────────────────────────────────────────
+                            ADD TO CART
+   ───────────────────────────────────────────────────────────────────── */
+
+function addToCart(id, productName, price, image) {
     count++;
 
-    let existing = cart.find(item => item.id === id);
+    const existing = cart.find(function(item) { return item.id === id; });
 
     if (existing) {
         existing.quantity += 1;
@@ -50,114 +85,97 @@ function addToCart(id, productName, price) {
             id: id,
             name: productName,
             price: price,
+            image: image,
             quantity: 1
         });
     }
 
-    document.getElementById('cart').innerHTML = 'Items: ' + count;
+    total += price;
 
+    refreshCartMeta();
     updateCartDisplay();
-
-    total = total + price;
-
-    document.getElementById('total').innerHTML = 'Total R' + total.toFixed(2);
-
-    localStorage.setItem(
-        'count', count
-    );
-
-    localStorage.setItem(
-        'items', document.getElementById('cart-items').innerHTML
-    );
-
-    localStorage.setItem(
-        'total', total
-    );
+    persistCart();
 }
 
-/*************        *********** CLEAR THE CART FUNCTION ************          ********/
+/* ─────────────────────────────────────────────────────────────────────
+CLEAR CART
+   ───────────────────────────────────────────────────────────────────── */
 
 function clearCart() {
-
     count = 0;
     total = 0;
-    cart = []; // Reset the cart array
-    syncCart(); // Sync the cart to localStorage
+    cart = [];
 
-    document.getElementById('customer').value = '';
+    const customerEl = document.getElementById('customer');
+    if (customerEl) customerEl.value = '';
 
-    document.getElementById('cart').innerHTML = 'Items: 0';
-
-    document.getElementById('total').innerHTML = 'Total: R0.00';
-
-
-    localStorage.removeItem("cart");
-    localStorage.removeItem("count");
-    localStorage.removeItem("items");
-    localStorage.removeItem("total");
-}
-
-/*************        ******* SYNC CART FUNCTION *******          ********/
-
-function syncCart() {
-    localStorage.setItem("cart", JSON.stringify(cart));
+    refreshCartMeta();
     updateCartDisplay();
+
+    localStorage.removeItem('cart');
+    localStorage.removeItem('count');
+    localStorage.removeItem('total');
+    // 'items' key removed from all writes; clean up legacy key if present
+    localStorage.removeItem('items');
 }
 
-/*************        ******* UPDATE THE CART DISPLAY FUNCTION *******          ********/
+/* ─────────────────────────────────────────────────────────────────────
+PERSIST CART (single source of truth — JSON only)
+   ───────────────────────────────────────────────────────────────────── */
+
+function persistCart() {
+    localStorage.setItem('cart', JSON.stringify(cart));
+    localStorage.setItem('count', count);
+    localStorage.setItem('total', total);
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+UPDATE CART DISPLAY
+   ───────────────────────────────────────────────────────────────────── */
 
 function updateCartDisplay() {
+    const cartItems = document.getElementById('cart-items');
+    if (!cartItems) return;
 
-    const cartItems = document.getElementById("cart-items");
-
-    if (!cartItems) {
+    if (!Array.isArray(cart) || cart.length === 0) {
+        cartItems.innerHTML = "<p style='text-align:center; color:#bbb; padding:20px 0; font-size:13px;'>Your cart is empty.</p>";
         return;
     }
 
-    let text = "";
-
-    if (cart.length === 0) {
-        cartItems.innerHTML = "<p style='text-align:center; color:#888;'>Your cart is empty.</p>";
-
-        return;
-    }
-
-    if (!Array.isArray(cart)) {
-        cart = []; // Ensure cart is initialized as an array
-        syncCart(); // Sync the cart to localStorage
-        return;
-    }
+    let html = '';
 
     for (let i = 0; i < cart.length; i++) {
+        const subTotal = (cart[i].price * cart[i].quantity).toFixed(2);
 
-        let subTotal = cart[i].price * cart[i].quantity;
+        html += `<div class='cart-item'>
+            <img class="cart-image" src="assets/images/products/${cart[i].image}" alt="${cart[i].name}" onerror="this.onerror=null;this.remove();">
+            <div class='cart-name'>
+                ${cart[i].name}
+            </div>
 
-        text +=
-            "<div class='cart-item'>" +
-            "<div class='cart-name'>" +
-            "<strong>" + cart[i].name + "</strong>" + "</div>" +
+            <div class='cart-controls'>
+                <button onclick="decreaseQuantity(${cart[i].id})">-</button>
+                    <span>
+                        ${cart[i].quantity}
+                    </span>
 
-            "<div class='cart-controls'>" +
-            "<button onclick=\"decreaseQuantity(" + cart[i].id + ")\">-</button>" +
-            "<span>" + cart[i].quantity + "</span>" +
-            "<button onclick=\"increaseQuantity(" + cart[i].id + ")\">+</button>" +
-            "</div>" +
-
-            "<div class='cart-price'>" + "R" + subTotal.toFixed(2) + "</div>" +
-
-            "</div>";
+                <button onclick='increaseQuantity(${cart[i].id})'>+</button>
+            </div>
+            <div class='cart-price'>
+                R${subTotal}
+            </div>
+            </div>`;
     }
 
-    cartItems.innerHTML = text;
-
+    cartItems.innerHTML = html;
 }
 
-/*************        ********** INCREASE QUANTITY FUNCTION **********          ********/
+/* ─────────────────────────────────────────────────────────────────────
+INCREASE QUANTITY
+   ───────────────────────────────────────────────────────────────────── */
 
 function increaseQuantity(id) {
-
     for (let i = 0; i < cart.length; i++) {
-
         if (cart[i].id === id) {
             cart[i].quantity++;
             count++;
@@ -166,307 +184,240 @@ function increaseQuantity(id) {
         }
     }
 
-    document.getElementById('total').innerHTML = 'Total: R' + total.toFixed(2);
-
+    refreshCartMeta();
     updateCartDisplay();
-
-    document.getElementById('cart').innerHTML = 'Items: ' + count;
-
-    localStorage.setItem('items', document.getElementById('cart-items').innerHTML);
-    localStorage.setItem('total', total);
-    localStorage.setItem('count', count);
-
-    syncCart();
+    persistCart();
 }
 
-/*************        ********** DECREASE QUANTITY FUNCTION **********          ********/
+/* ─────────────────────────────────────────────────────────────────────
+DECREASE QUANTITY
+   ───────────────────────────────────────────────────────────────────── */
 
 function decreaseQuantity(id) {
-
     for (let i = 0; i < cart.length; i++) {
-
         if (cart[i].id === id) {
-
             if (cart[i].quantity > 1) {
-
                 cart[i].quantity--;
-                total -= cart[i].price;
             } else {
-                total -= cart[i].price;
-                cart.splice(i, 1); // Remove the item from the cart
+                cart.splice(i, 1);
+                break;
             }
-
-            if (count > 0) {
-                count--;
-            }
-
-            break;
         }
     }
 
+    // BUG FIX #6: recalculate total from cart to avoid float accumulation drift
+    total = cart.reduce(function(sum, item) {
+        return sum + item.price * item.quantity;
+    }, 0);
+
+    if (count > 0) count--;
+
+    refreshCartMeta();
     updateCartDisplay();
-
-    document.getElementById('cart').innerHTML = 'Items: ' + count;
-
-    document.getElementById('total').innerHTML = 'Total: R' + total.toFixed(2);
-
-    localStorage.setItem('items', document.getElementById('cart-items').innerHTML);
-    localStorage.setItem('total', total);
-
-    syncCart();
+    persistCart(); // BUG FIX: count was not saved in original decreaseQuantity
 }
 
-/*************        ******** SEARCH FOR PRODUCTS FUNCTION **********          ********/
+/* ─────────────────────────────────────────────────────────────────────
+SEARCH
+   ───────────────────────────────────────────────────────────────────── */
 
 function searchProducts() {
     applyFilters();
 }
 
-/*************        ******** CLEAR SEARCH INPUT FUNCTION **********          ********/
 function clearSearch() {
-    document.getElementById("search").value = "";
-
+    const searchEl = document.getElementById('search');
+    if (searchEl) {
+        searchEl.value = '';
+        searchEl.focus();
+    }
     searchProducts();
-
-    document.getElementById("search").focus();
-
-    document.getElementById("clear-search").blur();
 }
 
-/*************        ********** FILTER PRODUCTS FUNCTION ************          ********/
+/* ─────────────────────────────────────────────────────────────────────
+FILTER BY CATEGORY
+   ───────────────────────────────────────────────────────────────────── */
 
 function filterProducts(category, button) {
-
-    //HIGHLIGHT ACTIVE BUTTON
-    let buttons = document.getElementsByClassName("category-btn");
-
-    for (let i = 0; i < buttons.length; i++) {
-        buttons[i].classList.remove("active");
-    }
-    button.classList.add("active");
-
+    document.querySelectorAll('.category-btn').forEach(function(b) {
+        b.classList.remove('active');
+    });
+    button.classList.add('active');
     selectedCategory = category;
-
     applyFilters();
 }
 
-/*************        *********** APPLY FILTERS FUNCTION *************          ********/
+/* ─────────────────────────────────────────────────────────────────────
+APPLY FILTERS (search + category combined)
+   ───────────────────────────────────────────────────────────────────── */
 
 function applyFilters() {
-    let search = document.getElementById("search").value.toLowerCase();
-
-    let products = document.getElementsByClassName("product");
+    const searchEl = document.getElementById('search');
+    const search = searchEl ? searchEl.value.toLowerCase() : '';
+    const products = document.getElementsByClassName('product');
 
     for (let i = 0; i < products.length; i++) {
-        let name = products[i].querySelector("h2").textContent.toLowerCase();
+        const nameEl = products[i].querySelector('.product-name') || products[i].querySelector('h2') || products[i].querySelector('h3');
+        const name = nameEl ? nameEl.textContent.toLowerCase() : '';
+        const category = products[i].dataset.category;
 
-        let category = products[i].dataset.category;
+        const matchesSearch = name.includes(search);
+        const matchesCategory = selectedCategory === 'All' || category === selectedCategory;
 
-        let matchesSearch = name.includes(search);
-
-        let matchesCategory = selectedCategory === "All" || category === selectedCategory;
-
-        if (matchesSearch && matchesCategory) {
-            products[i].style.display = "";
-        } else {
-            products[i].style.display = "none";
-        }
+        products[i].style.display = (matchesSearch && matchesCategory) ? '' : 'none';
     }
 }
 
-/*************        ********** PLACE THE ORDER FUNCTION ************          ********/
+/* ─────────────────────────────────────────────────────────────────────
+PLACE ORDER
+   ───────────────────────────────────────────────────────────────────── */
 
 function placeOrder() {
+    if (window.orderSubmitting) return;
 
-    if (window.orderSubmitting) {
-        return
+    const customerEl = document.getElementById('customer');
+    const customer = (customerEl ? customerEl.value : '').trim();
+
+    if (customer === '') {
+        alert('Please enter a customer name.');
+        return;
     }
 
-    let customer = document.getElementById('customer').value;
-
-    if (customer.trim() === '') {
-        alert("Please enter your name.");
+    if (cart.length === 0) {
+        alert('Cart is empty.');
         return;
     }
 
     const btn = document.getElementById('placeOrderBtn');
-    btn.disabled = true;
-    btn.textContent = "Placing Order...";
+    if (!btn) return;
 
+    btn.disabled = true;
+    btn.textContent = 'Placing Order…';
     window.orderSubmitting = true;
 
+    const formData = new FormData();
+    formData.append('customer', customer);
+    formData.append('cart', JSON.stringify(cart));
+    formData.append('total', total);
+    formData.append('payment_method', paymentMethod);
 
-    let items = "";
-
-    for (let i = 0; i < cart.length; i++) {
-
-        items += cart[i].name + " x " + cart[i].quantity;
-
-        if (i < cart.length - 1) {
-            items += "\n";
-        }
+    const csrfEl = document.getElementById('csrf_token');
+    if (!csrfEl) {
+        alert('Security token is missing.');
+        window.orderSubmitting = false;
+        btn.disabled = false;
+        btn.textContent = 'Place Order';
+        return;
     }
 
-    let formData = new FormData();
+    formData.append('csrf_token', csrfEl.value);
 
-    formData.append('customer', customer);
-    formData.append('items', items);
-    formData.append('total', total);
-    formData.append('cart', JSON.stringify(cart));
 
-    fetch('place_order.php', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-
+    fetch('place_order.php', { method: 'POST', body: formData })
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
             alert(data.message);
-
-            if (data.success) {
-                clearCart();
-            }
-
+            if (data.success) clearCart();
             window.orderSubmitting = false;
-
             btn.disabled = false;
-            btn.textContent = "Place Order";
-
+            btn.textContent = 'Place Order';
         })
-        .catch(error => {
-            alert("Order failed.");
+        .catch(function(error) {
+            console.error(error);
+            alert('Order failed. Please try again.');
             window.orderSubmitting = false;
-
             btn.disabled = false;
-            btn.textContent = "Place Order";
+            btn.textContent = 'Place Order';
         });
 }
 
-/*************        ********** SEARCH ORDER FUNCTION ************          ********/
+/* ─────────────────────────────────────────────────────────────────────
+PURCHASE ORDER HELPERS
+   ───────────────────────────────────────────────────────────────────── */
 
-function searchOrders() {
+function addPurchaseOrderRow(item) {
+    item = item || null;
+    const tbody = document.querySelector('#purchase-order-items tbody');
+    if (!tbody) return;
 
-    let input = document.getElementById("orderSearch").value.toLowerCase();
+    let options = '<option value="">Select Product</option>';
 
-    let rows = document.querySelectorAll(".orders-table tbody tr");
-
-    rows.forEach(function(row) {
-
-        if (row.innerText.toLowerCase().includes(input)) {
-            row.style.display = "";
-        } else {
-            row.style.display = "none";
-        }
-
+    window.poProducts.forEach(function(product) {
+        const selected = (item && Number(item.product_id) === Number(product.id)) ? 'selected' : '';
+        options += '<option value="' + product.id + '" ' + selected + '>' + product.name + '</option>';
     });
 
+    const quantity = item ? item.quantity : 1;
+    const price = item ? item.cost_price : '';
+    const rowTotal = item ? (item.quantity * item.cost_price).toFixed(2) : '0.00';
+
+    const row = document.createElement('tr');
+    row.innerHTML =
+        '<td><select name="product_id[]" required style="width:120%">' + options + '</select></td>' +
+        '<td><input type="number" name="quantity[]" value="' + quantity + '" min="1" required oninput="calculatePurchaseOrderRow(this)"></td>' +
+        '<td><input type="number" name="price[]" value="' + price + '" placeholder="0.00" min="0" step="0.01" required onfocus="if(this.value==0)this.value=\'\';" oninput="calculatePurchaseOrderRow(this)"></td>' +
+        '<td class="line-total">R' + rowTotal + '</td>' +
+        '<td><button type="button" class="action-btn delete-btn" onclick="removePurchaseOrderRow(this)">Remove</button></td>';
+
+    tbody.appendChild(row);
 }
 
-/*************        ********** SORT ORDERS FUNCTION ************          ********/
-
-function sortOrders() {
-
-    const table = document.querySelector(".orders-table tbody");
-
-    const rows = Array.from(table.querySelectorAll("tr"));
-
-    const activeRows = rows.filter(row => row.cells[3].innerText.trim() !== "Cancelled");
-
-    const cancelledRows = rows.filter(row => row.cells[3].innerText.trim() === "Cancelled");
-
-    const sort = document.getElementById("orderSort").value;
-
-    if (sort === "status") {
-
-        const order = {
-            "Pending": 1,
-            "Preparing": 2,
-            "Ready": 3,
-            "Collected": 4,
-            "Cancelled": 5
-        };
-
-        activeRows.sort((a, b) => {
-
-            const statusA = a.cells[3].innerText.trim();
-            const statusB = b.cells[3].innerText.trim();
-
-            return order[statusA] - order[statusB];
-
-        });
-
-    } else if (sort === "highest") {
-
-        activeRows.sort((a, b) => {
-
-            const totalA = parseFloat(a.cells[2].innerText.replace(/[^\d.]/g, ""));
-            const totalB = parseFloat(b.cells[2].innerText.replace(/[^\d.]/g, ""));
-
-            return totalB - totalA;
-
-        });
-
-    } else if (sort === "lowest") {
-
-        activeRows.sort((a, b) => {
-            const totalA = parseFloat(a.cells[2].innerText.replace(/[^\d.]/g, ""));
-            const totalB = parseFloat(b.cells[2].innerText.replace(/[^\d.]/g, ""));
-
-            return totalA - totalB;
-        });
-
-    } else if (sort === "newest") {
-
-        activeRows.sort((a, b) => {
-
-            const dateA = new Date(a.cells[4].innerText.trim());
-            const dateB = new Date(b.cells[4].innerText.trim());
-
-            return dateB - dateA;
-
-        });
-
-    } else if (sort === "oldest") {
-
-        activeRows.sort((a, b) => {
-
-            const dateA = new Date(a.cells[4].innerText.trim());
-            const dateB = new Date(b.cells[4].innerText.trim());
-
-            return dateA - dateB;
-
-        });
-
-    }
-
-    activeRows.forEach(row => table.appendChild(row));
-    cancelledRows.forEach(row => table.appendChild(row));
-
+function removePurchaseOrderRow(button) {
+    button.closest('tr').remove();
+    calculatePurchaseOrderTotal();
 }
 
-/*************        ********** SALES CANVAS AND CHART ************          ********/
+function calculatePurchaseOrderRow(input) {
+    const row = input.closest('tr');
+    const quantity = parseFloat(row.querySelector('input[name="quantity[]"]').value) || 0;
+    const price = parseFloat(row.querySelector('input[name="price[]"]').value) || 0;
+    row.querySelector('.line-total').textContent = 'R' + (quantity * price).toFixed(2);
+    calculatePurchaseOrderTotal();
+}
 
-document.addEventListener("DOMContentLoaded", function() {
+function calculatePurchaseOrderTotal() {
+    let grandTotal = 0;
+    document.querySelectorAll('.line-total').forEach(function(cell) {
+        grandTotal += parseFloat(cell.textContent.replace('R', '')) || 0;
+    });
+    const totalCell = document.getElementById('purchase-order-total');
+    if (totalCell) totalCell.textContent = 'R' + grandTotal.toFixed(2);
+}
 
-    cart = JSON.parse(localStorage.getItem("cart")) || [];
+/* ─────────────────────────────────────────────────────────────────────
+DOM CONTENT LOADED
+   ───────────────────────────────────────────────────────────────────── */
+
+document.addEventListener('DOMContentLoaded', function() {
+
+    // Re-read cart from JSON (single source of truth)
+    cart = loadCartFromStorage();
+    count = Number(localStorage.getItem('count')) || 0;
+    total = Number(localStorage.getItem('total')) || 0;
+
+    refreshCartMeta();
     updateCartDisplay();
 
-    const salesCanvas = document.getElementById("salesChart");
+    // Purchase order rows (edit screen)
+    if (window.poItems && window.poItems.length > 0) {
+        window.poItems.forEach(function(item) { addPurchaseOrderRow(item); });
+    }
 
-    if (salesCanvas && typeof Chart !== "undefined") {
+    // Sales chart
+    const salesCanvas = document.getElementById('salesChart');
+    if (salesCanvas && typeof Chart !== 'undefined') {
         new Chart(salesCanvas, {
-            type: "line",
+            type: 'line',
             data: {
                 labels: window.chartLabels,
-                datasets: [{
-                    label: "Sales (R)",
-                    data: window.chartData
-                }]
+                datasets: [{ label: 'Sales (R)', data: window.chartData }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false
-            }
+            options: { responsive: true, maintainAspectRatio: false }
         });
     }
 });
+
+/* ─────────────────────────────────────────────────────────────────────
+SwiftOrder Version 0.9.1
+Developer - Isaac Junior Lehlogonolo Maluleka
+   ───────────────────────────────────────────────────────────────────── */

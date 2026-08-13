@@ -1,29 +1,28 @@
 <?php
-require_once "includes/auth.php";
-require_once "includes/permissions.php";
+require_once 'includes/auth.php';
+require_once 'includes/permissions.php';
 requireRole([ROLE_ADMIN]);
-require_once "includes/db.php";
-require_once "includes/logger.php";
+require_once 'includes/db.php';
+require_once 'includes/logger.php';
 
 /************ ************** DELETE PRODUCT *********** *****************/
 
-$id = (int)$_GET["id"];
-$sql = "SELECT * FROM products WHERE id=?";
+$id = (int) $_GET['id'];
+$sql = 'SELECT * FROM products WHERE id=?';
 
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $id);
+$stmt->bind_param('i', $id);
 $stmt->execute();
 
 $result = $stmt->get_result();
 $product = $result->fetch_assoc();
 
 if (!$product) {
-
-    header("Location: products.php");
+    header('Location: products.php');
     exit();
 }
 
-include "includes/header.php"; ?>
+include 'includes/header.php'; ?>
 
 <h2>
     Deactivate Product
@@ -32,12 +31,14 @@ include "includes/header.php"; ?>
 <p>
     Are you sure you want to deactivate
     <strong>
-        <?php echo htmlspecialchars($product["name"]); ?>
+        <?php echo htmlspecialchars($product['name']); ?>
     </strong>?
 </p>
 
 <form action="confirm_delete.php" method="POST">
-    <input type="hidden" name="id" value="<?php echo $product["id"]; ?>">
+<input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrfToken(), ENT_QUOTES); ?>">
+
+    <input type="hidden" name="id" value="<?php echo $product['id']; ?>">
 
     <button type="submit" class="action-btn delete-btn">
         🗑 Yes, Deactivate
@@ -48,4 +49,4 @@ include "includes/header.php"; ?>
     </a>
 </form>
 
-<?php include "includes/footer.php" ?>
+<?php include 'includes/footer.php'; ?>

@@ -405,4 +405,358 @@ Stock not decreasing after completed orders. Product name matching during stock 
 
 Completed Inventory Management foundation. Stock is now automatically deducted when an order reaches Collected status. Dashboard now provides sales analytics, revenue summaries and top-selling products. Product management now includes search, inventory filters and improved stock visibility. SwiftOrder inventory and reporting foundation is now ready for future stock adjustments, supplier management and purchase order features.
 
+### SwiftOrder v0.7.2-beta Development Log
+
+## Date: 12-July-2026
+
+---
+
+## ### Inventory Module
+
+### Stock Adjustments
+
+- Completed Stock Adjustment history module.
+- Added stock adjustment listing page.
+- Added pagination.
+- Added product search.
+- Added filtering:
+  - All
+  - Increase
+  - Decrease
+  - Today
+- Added Available Stock column.
+- Available Stock now stores the resulting stock level after each adjustment.
+- Quantity column now displays:
+
+  - Increase
+  - Decrease
+- Fixed multiple SQL query issues.
+- Fixed pagination calculations.
+- Fixed search variable bugs.
+- Fixed filter variable bugs.
+- Corrected joins between:
+  - products
+  - users
+  - stock_adjustments
+- Improved page layout.
+- Styled search toolbar.
+- Styled filter buttons.
+- Styled Clear button.
+- Removed layout inconsistencies.
+- Dashboard card sizing corrected.
+
+---
+
+## ### Supplier Management Module
+
+### Completed
+
+Created Suppliers module from scratch.
+
+Added:
+
+- suppliers.php
+- add_supplier.php
+- save_supplier.php
+- edit_supplier.php
+- update_supplier.php
+- deactivate_supplier.php
+- reactivate_supplier.php
+
+### Features
+
+- Supplier listing
+- Search suppliers
+- Pagination
+- Add supplier
+- Edit supplier
+- Soft deactivate supplier
+- Reactivate supplier
+- Active / Inactive status
+- Notes
+- Contact details
+- Company details
+- Phone
+- Email
+- Address
+
+### Security 3
+
+- Role protected
+- Prepared statements
+- Input validation
+- Soft delete approach maintained
+
+---
+
+## ### Purchase Orders Module
+
+### Database
+
+Created:
+
+purchase_orders
+
+Created:
+
+purchase_order_items
+
+### Files Created
+
+- purchase_orders.php
+- add_purchase_order.php
+- save_purchase_order.php
+- view_purchase_order.php
+- add_purchase_order_item.php
+- save_po_item.php
+- receive_purchase_order.php *(placeholder)*
+- cancel_purchase_order.php *(placeholder)*
+
+### Features2
+
+- Purchase Order listing
+- Purchase Order search
+- Pagination
+- Purchase Order creation
+- Automatic PO number generation
+- Supplier selection
+- Notes support
+- View Purchase Order page
+
+### Purchase Order Items
+
+- Dynamic Add Product button
+- JavaScript row creation
+- Remove row
+- Quantity field
+- Unit Cost field
+- Automatic line total calculation
+- Save Purchase Order Items
+- Purchase Order total automatically recalculated after save
+
+---
+
+## ### JavaScript
+
+Updated:
+
+assets/js/script.js
+
+Added:
+
+- Dynamic Purchase Order item rows
+- Remove Purchase Order item rows
+
+Prepared foundation for:
+
+- Automatic Purchase Order calculations
+
+---
+
+## ### User Interface
+
+Improved:
+
+- Purchase Order layout
+- Supplier pages
+- Inventory search layout
+- Inventory filter layout
+- Button consistency
+- Dashboard cards
+- Clear button styling
+- Purchase Order detail page
+
+---
+
+## ### Bug Fixes
+
+Resolved:
+
+- fetch_assoc() SQL errors
+- Incorrect JOIN statements
+- Pagination offset bug
+- Undefined variables
+- Search query issues
+- Filter query issues
+- Available stock history recording
+- Purchase Order page styling
+- Supplier CRUD workflow
+- Purchase Order total recalculation
+
+---
+
+## ### Current Module Status
+
+### Authentication
+
+? Complete
+
+### Roles & Permissions
+
+? Complete
+
+### Dashboard
+
+? Complete
+
+### Products
+
+? Complete
+
+### Orders
+
+? Complete
+
+### Inventory
+
+? Complete
+
+### Activity Logs
+
+? Complete
+
+### Reports
+
+? Complete
+
+### Suppliers
+
+? Complete
+
+### Purchase Orders
+
+?? In Progress
+
+### Completed1
+
+- Purchase Order CRUD foundation
+- Purchase Order Items
+- Automatic total updates
+
+## Remaining
+
+- Product dropdown instead of free text
+- Receive Purchase Order
+- Automatic stock increase
+- Prevent editing after receipt
+- Purchase Order history
+
+---
+
+## ### Overall Progress
+
+## SwiftOrder has now progressed beyond a basic POS and into a true business management platform
+
+Completed major modules:
+
+- Authentication
+- Role Management
+- POS
+- Orders
+- Products
+- Inventory
+- Reporting
+- Activity Logs
+- Suppliers
+
+## Current development focus
+
+- Purchase Order workflow and inventory procurement.
+
+---
+
+## Version 0.7.3-beta
+
+## Date: 2026-07-17
+
+## Architecture & Codebase Hardening
+
+## Added (v0.7.3-beta)
+
+Shared executeQuery() helper.
+Shared executeStatement() helper.
+Shared reusable flash message partial.
+Automatic stock adjustment logging during order collection.
+Database performance indexes for high-traffic tables.
+Foundation for centralized database layer.
+Foundation for global error handling.
+
+## Improved (v0.7.3-beta)
+
+Dashboard modular architecture completed.
+Reports modular architecture completed.
+Activity Logs modular architecture completed.
+Product module maintainability.
+User module maintainability.
+Supplier module maintainability.
+Inventory workflow reliability.
+Order collection workflow.
+Stock history accuracy.
+Database query consistency.
+Purchase Order preparation for future inventory engine.
+Refactored (v0.7.3-beta)
+Began separating database execution from business logic.
+Reduced repeated prepared statement code.
+Standardized reusable helper functions.
+Continued moving reusable UI into partials.
+Continued reducing duplicated code throughout the system.
+
+#### Fixed (v0.7.3-beta)
+
+Fixed automatic stock deduction SQL error (AND stock >= ?).
+Fixed stock history recording after collected orders.
+Fixed "bind_param() on bool" fatal error.
+Fixed duplicate helper loading.
+Fixed helper syntax issues.
+Fixed Product search helper migration.
+Fixed User Save helper migration.
+Fixed User Update helper migration.
+Fixed Supplier Save helper migration.
+Fixed Supplier Update helper migration.
+Fixed Product Save helper migration.
+Fixed Product Update helper migration.
+Fixed session warning caused by duplicate session_start() calls.
+Fixed Activity Log pagination and filtering issues.
+Fixed Reports dashboard partial organization.
+
+### Database
+
+Added indexes for performance.
+Orders
+Status index.
+Created Date index.
+Composite Status + Created Date index.
+
+## Products
+
+Status + Stock index.
+Category index.
+Order Items
+Order ID index.
+Product ID index.
+Stock Adjustments
+Product + Created Date index.
+Created Date index.
+
+## Security1
+
+Continued CSRF implementation planning.
+Continued helper migration to reduce SQL duplication.
+Continued preparing centralized exception handling.
+Continued improving reusable architecture.
+
+## Notes11
+
+SwiftOrder has officially transitioned from feature-focused development into architecture-focused development.
+Current emphasis is on:
+Cleaner code.
+Faster database performance.
+Reduced duplication.
+Easier maintenance.
+Enterprise-ready architecture.
+Preparing for multi-tenancy.
+The system is now approaching commercial-quality internal architecture rather than tutorial-style PHP development.
+
+## Version SwiftOrder v0.7.2-beta**
+
 ## Isaac Junior Lehogonolo Maluleka

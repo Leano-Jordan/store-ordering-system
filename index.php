@@ -1,11 +1,12 @@
 <?php
-require_once "includes/db.php";
+require_once 'includes/auth.php';
+require_once 'includes/permissions.php';
+require_once 'includes/db.php';
+requireRole([ROLE_ADMIN, ROLE_MANAGER, ROLE_CASHIER]);
 
 $loadScript = true;
 
-include "includes/header.php";
-
-$sql = "SELECT * FROM products 
+$sql = "SELECT id, name, description, price, image, category, stock FROM products 
 WHERE status ='Active' 
 ORDER BY category ASC,
 stock = 0 ASC,
@@ -14,6 +15,19 @@ name ASC
 
 $result = $conn->query($sql);
 
+$catResult = $conn->query(
+    "SELECT DISTINCT category 
+    FROM products 
+    WHERE status = 'Active' 
+    ORDER BY category 
+    ASC"
+);
+
+$categories = [];
+while ($cat = $catResult->fetch_assoc()) {
+    $categories[] = $cat['category'];
+}
+include 'includes/header.php';
 ?>
 
 <h1>
@@ -25,41 +39,52 @@ $result = $conn->query($sql);
 
         <div class="search-area">
 
-            <input type="text" id="search"
-                placeholder="Search meals, drinks, sides, snacks or other items"
+            <input type="text" 
+                id="search"
+                placeholder="🔍 Search for a product..."
+                autocomplete="off"
                 onkeyup="searchProducts()">
-            <button id="clear-search" onclick="clearSearch()">Clear</button>
+            <button id="clear-search"
+            class="action-btn clear-btn" 
+            onclick="clearSearch()">Clear</button>
 
         </div>
 
         <div class="category-filter" id="category-filter">
-            <button class="category-btn active" onclick="filterProducts('All', this)">📃All</button>
-            <button class="category-btn" onclick="filterProducts('Meals', this)">🍔Meals</button>
-            <button class="category-btn" onclick="filterProducts('Drinks', this)">🥤Drinks</button>
-            <button class="category-btn" onclick="filterProducts('Sides', this)">🍟Sides</button>
-            <button class="category-btn" onclick="filterProducts('Snacks', this)">🍬Snacks</button>
-            <button class="category-btn" onclick="filterProducts('Other', this)">👓Other</button>
+            <button class="category-btn active" onclick="filterProducts('All', this)">
+                📃 All
+            </button>
+            <?php foreach ($categories as $cat) { ?>
+                <button class="category-btn" onclick="filterProducts('<?php echo htmlspecialchars($cat, ENT_QUOTES); ?>', this)">
+                    <?php echo htmlspecialchars($cat); ?>
+                </button>
+            <?php } ?>
         </div>
 
         <div class="products">
 
             <?php while ($row = $result->fetch_assoc()) { ?>
 
-                <div class="product" data-category="<?= htmlspecialchars($row['category']) ?>">
+                <div class="product" data-category="<?php echo htmlspecialchars($row['category']); ?>">
 
-                    <img src="./assets/images/products/<?= htmlspecialchars($row['image']) ?>"
-                        alt="<?= htmlspecialchars($row['name']) ?>" class="product-image">
+                    <img src="./assets/images/products/<?php echo htmlspecialchars($row['image']); ?>"
+                        alt="<?php echo htmlspecialchars($row['name']); ?>" class="product-image">
+                
+                <div class="product-info">
+                    <h2><?php echo htmlspecialchars($row['name']); ?></h2>
+                    <p><?php echo htmlspecialchars($row['description']); ?></p>
+                </div>
 
-                    <h2><?= htmlspecialchars($row['name']) ?></h2>
-                    <p><?= htmlspecialchars($row['description']) ?></p>
-                    <p>R<?= number_format($row['price'], 2) ?></p>
+                <div class="product-footer">
+                    <p>R<?php echo number_format($row['price'], 2); ?></p>
 
-                    <?php if ($row["stock"] > 0) { ?>
-                        <button onclick="addToCart(
-                    <?= $row['id'] ?>, 
-                    '<?= htmlspecialchars($row['name'], ENT_QUOTES) ?>', 
-                    <?= $row['price'] ?>)">
-                            Order Now
+                    <?php if ($row['stock'] > 0) { ?>
+                        <button class="add-to-cart" onclick="addToCart(
+                    <?php echo $row['id']; ?>, 
+                    '<?php echo htmlspecialchars($row['name'], ENT_QUOTES); ?>', 
+                    <?php echo $row['price']; ?>,
+                    '<?php echo htmlspecialchars($row['image'], ENT_QUOTES); ?>')">
+                            + Add
                         </button>
 
                     <?php } else { ?>
@@ -71,38 +96,67 @@ $result = $conn->query($sql);
                     <?php } ?>
 
                 </div>
+                </div>
 
             <?php } ?>
         </div>
     </div>
+    
+    <!-- =================== CART PANEL =================== -->
     <div class="cart-section">
 
-        <h2 id="cart-title">
-            🛒Cart
-        </h2>
+<div class="payment-method-tabs">
+    <button class="payment-method-btn active" onclick="setPaymentMethod('cash_pmt', this)">Cash</button>
 
-        <p id="cart">
-            Items: 0
-        </p>
+    <button class="payment-method-btn" onclick="setPaymentMethod('card_pmt', this)">Card</button>
 
-        <div id="cart-items">
+    <button class="payment-method-btn" onclick="setPaymentMethod('eft_pmt', this)">EFT</button>
+</div>
+<input type="hidden" id="payment-method" value="cash_pmt">
 
+<div class="cart-body">
+    <div id="cart-items"></div>
+</div>
+
+<div class="cart-footer">
+
+    <div class="cart-summary">
+        
+        <div class="summary-row">
+            <span>Cart:</span>
+        <strong>
+        <span id="cart-badge">0</span>
+        </div>
+    </strong>
+
+        <div class="summary-row">
+                <span>VAT Incl. (15%):</span>
+            <strong>
+            <span id="vat">R0.00</span>
+    </strong>
         </div>
 
-        <p id="total">
-            Total: R0.00
-        </p>
-        <br>
+        <div class="summary-row summary-total">
+            <span>Total:</span>
+            <span id="total">R0.00</span>
+        </div>
 
-        <input type="text" id="customer" placeholder="Your Name">
+        </div>
+    </div>
 
-        <button id="placeOrderBtn" onclick="placeOrder()">Place Order</button>
-
-        <br><br>
-
-        <button onclick="clearCart()">Clear Cart</button>
-
+    <input type="text" id="customer" placeholder="Customer name" autocomplete="off">
+<div class="cart-actions">
+    <button id="placeOrderBtn" class="place-order-btn" onclick="placeOrder()">
+        Place Order
+    </button>
+    <button class="clear-cart-btn" onclick="clearCart()">
+        Clear Cart
+    </button>
     </div>
 </div>
 
-<?php include "includes/footer.php"; ?>
+<!-- =================== / CART PANEL =================== -->
+</div>
+</div>
+<input type="hidden" id="csrf_token" value="<?php echo htmlspecialchars(csrfToken(), ENT_QUOTES); ?>">
+<?php include 'includes/footer.php'; ?>

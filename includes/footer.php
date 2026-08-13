@@ -17,7 +17,7 @@ if (isset($loadChart) && $loadChart) { ?>
     <script src="assets/js/script.js"></script>
 
 <?php } ?>
-
+<script src="assets/js/clock.js"></script>
 </body>
 
 </html>

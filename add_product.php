@@ -1,11 +1,11 @@
 <?php
-require_once "includes/auth.php";
-require_once "includes/permissions.php";
+require_once 'includes/auth.php';
+require_once 'includes/permissions.php';
 requireRole([ROLE_ADMIN, ROLE_MANAGER]);
-require_once "includes/db.php";
-require_once "includes/logger.php";
+require_once 'includes/db.php';
+require_once 'includes/logger.php';
 
-include "includes/header.php";
+include 'includes/header.php';
 
 ?>
 
@@ -16,6 +16,8 @@ include "includes/header.php";
         method="POST"
         enctype="multipart/form-data"
         autocomplete="off">
+        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrfToken(), ENT_QUOTES); ?>">
+
 
         <div class="form-group">
             <label for="name">Product Name</label>
@@ -23,7 +25,10 @@ include "includes/header.php";
                 id="name"
                 name="name"
                 placeholder="Enter Product Name"
-                required><br><br>
+                autocomplete="off"
+                required>
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrfToken(), ENT_QUOTES); ?>">
+                <br><br>
 
             <label for="category">Category</label><br>
             <select name="category" id="category" required>
@@ -44,7 +49,7 @@ include "includes/header.php";
                 placeholder="Enter Stock Quantity"
                 min="0"
                 required>
-            <br>
+            <br><br>
 
             <label for="price">Price</label>
             <input type="number" name="price" step="0.01" required><br><br>
@@ -54,18 +59,18 @@ include "includes/header.php";
             <textarea
                 name="description"
                 placeholder="Enter Product Description..."
-                rows="4" required></textarea>
-
+                rows="4" required></textarea><br><br>
+                
             <label for="image">Product Image</label><br>
 
 
             <input type="file" name="image" required accept="image/*"><br><br>
 
-            <?php if (isset($_GET["error"]) && $_GET["error"] === "invalid_image") {
-                echo '<p class="error-message">
+            <?php if (isset($_GET['error']) && $_GET['error'] === 'invalid_image') {
+    echo '<p class="error-message">
                 Only JPG, JPEG and PNG images are allowed.
             </p>';
-            }
+}
             ?>
         </div>
 
@@ -75,4 +80,4 @@ include "includes/header.php";
         </div>
     </form>
 </div>
-<?php include "includes/footer.php" ?>
+<?php include 'includes/footer.php'; ?>
