@@ -13,13 +13,33 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 verifyCsrfToken();
 
-$supplierId = (int) $_POST['supplier_id'];
+$supplierId = filter_input(INPUT_POST, 'supplier_id', FILTER_VALIDATE_INT);
+
+if ($supplierId === false || $supplierId <= 0) {
+    $_SESSION['error'] = 'Invalid supplier selected.';
+    header('Location: add_purchase_orders.php');
+    exit();
+}
+
 $notes = trim($_POST['notes']);
 $status = in_array($_POST['status'] ?? '', ['Draft', 'Pending']) ? $_POST['status'] : 'Pending';
 
 $productIds = $_POST['product_id'] ?? [];
 $quantities = $_POST['quantity'] ?? [];
 $prices = $_POST['price'] ?? [];
+
+if (
+    !is_array($productIds) ||
+    !is_array($quantities) ||
+    !is_array($prices) ||
+    empty($productIds) ||
+    count($productIds) !== count($quantities) ||
+    count($productIds) !== count($prices)
+    ) {
+    $_SESSION['error'] = 'Invalid purchase order item data.';
+    header('Location: add_purchase_orders.php');
+    exit();
+}
 
 if ($supplierId <= 0) {
     exit('Please select a supplier.');
@@ -150,9 +170,14 @@ $stmt->close();
 
 for ($i = 0; $i < count($productIds);
 ++$i) {
-    $productId = (int) $productIds[$i];
-    $qty = (float) $quantities[$i];
-    $price = (float) $prices[$i];
+    $productId = filter_var($productIds[$i], FILTER_VALIDATE_INT);
+    $qty = filter_var($quantities[$i], FILTER_VALIDATE_FLOAT);
+    $price = filter_var($prices[$i], FILTER_VALIDATE_FLOAT);
+
+    if ($productId === false || $productId <= 0 || $qty === false || $qty <= 0 || $price === false || $price <= 0) {
+        throw new Exception('Invalid purchase order item data.');
+    }
+
     $lineTotal = $qty * $price;
 
     $itemStmt = $conn->prepare('INSERT INTO 

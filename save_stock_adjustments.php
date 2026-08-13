@@ -12,21 +12,38 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit();
 }
 
-$productId = (int) $_POST['product_id'];
+$productId = filter_input(INPUT_POST, 'product_id', FILTER_VALIDATE_INT);
+
+if ($productId === false || $productId === null || $productId <= 0) {
+    $_SESSION['error'] = 'Invalid product selected.';
+    header('Location: adjust_stock.php');
+    exit();
+}
+
 $type = $_POST['adjustment_type'];
-if (!in_array($type, ['Increase', 'Decrease'])) {
+if (!in_array($type, ['Increase', 'Decrease'], true)
+) {
     header('Location: adjust_stock.php');
     exit();
 }
 
-$quantity = (int) $_POST['quantity'];
-if ($quantity <= 0) {
+$quantity = filter_input(INPUT_POST, 'quantity', FILTER_VALIDATE_INT);
+
+if ($quantity === false || $quantity === null || $quantity <= 0) {
+    $_SESSION['error'] = 'Invalid adjustment quantity specified.';
     header('Location: adjust_stock.php');
     exit();
 }
 
-$reason = trim($_POST['reason']);
-$notes = trim($_POST['notes']);
+$reason = trim($_POST['reason'] ?? '');
+$notes = trim($_POST['notes'] ?? '');
+
+if ($reason === '') {
+    $_SESSION['error'] = 'Please provide a reason for the stock adjustment.';
+    header('Location: adjust_stock.php');
+    exit();
+}
+
 $userId = $_SESSION['user_id'];
 $conn->begin_transaction();
 

@@ -31,6 +31,8 @@ if ($search !== '') {
     if (!$stmt) {
         error_log('SwiftOrder suppliers query failed: '.$conn->error);
         $_SESSION['error'] = 'Unable to load suppliers. Please try again.';
+        header('Location: suppliers.php');
+        exit();
     }
 
     $stmt->bind_param('ssss', $searchTerm, $searchTerm, $searchTerm, $searchTerm);
@@ -43,7 +45,10 @@ if ($search !== '') {
     OR email LIKE ? ');
 
     if (!$countStmt) {
-        exit($conn->error);
+        error_log('Unable to load suppliers count: '.$conn->error);
+        $_SESSION['error'] = 'Unable to load suppliers count. Please try again.';
+        header('Location: suppliers.php');
+        exit();
     }
 
     $countStmt->bind_param('ssss', $searchTerm, $searchTerm, $searchTerm, $searchTerm);

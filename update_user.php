@@ -42,7 +42,7 @@ $status = trim($statusRaw);
 
 $allowedRoles = [ROLE_ADMIN, ROLE_MANAGER, ROLE_CASHIER, ROLE_KITCHEN];
 
-$allowedStatuses = ['active', 'inactive'];
+$allowedStatuses = ['Active', 'Inactive'];
 
 if ($id === false || $id <= 0) {
     $_SESSION['error'] = 'Invalid user ID.';
@@ -53,6 +53,7 @@ if ($id === false || $id <= 0) {
 if ($fullName === '' || $username === '') {
     $_SESSION['error'] = 'Please complete all required fields.';
     header('Location: users.php');
+    exit();
 }
 
 if (!in_array($role, $allowedRoles, true)) {
@@ -67,7 +68,7 @@ if (!in_array($status, $allowedStatuses, true)) {
     exit();
 }
 
-$currentUserStmt = $conn->prepare('SELECT profile_image FROM users WHERE id = ?');
+$currentUserStmt = $conn->prepare('SELECT profile_image, role, status FROM users WHERE id = ?');
 
 if (!$currentUserStmt) {
     error_log('update_user.php: Failed to prepare current user lookup: '.$conn->error);
@@ -111,16 +112,57 @@ if (!$currentUser) {
     exit();
 }
 
+if ($id === (int) $_SESSION['user_id'] && ($role !== ROLE_ADMIN || $status !== 'Active')) {
+    $_SESSION['error'] = 'You cannot remove administrator access from your own account';
+    header('Location: users.php');
+    exit();
+}
+
+if ($currentUser['role'] === ROLE_ADMIN && $currentUser['status'] === 'Active' && ($role !== ROLE_ADMIN || $status !== 'Active')) {
+    $adminCheck = $conn->prepare("SELECT COUNT(*) AS total FROM users WHERE role = ? AND status = 'Active' AND id != ?");
+
+    if (!$adminCheck) {
+        error_log('update_user.php: Failed to prepare active admin check: '.$conn->error);
+        $_SESSION['error'] = 'Unable to validate administrator access.';
+        header('Location: users.php');
+        exit();
+    }
+
+    $adminRole = ROLE_ADMIN;
+
+    if (!$adminCheck->bind_param('si', $adminRole, $id)) {
+        error_log('update_user.php: Failed to bind active admin check: '.$adminCheck->error);
+        $adminCheck->close();
+        $_SESSION['error'] = 'Unable to validate administrator access.';
+        header('Location: users.php');
+        exit();
+    }
+
+    if (!$adminCheck->execute()) {
+        error_log('update_user.php: Failed to execute admin check: '.$adminCheck->error);
+        $adminCheck->close();
+        $_SESSION['error'] = 'Unable to validate administrator access.';
+        header('Location: users.php');
+        exit();
+    }
+
+    $adminResult = $adminCheck->get_result();
+    $activeAdminCount = (int) $adminResult->fetch_assoc()['total'];
+
+    $adminCheck->close();
+
+    if ($activeAdminCount === 0) {
+        $_SESSION['error'] = 'At least one active administrator must remain.';
+        header('Location: users.php');
+        exit();
+    }
+}
+
 $currentImage = basename((string) ($currentUser['profile_image'] ?? ''));
 
 $profileImage = $currentImage;
 $newProfileImageUploaded = false;
 $newProfileImagePath = null;
-
-if (empty($fullName) || empty($username) || empty($role) || empty($status)
-) {
-    exit('Please complete all fields.');
-}
 
 $check = $conn->prepare('SELECT id FROM users WHERE username = ? AND id != ?');
 
@@ -149,7 +191,7 @@ if (!$check->execute()) {
 
 $usernameResult = $check->get_result();
 
-if (!$usernameResult->num_rows > 0) {
+if ($usernameResult->num_rows > 0) {
     $check->close();
     $_SESSION['error'] = 'Username already exists.';
     header('Location: users.php');
@@ -157,10 +199,6 @@ if (!$usernameResult->num_rows > 0) {
 }
 
 $check->close();
-
-if ($check->get_result()->num_rows > 0) {
-    exit('Username already exists.');
-}
 
 if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] !== UPLOAD_ERR_NO_FILE) {
     if ($_FILES['profile_image']['error'] !== UPLOAD_ERR_OK) {
@@ -244,7 +282,7 @@ if (!$success) {
     error_log('update_user.php: Failed to update user ID: '.$id);
 
     $_SESSION['error'] = 'Unable to update user. Please try again.';
-    header('Location: edit.php?id='.$id);
+    header('Location: edit_user.php?id='.$id);
     exit();
 }
 

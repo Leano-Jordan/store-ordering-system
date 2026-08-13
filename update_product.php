@@ -26,7 +26,7 @@ $id = filter_var($idRaw, FILTER_VALIDATE_INT);
 $price = filter_var($priceRaw, FILTER_VALIDATE_FLOAT);
 $stock = filter_var($stockRaw, FILTER_VALIDATE_INT);
 
-if (!$id === false || $id <= 0) {
+if ($id === false || $id <= 0) {
     exit('Invalid product ID.');
 }
 
