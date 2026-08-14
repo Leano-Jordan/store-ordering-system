@@ -5,7 +5,6 @@ require_once 'includes/permissions.php';
 requireRole([ROLE_ADMIN, ROLE_MANAGER]);
 require_once 'includes/db.php';
 require_once 'includes/csrf.php';
-verifyCsrfToken();
 
 $products = $conn->query("SELECT id, name, stock 
 FROM products 

@@ -42,7 +42,10 @@ require_once 'includes/csrf.php';
                 <a href="reports.php" class="<?php echo $currentPage === 'reports.php' ? 'active-nav' : ''; ?>">Reports</a>
                 <a href="activity_logs.php" class="<?php echo $currentPage === 'activity_logs.php' ? 'active-nav' : ''; ?>">Activity Logs</a>
                 <a href="about.php">About</a>
-                <a href="logout.php" class="<?php echo $currentPage === 'logout.php' ? 'active-nav' : ''; ?>">Logout</a>
+                <form method="post" action="logout.php" class="logout-form">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrfToken(), ENT_QUOTES); ?>">
+                    <button type="submit" class="logout-button">Logout</button>
+                </form>
 
             <?php } elseif (isset($_SESSION['role']) && $_SESSION['role'] === ROLE_MANAGER) { ?>
                 <a href="index.php" class="<?php echo $currentPage === 'index.php' ? 'active-nav' : ''; ?>">Home</a>
@@ -55,7 +58,10 @@ require_once 'includes/csrf.php';
                 <a href="goods_received_notes.php" class="<?php echo $currentPage === 'goods_received_notes.php' ? 'active-nav' : ''; ?>">GRNs</a>
                 <a href="reports.php" class="<?php echo $currentPage === 'reports.php' ? 'active-nav' : ''; ?>">Reports</a>
                 <a href="about.php">About</a>
-                <a href="logout.php">Logout</a>
+                <form method="post" action="logout.php" class="logout-form">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrfToken(), ENT_QUOTES); ?>">
+                    <button type="submit" class="logout-button">Logout</button>
+                </form>
             <?php }
 
             if (isset($_SESSION['role']) && $_SESSION['role'] === ROLE_CASHIER) { ?>
@@ -63,13 +69,19 @@ require_once 'includes/csrf.php';
                 <a href="dashboard.php" class="<?php echo $currentPage === 'dashboard.php' ? 'active-nav' : ''; ?>">Dashboard</a>
                 <a href="orders.php" class="<?php echo $currentPage === 'orders.php' ? 'active-nav' : ''; ?>">Orders</a>
                 <a href="about.php">About</a>
-                <a href="logout.php">Logout</a>
+                <form method="post" action="logout.php" class="logout-form">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrfToken(), ENT_QUOTES); ?>">
+                    <button type="submit" class="logout-button">Logout</button>
+                </form>
             <?php }
 
             if (isset($_SESSION['role']) && $_SESSION['role'] === ROLE_KITCHEN) { ?>
                 <a href="orders.php" class="<?php echo $currentPage === 'orders.php' ? 'active-nav' : ''; ?>">Orders</a>
                 <a href="about.php">About</a>
-                <a href="logout.php">Logout</a>
+                <form method="post" action="logout.php" class="logout-form">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrfToken(), ENT_QUOTES); ?>">
+                    <button type="submit" class="logout-button">Logout</button>
+                </form>
 
             <?php } ?>
 

@@ -3,7 +3,7 @@ require_once 'includes/auth.php';
 require_once 'includes/permissions.php';
 requireRole([ROLE_ADMIN]);
 require_once 'includes/csrf.php';
-verifyCsrfToken();
+
 require_once 'includes/db.php';
 include 'includes/header.php';
 

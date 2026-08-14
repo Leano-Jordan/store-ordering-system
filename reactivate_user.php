@@ -31,11 +31,16 @@ if ($id === (int) $_SESSION['user_id']) {
 
 /*************************  REACTIVATE USER  *********************/
 
-$stmt = $conn->prepare("UPDATE users SET status = 'Active' WHERE id = ?");
+$updateStmt = $conn->prepare(
+    "UPDATE users 
+    SET status = 'Active' 
+    WHERE id = ? AND status = 'Inactive'"
+);
 
 if (!$stmt) {
-    error_log('reactivate_user.php prepare failed: '.$conn->error);
-    $_SESSION['error'] = 'Unable to reactivate user.';
+    $conn->rollback();
+    error_log('reactivate_user.php update prepare failed. '.$conn->error);
+    $_SESSION['error'] = 'Unable to Reactivate user.';
     header('Location: users.php');
     exit();
 }
@@ -43,11 +48,22 @@ if (!$stmt) {
 $stmt->bind_param('i', $id);
 
 if (!$stmt->execute()) {
-    error_log('reactivate_user.php execute failed: '.$stmt->error);
-    $_SESSION['error'] = 'Unable to reactivate user.';
+    $conn->rollback();
+    error_log('reactivate_user.php update execute failed. '.$stmt->error);
+    $stmt->close();
+    $_SESSION['error'] = 'Unable to Reactivate user.';
     header('Location: users.php');
     exit();
 }
+
+if ($stmt->affected_rows !== 1) {
+    $stmt->close();
+    $_SESSION['error'] = 'User was not reactivated.';
+    header('Location: users.php');
+    exit();
+}
+
+$stmt->close();
 
 $_SESSION['success'] = 'User reactivated successfully.';
 header('Location: users.php');

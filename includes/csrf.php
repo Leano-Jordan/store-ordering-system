@@ -14,16 +14,22 @@ function csrfToken()
 
 function verifyCsrfToken(): void
 {
-    if (defined('APP_ENV') && APP_ENV === 'development') {
-        return;
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        http_response_code(405);
+        header('Allow: POST');
+        exit('Method Not Allowed.');
     }
 
+    $sessionToken = $_SESSION['csrf_token'] ?? null;
+    $submittedToken = $_POST['csrf_token'] ?? null;
+
     if (
-        empty($_POST['csrf_token']) || empty($_SESSION['csrf_token']) ||
-        !hash_equals(
-            $_SESSION['csrf_token'],
-            $_POST['csrf_token']
-        )) {
-        exit('Invalid CSRF Token.');
+        !is_string($sessionToken)
+        || $sessionToken === ''
+        || !is_string($submittedToken)
+        || $submittedToken === ''
+        || !hash_equals($sessionToken, $submittedToken)) {
+        http_response_code(403);
+        exit('Forbidden.');
     }
 }
