@@ -3,6 +3,7 @@
 require_once __DIR__.'/includes/session.php';
 
 require_once 'includes/db.php';
+require_once 'includes/session_tracker.php';
 
 if (!isset($conn)) {
     exit('Database connection not established.');
@@ -53,6 +54,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['full_name'] = $user['full_name'] ?? '';
                 $_SESSION['role'] = $user['role'] ?? '';
                 $_SESSION['profile_image'] = $user['profile_image'] ?? '';
+
+                try {
+                    $_SESSION['session_log_id'] = createSessionRecord($conn, (int) $_SESSION['user_id']);
+                    $_SESSION['last_activity'] = time();
+                } catch (RuntimeException $exception) {
+                    error_log('SwiftOrder session record creation failed: '.$exception->getMessage());
+
+                    $_SESSION = [];
+                    session_destroy();
+
+                    header('Location: login.php');
+                    exit();
+                }
 
                 if (isset($_SESSION['redirect_after_login'])) {
                     $redirect = $_SESSION['redirect_after_login'];
