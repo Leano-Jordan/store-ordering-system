@@ -9,6 +9,39 @@ require_once __DIR__.'/includes/csrf.php';
 
 requireRole([ROLE_ADMIN, ROLE_MANAGER]);
 
+$idleTimeout = SESSION_IDLE_TIMEOUT;
+
+$reconcileStmt = $conn->prepare(
+    'UPDATE user_sessions 
+    SET status = \'TIMED_OUT\', 
+    logout_at = NOW() 
+    WHERE status = \'ACTIVE\' 
+    AND last_activity_at < DATE_SUB(NOW(), INTERVAL ? SECOND)'
+);
+
+if (!$reconcileStmt) {
+    error_log('SwiftOrder sessions reconciliation prepare failed: '.$conn->error);
+    http_response_code(500);
+    exit('An unexpected error occurred.');
+}
+
+if (!$reconcileStmt->bind_param('i', $idleTimeout)) {
+    error_log('SwiftOrder sessions reconciliation bind failed: '.$reconcileStmt->error);
+
+    $reconcileStmt->close();
+    http_response_code(500);
+    exit('An unexpected error occurred.');
+}
+
+if (!$reconcileStmt->execute()) {
+    error_log('SwiftOrder sessions reconciliation execute failed: '.$reconcileStmt->error);
+    $reconcileStmt->close();
+    http_response_code(500);
+    exit('An unexpected error occurred.');
+}
+
+$reconcileStmt->close();
+
 $stmt = $conn->prepare(
     'SELECT
         us.id,
@@ -110,6 +143,47 @@ function swiftOrderSessionDate(?string $date): string
     return date('d M Y, H:i', $timestamp);
 }
 
+function swiftOrderSessionDuration(
+    ?string $loginAt,
+    ?string $logoutAt
+): string {
+    if ($loginAt === null || $loginAt === '') {
+        return '-';
+    }
+
+    $loginTimestamp = strtotime($loginAt);
+
+    if ($loginTimestamp === false) {
+        return '-';
+    }
+
+    if ($logoutAt !== null && $logoutAt !== '') {
+        $logoutTimestamp = strtotime($logoutAt);
+
+        if ($logoutTimestamp === false || $logoutTimestamp < $loginTimestamp) {
+            return '-';
+        }
+
+        $seconds = $logoutTimestamp - $loginTimestamp;
+    } else {
+        $seconds = time() - $loginTimestamp;
+    }
+
+    if ($seconds < 0) {
+        return '-';
+    }
+
+    $days = intdiv($seconds, 86400);
+    $hours = intdiv($seconds % 86400, 3600);
+    $minutes = intdiv($seconds % 3600, 60);
+
+    if ($days > 0) {
+        return $days.'d '.$hours.'h '.$minutes.'m';
+    }
+
+    return $minutes.'m';
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -152,7 +226,7 @@ function swiftOrderSessionDate(?string $date): string
             </div>
 
             <div class="session-summary-description">
-                Currently signed in
+                Recently Active
             </div>
         </article>
 
@@ -224,6 +298,7 @@ function swiftOrderSessionDate(?string $date): string
                         <th>Role</th>
                         <th>Login</th>
                         <th>Last Activity</th>
+                        <th>Duration</th>
                         <th>Logout</th>
                         <th>Status</th>
                         <th>Action</th>
@@ -250,9 +325,17 @@ function swiftOrderSessionDate(?string $date): string
                         $status = (string) ($session['status'] ?? '');
                         $userId = (int) ($session['user_id'] ?? 0);
                         $sessionId = (int) ($session['id'] ?? 0);
+
                         $isCurrentSession = (
-                            $userId === (int) $_SESSION['user_id']
+                            $userId === (int)
+                            ($_SESSION['user_id'] ?? 0)
                             && $sessionId === (int) ($_SESSION['session_log_id'] ?? 0)
+                        );
+
+                        $canTerminateSession = (
+                            $status === 'ACTIVE'
+                            && (($_SESSION['role'] ?? '') === ROLE_ADMIN)
+                            && !$isCurrentSession
                         );
                         ?>
 
@@ -319,6 +402,19 @@ function swiftOrderSessionDate(?string $date): string
                             <td>
                                 <?php
                                 echo htmlspecialchars(
+                                    swiftOrderSessionDuration(
+                                        $session['login_at'] ?? null,
+                                        $session['logout_at'] ?? null
+                                    ),
+                                    ENT_QUOTES,
+                                    'UTF-8'
+                                );
+                                ?>
+                            </td>
+
+                            <td>
+                                <?php
+                                echo htmlspecialchars(
                                     swiftOrderSessionDate(
                                         $session['logout_at'] ?? null
                                     ),
@@ -356,7 +452,7 @@ function swiftOrderSessionDate(?string $date): string
                                             Current Session
                                         </span>
 
-                                    <?php } else { ?>
+                                    <?php } elseif ($canTerminateSession) { ?>
 
                                         <form
                                             method="POST"
@@ -384,8 +480,7 @@ function swiftOrderSessionDate(?string $date): string
 
                                             <button
                                                 type="submit"
-                                                class="session-terminate-button"
-                                            >
+                                                class="session-terminate-button">
                                                 Terminate
                                             </button>
 

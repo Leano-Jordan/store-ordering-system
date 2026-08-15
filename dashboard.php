@@ -17,8 +17,10 @@ $totalProducts = $row['totalProducts'];
 
 //                                                          ORDERS TODAY
 
-$sql = 'SELECT COUNT(*) AS todayOrders FROM orders 
-WHERE DATE(created_at) = CURDATE()';
+$sql = "SELECT COUNT(*) AS todayOrders FROM orders 
+WHERE DATE(created_at) = CURDATE() 
+AND status != 'Cancelled'";
+
 $result = $conn->query($sql);
 $row = $result->fetch_assoc();
 
@@ -137,7 +139,8 @@ $sql = "SELECT DATE(created_at) AS
 sale_date, 
 SUM(total) AS daily_total 
 FROM orders 
-WHERE $where GROUP BY DATE(created_at) 
+WHERE $where AND status = 'Collected'
+GROUP BY DATE(created_at) 
 ORDER BY sale_date";
 
 $chartResult = $conn->query($sql);

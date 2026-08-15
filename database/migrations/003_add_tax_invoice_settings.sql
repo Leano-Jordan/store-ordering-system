@@ -1,0 +1,14 @@
+CREATE TABLE IF NOT EXISTS business_settings (
+    id INT NOT NULL AUTO_INCREMENT,
+    business_name VARCHAR(150) NOT NULL,
+    business_address TEXT NOT NULL,
+    vat_enabled TINYINT(1) NOT NULL DEFAULT 0,
+    vat_number VARCHAR(50) NULL,
+    vat_rate DECIMAL(5,2) NOT NULL DEFAULT 15.00,
+    next_invoice_number INT NOT NULL DEFAULT 1,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (id)
+) ENGINE=InnoDB;

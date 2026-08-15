@@ -20,14 +20,27 @@ requireRole([ROLE_ADMIN]);
 
 $sessionId = filter_input(INPUT_POST, 'session_id', FILTER_VALIDATE_INT);
 
-$currentSessionId = $_SESSION['session_log_id'] ?? null;
+if ($sessionId === false || $sessionId === null || $sessionId < 1) {
+    http_response_code(400);
+    exit('Invalid session.');
+}
 
-if (is_int($currentSessionId) && $currentSessionId === $sessionId) {
+$currentSessionId = filter_var($_SESSION['session_log_id'] ?? null, FILTER_VALIDATE_INT);
+
+if ($currentSessionId !== false && $currentSessionId === $sessionId) {
     http_response_code(400);
     exit('You cannot terminate your current session.');
 }
 
-$stmt = $conn->prepare('SELECT id, user_id FROM user_sessions WHERE id = ? AND status =\'ACTIVE\' LIMIT 1');
+$stmt = $conn->prepare(
+    'SELECT id, 
+    user_id 
+    FROM user_sessions 
+    WHERE id = ? 
+    AND status =\'ACTIVE\' 
+    AND last_activity_at >= DATE_SUB(NOW(), 
+    INTERVAL ? SECOND) LIMIT 1'
+);
 
 if (!$stmt) {
     error_log('SwiftOrder session termination prepare failed: '.$conn->error);
@@ -35,7 +48,15 @@ if (!$stmt) {
     exit('An unexpected error occurred.');
 }
 
-$stmt->bind_param('i', $sessionId);
+$idleTimeout = SESSION_IDLE_TIMEOUT;
+
+if (!$stmt->bind_param('ii', $sessionId, $idleTimeout)) {
+    error_log('SwiftOrder session termination bind failed: '.$stmt->error);
+
+    $stmt->close();
+    http_response_code(500);
+    exit('An unexpected error occurred.');
+}
 
 if (!$stmt->execute()) {
     error_log('SwiftOrder session termination execute failed: '.$stmt->error);
