@@ -61,7 +61,10 @@ ORDER BY company_name ASC
 LIMIT $limit OFFSET $offset");
 
     if (!$result) {
-        exit($conn->error);
+        error_log('Failed to load suppliers query: '.$conn->error);
+        $_SESSION['error'] = 'Unable to load suppliers count. Please try again.';
+        header('Location: suppliers.php');
+        exit();
     }
 
     $totalResult = $conn->query('SELECT COUNT(*) AS total FROM suppliers');

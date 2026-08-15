@@ -83,6 +83,19 @@ $fileMimeType = $finfo->file($tempName);
 
 $allowedMimeTypes = ['image/jpeg' => 'jpg', 'image/png' => 'png'];
 
+if ($fileMimeType === false || !isset($allowedMimeTypes[$fileMimeType])
+) {
+    $_SESSION['error'] = 'Invalid image format.';
+    header('Location: add_product.php');
+    exit();
+}
+
+if (@getimagesize($tempName) === false) {
+    $_SESSION['error'] = 'Uploaded file is not a valid image.';
+    header('Location: add_product.php');
+    exit();
+}
+
 if (!validateImageDimensions($tempName)) {
     $_SESSION['error'] = 'Image dimensions are too large.';
     header('Location: add_product.php');

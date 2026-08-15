@@ -70,7 +70,45 @@ function touchSessionRecord(mysqli $conn, int $sessionId, int $userId): bool
         return false;
     }
 
+    $affectedRows = $stmt->affected_rows;
     $stmt->close();
+
+    if ($affectedRows === 0) {
+        $checkStmt = $conn->prepare(
+            'SELECT id 
+            FROM user_sessions 
+            WHERE id = ? 
+            AND user_id = ? 
+            AND status = \'ACTIVE\' limit 1'
+        );
+
+        if (!$checkStmt) {
+            error_log('SwiftOrder session touch verification prepare failed: '.$conn->error);
+
+            return false;
+        }
+
+        $checkStmt->bind_param('ii', $sessionId, $userId);
+
+        if (!$checkStmt->execute()) {
+            error_log('SwiftOrder session touch verification execute failed: '.$checkStmt->error);
+            $checkStmt->close();
+
+            return false;
+        }
+
+        $checkResult = $checkStmt->get_result();
+        $sessionExists = $checkResult && $checkResult->num_rows === 1;
+        $checkStmt->close();
+
+        return $sessionExists;
+    }
+
+    if ($affectedRows !== 1) {
+        error_log('SwiftOrder session touch affected unexpected number of rows: '.$affectedRows);
+
+        return false;
+    }
 
     return true;
 }
@@ -123,7 +161,14 @@ function closeSessionRecord(mysqli $conn, int $sessionId, int $userId, string $s
         return false;
     }
 
+    $affectedRows = $stmt->affected_rows;
     $stmt->close();
+
+    if ($affectedRows !== 1) {
+        error_log('SwiftOrder session close affected unexpected number of rows: '.$affectedRows);
+
+        return false;
+    }
 
     return true;
 }

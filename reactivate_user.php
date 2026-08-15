@@ -30,6 +30,36 @@ if ($id === (int) $_SESSION['user_id']) {
 }
 
 /*************************  REACTIVATE USER  *********************/
+$userCheck = $conn->prepare('SELECT id, status FROM users WHERE id = ? LIMIT 1');
+
+if (!$userCheck) {
+    error_log('reactivate_user.php prepare user check failed: '.$conn->error);
+    $_SESSION['error'] = 'Unable to reactivate user.';
+    header('Location: users.php');
+    exit();
+}
+
+$userCheck->bind_param('i', $id);
+
+if (!$userCheck->execute()) {
+    error_log('reactivate_user.php execute user check failed: '.$userCheck->error);
+    $userCheck->close();
+
+    $_SESSION['error'] = 'Unable to reactivate user.';
+    header('Location: users.php');
+    exit();
+}
+
+$userResult = $userCheck->get_result();
+$userRecord = $userResult->fetch_assoc();
+
+$userCheck->close();
+
+if (!$userRecord) {
+    $_SESSION['error'] = 'User not found.';
+    header('Location: users.php');
+    exit();
+}
 
 $updateStmt = $conn->prepare(
     "UPDATE users 

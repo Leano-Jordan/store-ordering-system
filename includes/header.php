@@ -39,6 +39,7 @@ require_once 'includes/csrf.php';
                 <a href="purchase_orders.php" class="<?php echo $currentPage === 'purchase_orders.php' ? 'active-nav' : ''; ?>">Purchase Orders</a>
                 <a href="goods_received_notes.php" class="<?php echo $currentPage === 'goods_received_notes.php' ? 'active-nav' : ''; ?>">GRNs</a>
                 <a href="users.php" class="<?php echo $currentPage === 'users.php' ? 'active-nav' : ''; ?>">Users</a>
+                <a href="sessions.php" class="<?php echo $currentPage === 'sessions.php' ? 'active-nav' : ''; ?>">Sessions</a>
                 <a href="reports.php" class="<?php echo $currentPage === 'reports.php' ? 'active-nav' : ''; ?>">Reports</a>
                 <a href="activity_logs.php" class="<?php echo $currentPage === 'activity_logs.php' ? 'active-nav' : ''; ?>">Activity Logs</a>
                 <a href="about.php">About</a>
@@ -56,6 +57,7 @@ require_once 'includes/csrf.php';
                 <a href="suppliers.php" class="<?php echo $currentPage === 'suppliers.php' ? 'active-nav' : ''; ?>">Suppliers</a>
                 <a href="purchase_orders.php" class="<?php echo $currentPage === 'purchase_orders.php' ? 'active-nav' : ''; ?>">Purchase Orders</a>
                 <a href="goods_received_notes.php" class="<?php echo $currentPage === 'goods_received_notes.php' ? 'active-nav' : ''; ?>">GRNs</a>
+                <a href="sessions.php" class="<?php echo $currentPage === 'sessions.php' ? 'active-nav' : ''; ?>">Sessions</a>
                 <a href="reports.php" class="<?php echo $currentPage === 'reports.php' ? 'active-nav' : ''; ?>">Reports</a>
                 <a href="about.php">About</a>
                 <form method="post" action="logout.php" class="logout-form">

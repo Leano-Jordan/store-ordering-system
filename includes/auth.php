@@ -6,7 +6,7 @@ require_once __DIR__.'/session.php';
 require_once __DIR__.'/db.php';
 require_once __DIR__.'/session_tracker.php';
 
-const SESSION_IDLE_TIMEOUT = 1800; //session timeout for 5 minutes, if you don't do anything for 5 minutes you get logged out.
+const SESSION_IDLE_TIMEOUT = 1800; // 30-minute idle session timeout.
 
 if (!isset($_SESSION['user_id'])) {
     $requestUri = $_SERVER['REQUEST_URI'] ?? 'dashboard.php';
@@ -117,10 +117,17 @@ $_SESSION['profile_image'] = (string) ($user['profile_image'] ?? '');
 $_SESSION['last_activity'] = $currentTime;
 
 if (
-    isset($_SESSION['session_log_id'])
-    && is_int($_SESSION['session_log_id'])
-    && $_SESSION['session_log_id'] > 0
+    !isset($_SESSION['session_log_id'])
+    || !is_int($_SESSION['session_log_id'])
+    || $_SESSION['session_log_id'] < 1
     ) {
+    $_SESSION = [];
+    session_destroy();
+
+    header('Location: login.php');
+    exit();
+}
+
     $sessionUpdated = touchSessionRecord(
         $conn,
         $_SESSION['session_log_id'],
@@ -129,7 +136,12 @@ if (
 
     if (!$sessionUpdated) {
         error_log(
-            'SwiftOrder session activity update failed for user ID '.$user['id']
+            'SwiftOrder authenticated session is no longer active for user ID '.$user['id']
         );
+
+        $_SESSION = [];
+        session_destroy();
+
+        header('Location: login.php');
+        exit();
     }
-}

@@ -1,24 +1,40 @@
-CREATE TABLE user_sessions (
+CREATE TABLE IF NOT EXISTS audit_log (
     id INT NOT NULL AUTO_INCREMENT,
     user_id INT NOT NULL,
-    login_at DATETIME NOT NULL,
-    last_activity_at DATETIME NOT NULL,
-    logout_at DATETIME NULL,
-    status ENUM('ACTIVE', 'LOGGED_OUT', 'TIMED_OUT', 'TERMINATED')
-        NOT NULL DEFAULT 'ACTIVE',
+    entity VARCHAR(50) NOT NULL,
+    entity_id INT NOT NULL,
+    action VARCHAR(100) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     PRIMARY KEY (id),
 
-    KEY idx_user_sessions_user_id (user_id),
-    KEY idx_user_sessions_status (status),
-    KEY idx_user_sessions_last_activity (last_activity_at),
+    KEY idx_audit_log_user_id (user_id),
+    KEY idx_audit_log_entity (entity),
+    KEY idx_audit_log_entity_id (entity_id),
+    KEY idx_audit_log_created_at (created_at),
 
-    CONSTRAINT fk_user_sessions_user
+    CONSTRAINT fk_audit_log_user
         FOREIGN KEY (user_id)
-        REFERENCES users(id)
-        ON UPDATE CASCADE
+        REFERENCES users (id)
         ON DELETE RESTRICT
-) ENGINE=InnoDB
-    DEFAULT CHARSET=utf8mb4
-    COLLATE=utf8mb4_general_ci;
+        ON UPDATE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS audit_changes (
+    id INT NOT NULL AUTO_INCREMENT,
+    audit_id INT NOT NULL,
+    field_name VARCHAR(100) NOT NULL,
+    old_value TEXT NULL,
+    new_value TEXT NULL,
+
+    PRIMARY KEY (id),
+
+    KEY idx_audit_changes_audit_id (audit_id),
+
+    CONSTRAINT fk_audit_changes_audit
+        FOREIGN KEY (audit_id)
+        REFERENCES audit_log (id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+) ENGINE=InnoDB;
 

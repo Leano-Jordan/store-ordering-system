@@ -6,6 +6,7 @@ requireRole([ROLE_ADMIN, ROLE_MANAGER]);
 require_once 'includes/logger.php';
 require_once 'includes/db.php';
 require_once 'includes/helpers.php';
+require_once 'includes/audit.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: products.php');
@@ -42,7 +43,7 @@ if ($stock === false || $stock <= 0) {
         exit('Name and category cannot be empty.');
     }
 
-$currentProductStmt = $conn->prepare('SELECT image FROM products WHERE id = ?');
+$currentProductStmt = $conn->prepare('SELECT name, description, price, image, category, stock FROM products WHERE id = ?');
 
 if (!$currentProductStmt) {
     error_log('update_product.php: Failed to prepare current product lookup: '.$conn->error);
@@ -89,6 +90,12 @@ if (isset($_FILES['image']) && $_FILES['image']['error'] !== UPLOAD_ERR_NO_FILE)
         exit();
     }
 
+    if (!is_uploaded_file($_FILES['image']['tmp_name'])) {
+        $_SESSION['error'] = 'Invalid image upload.';
+        header('Location: edit_product.php?id='.$id);
+        exit();
+    }
+
     $maxImageSize = 2 * 1024 * 1024; // 2MB
 
     if ($_FILES['image']['size'] > $maxImageSize) {
@@ -98,6 +105,18 @@ if (isset($_FILES['image']) && $_FILES['image']['error'] !== UPLOAD_ERR_NO_FILE)
 
     $info = new finfo(FILEINFO_MIME_TYPE);
     $fileMimeType = $info->file($_FILES['image']['tmp_name']);
+
+    if ($fileMimeType === false) {
+        $_SESSION['error'] = 'Invalid to validate image format.';
+        header('Location: edit_product.php?id='.$id);
+        exit();
+    }
+
+    if (@getimagesize($_FILES['image']['tmp_name']) === false) {
+        $_SESSION['error'] = 'Uploaded file is not a valid image.';
+        header('Location: edit_product.php?id='.$id);
+        exit();
+    }
 
     $allowedMimeTypes = ['image/jpeg' => 'jpg', 'image/png' => 'png'];
 
@@ -120,8 +139,9 @@ if (isset($_FILES['image']) && $_FILES['image']['error'] !== UPLOAD_ERR_NO_FILE)
     $newImageUploaded = true;
 }
 
-$sql = 'UPDATE products 
-SET 
+$conn->begin_transaction();
+
+$sql = 'UPDATE products SET 
 name=?, 
 description=?, 
 price=?, 
@@ -129,25 +149,120 @@ image=?,
 category=?, 
 stock=? 
 WHERE id=?';
+
 if (!executeStatement(
     $conn,
     $sql,
     'ssdssii',
-    [$name,
-    $description,
-    $price,
-    $image,
-    $category,
-    $stock,
-    $id, ]
+    [
+        $name,
+        $description,
+        $price,
+        $image,
+        $category,
+        $stock,
+        $id,
+        ]
 )) {
+    $conn->rollback();
+
     if ($newImageUploaded && $newImagePath !== null && is_file($newImagePath)) {
         if (!unlink($newImagePath)) {
             error_log('update_product.php: Failed to clean up new product image after database failure: '.$newImagePath);
         }
     }
     error_log('update_product.php: Failed to update product ID: '.$id);
-    exit('Unable to Update Product. Please try again.');
+
+    $_SESSION['error'] = 'Unable to update product. Please try again.';
+    header('Location: edit_product.php?id='.$id);
+    exit();
+}
+
+$changes = [];
+
+if ((string) ($currentProduct['name'] ?? '') !== $name) {
+    $changes['name'] = [
+        (string) ($currentProduct['name'] ?? ''),
+        $name,
+    ];
+}
+
+if ((string) ($currentProduct['description'] ?? '') !== $description) {
+    $changes['description'] = [
+        (string) ($currentProduct['description'] ?? ''),
+        $description,
+    ];
+}
+
+if ((string) ($currentProduct['price'] ?? '') !== (string) $price) {
+    $changes['price'] = [
+        (string) ($currentProduct['price'] ?? ''),
+        (string) $price,
+    ];
+}
+
+if ((string) ($currentProduct['category'] ?? '') !== $category) {
+    $changes['category'] = [
+        (string) ($currentProduct['category'] ?? ''),
+        $category,
+    ];
+}
+
+if ((int) ($currentProduct['stock'] ?? 0) !== (int) $stock) {
+    $changes['stock'] = [
+        (string) ($currentProduct['stock'] ?? 0),
+        (string) $stock,
+    ];
+}
+
+if ($currentImage !== $image) {
+    $changes['image'] = [
+        $currentImage,
+        $image,
+    ];
+}
+
+try {
+    if ($changes !== []) {
+        recordAudit(
+            $conn,
+            (int) $_SESSION['user_id'],
+            'product',
+            $id,
+            'UPDATE',
+            $changes
+        );
+    }
+
+    if (!$conn->commit()) {
+        throw new RuntimeException('Product update transaction commit failed.');
+    }
+} catch (RuntimeException $exception) {
+    $conn->rollback();
+
+    error_log(
+        'update_product.php: Audit transaction failed for product ID '
+        .$id.': '.$exception->getMessage()
+    );
+
+    if (
+        $newImageUploaded
+        && $newImagePath !== null
+        && is_file($newImagePath)
+    ) {
+        if (!unlink($newImagePath)) {
+            error_log(
+                'update_product.php: Failed to clean up new product image after audit failure: '
+                .$newImagePath
+            );
+        }
+    }
+
+    $_SESSION['error'] =
+        'Unable to complete product update. Please try again.';
+
+    header('Location: edit_product.php?id='.$id);
+    exit();
 }
 
 if ($newImageUploaded && $currentImage !== '' && $currentImage !== 'no-image.png') {
