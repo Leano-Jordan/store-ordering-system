@@ -69,5 +69,5 @@ if (!closeSessionRecord($conn, $sessionId, $targetUserId, 'TERMINATED')) {
     exit('Unable to terminate session.');
 }
 
-header('Location: users.php');
+header('Location: sessions.php');
 exit();

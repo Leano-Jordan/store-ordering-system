@@ -44,7 +44,7 @@ $status = 'Cancelled';
 $revenueStmt = $conn->prepare("SELECT SUM(total) AS revenue
     FROM orders
     WHERE $where
-    AND status <> ?
+    AND status = ?
 ");
 
 if (!$revenueStmt) {

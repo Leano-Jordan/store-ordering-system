@@ -31,11 +31,11 @@ if ($id === false || $id <= 0) {
     exit('Invalid product ID.');
 }
 
-if ($price === false || $price <= 0) {
+if ($price === false || $price < 0) {
     exit('Invalid price.');
 }
 
-if ($stock === false || $stock <= 0) {
+if ($stock === false || $stock < 0) {
     exit('Invalid stock.');
 }
 

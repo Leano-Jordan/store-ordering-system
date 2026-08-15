@@ -348,7 +348,7 @@ function swiftOrderSessionDate(?string $date): string
 
                             <td>
 
-                                90<?php if ($status === 'ACTIVE') { ?>yt
+                                <?php if ($status === 'ACTIVE') { ?>
 
                                     <?php if ($isCurrentSession) { ?>
 
