@@ -13,6 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 verifyCsrfToken();
 
 require_once 'includes/db.php';
+require_once 'includes/audit.php';
 
 /************ *       ************* REACTIVATE USERS ***********              *****************/
 
@@ -61,39 +62,62 @@ if (!$userRecord) {
     exit();
 }
 
-$updateStmt = $conn->prepare(
-    "UPDATE users 
+$conn->begin_transaction();
+
+try {
+    $updateStmt = $conn->prepare(
+        "UPDATE users 
     SET status = 'Active' 
     WHERE id = ? AND status = 'Inactive'"
-);
+    );
 
-if (!$stmt) {
+    if (!$updateStmt) {
+        throw new RuntimeException('reactivate_user.php update prepare failed. '.$conn->error);
+    }
+
+    if (!$updateStmt->bind_param('i', $id)) {
+        $updateStmt->close();
+
+        throw new RuntimeException('reactivate_user.php update bind failed. '.$updateStmt->error);
+    }
+
+    if (!$updateStmt->execute()) {
+        $error = $updateStmt->error;
+        $updateStmt->close();
+
+        throw new RuntimeException('reactivate_user.php update execute failed. '.$error);
+    }
+
+    if ($updateStmt->affected_rows !== 1) {
+        $updateStmt->close();
+
+        throw new RuntimeException('reactivate_user.php user was not reactivated');
+    }
+
+    $updateStmt->close();
+
+    recordAudit(
+        $conn,
+        (int) $_SESSION['user_id'],
+        'user',
+        $id,
+        'REACTIVATE',
+        ['status' => [(string) $userRecord['status'], 'Active'],
+    ]
+    );
+
+    if (!$conn->commit()) {
+        throw new RuntimeException('reactivate_user.php commit failed: '.$conn->error);
+    }
+} catch (\Throwable $exception) {
     $conn->rollback();
-    error_log('reactivate_user.php update prepare failed. '.$conn->error);
-    $_SESSION['error'] = 'Unable to Reactivate user.';
+
+    error_log('receive_purchase_order.php transaction failed.'.$exception->getMessage());
+
+    $_SESSION['error'] = 'Unable to reactivate user.';
     header('Location: users.php');
     exit();
 }
-
-$stmt->bind_param('i', $id);
-
-if (!$stmt->execute()) {
-    $conn->rollback();
-    error_log('reactivate_user.php update execute failed. '.$stmt->error);
-    $stmt->close();
-    $_SESSION['error'] = 'Unable to Reactivate user.';
-    header('Location: users.php');
-    exit();
-}
-
-if ($stmt->affected_rows !== 1) {
-    $stmt->close();
-    $_SESSION['error'] = 'User was not reactivated.';
-    header('Location: users.php');
-    exit();
-}
-
-$stmt->close();
 
 $_SESSION['success'] = 'User reactivated successfully.';
 header('Location: users.php');

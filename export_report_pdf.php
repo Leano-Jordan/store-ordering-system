@@ -25,7 +25,7 @@ if ($range === '30') {
 }
 
 $totalRevenue = $conn->query("SELECT SUM(total) 
-AS revenue FROM orders WHERE $where AND status = 'Cancelled'")->fetch_assoc()['revenue'] ?? 0;
+AS revenue FROM orders WHERE $where AND status = 'Collected'")->fetch_assoc()['revenue'] ?? 0;
 
 $totalOrders = $conn->query("SELECT COUNT(*) 
 AS total FROM orders WHERE $where")->fetch_assoc()['total'] ?? 0;
@@ -37,7 +37,7 @@ $cancelledOrders = $conn->query("SELECT COUNT(*)
 AS total FROM orders WHERE $where AND status = 'Cancelled'")->fetch_assoc()['total'] ?? 0;
 
 $averageOrder = $conn->query("SELECT AVG(total) 
-AS avg FROM orders WHERE $where AND status = 'Cancelled'")->fetch_assoc()['avg'] ?? 0;
+AS avg FROM orders WHERE $where AND status = 'Collected'")->fetch_assoc()['avg'] ?? 0;
 
 $html = '
 <h1>SwiftOrder POS - Sales Report</h1>

@@ -39,7 +39,7 @@ switch ($range) {
         break;
 }
 
-$status = 'Cancelled';
+$status = 'Collected';
 
 $revenueStmt = $conn->prepare("SELECT SUM(total) AS revenue
     FROM orders

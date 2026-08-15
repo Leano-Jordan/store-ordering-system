@@ -6,6 +6,7 @@ let count = 0;
 let total = 0;
 let cart = [];
 let paymentMethod = 'cash_pmt';
+let currentOrderRequestId = null;
 
 // ── Bootstrap from localStorage (JSON source of truth) ──────────────
 cart = loadCartFromStorage();
@@ -273,6 +274,10 @@ PLACE ORDER
    ───────────────────────────────────────────────────────────────────── */
 
 function placeOrder() {
+    if (!currentOrderRequestId) {
+        currentOrderRequestId = crypto.randomUUID();
+    }
+
     if (window.orderSubmitting) return;
 
     const customerEl = document.getElementById('customer');
@@ -300,6 +305,7 @@ function placeOrder() {
     formData.append('cart', JSON.stringify(cart));
     formData.append('total', total);
     formData.append('payment_method', paymentMethod);
+    formData.append('request_id', currentOrderRequestId);
 
     const csrfEl = document.getElementById('csrf_token');
     if (!csrfEl) {
@@ -317,7 +323,13 @@ function placeOrder() {
         .then(function(response) { return response.json(); })
         .then(function(data) {
             alert(data.message);
-            if (data.success) clearCart();
+
+            if (data.success) {
+
+                clearCart()
+                currentOrderRequestId = null;
+            }
+
             window.orderSubmitting = false;
             btn.disabled = false;
             btn.textContent = 'Place Order';

@@ -7,6 +7,7 @@ verifyCsrfToken();
 require_once 'includes/permissions.php';
 require_once 'includes/helpers.php';
 require_once 'includes/shared/errors.php';
+require_once 'includes/audit.php';
 requireRole([ROLE_ADMIN, ROLE_MANAGER, ROLE_CASHIER]);
 
 if (
@@ -16,34 +17,81 @@ if (
     jsonError('Invalid request.');
 }
 
-$maxOrderNumberAttempts = 20;
-$orderNumberAttempts = 0;
+$orderNumber = 'SW'.str_pad(random_int(1, 999999), 6, '0', STR_PAD_LEFT);
 
-do {
-    ++$orderNumberAttempts;
+$requestIdInput = $_POST['request_id'] ?? null;
 
-    if ($orderNumberAttempts > $maxOrderNumberAttempts) {
-        jsonError('Unable to generate a unique order number. Please try again');
-    }
+if (!is_string($requestIdInput)) {
+    jsonError('Invalid order request.');
+}
 
-    $orderNumber = 'SW'.str_pad(random_int(1, 999999), 6, '0', STR_PAD_LEFT);
+$requestId = trim($requestIdInput);
 
-    $check = $conn->prepare('SELECT id FROM orders WHERE order_number = ?');
-    if (!$check) {
-        jsonError('Failed to generate unique order number.');
-    }
+if ($requestId === '' ||
+!preg_match(
+    '/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/',
+    $requestId
+)
+    ) {
+    jsonError('Invalid order request.');
+}
 
-    $check->bind_param('s', $orderNumber);
+$existingStmt = $conn->prepare(
+    'SELECT order_number
+    FROM orders
+    WHERE request_id = ?
+    LIMIT 1'
+);
 
-    if (!$check->execute()) {
-        error_log('place_order.php: Failed to check order number uniqueness: '.$check->error);
-        jsonError('Failed to generate a unique order number. Please try again.');
-    }
+if (!$existingStmt) {
+    error_log(
+        'place_order.php: Failed to check request ID: '
+        .$conn->error
+    );
 
-    $result = $check->get_result();
-} while ($result->num_rows > 0);
+    jsonError('Unable to process the order. Please try again.');
+}
 
-$check->close();
+if (!$existingStmt->bind_param('s', $requestId)) {
+    $existingStmt->close();
+
+    error_log(
+        'place_order.php: Failed to bind request ID: '
+        .$existingStmt->error
+    );
+
+    jsonError('Unable to process the order. Please try again.');
+}
+
+if (!$existingStmt->execute()) {
+    $existingStmt->close();
+
+    error_log(
+        'place_order.php: Failed to execute request ID check: '
+        .$existingStmt->error
+    );
+
+    jsonError('Unable to process the order. Please try again.');
+}
+
+$existingResult = $existingStmt->get_result();
+
+if ($existingResult && $existingResult->num_rows === 1) {
+    $existingOrder = $existingResult->fetch_assoc();
+    $existingStmt->close();
+
+    header('Content-Type: application/json');
+
+    echo json_encode([
+        'success' => true,
+        'message' => 'Order already placed.',
+        'order_number' => $existingOrder['order_number'],
+    ]);
+
+    exit();
+}
+
+$existingStmt->close();
 
 $customerInput = $_POST['customer'] ?? '';
 
@@ -70,7 +118,9 @@ if (json_last_error() !== JSON_ERROR_NONE) {
     jsonError('Invalid cart data. Please try again.');
 }
 
-$paymentMethodInput = $_POST['payment_method'] ?? 'cash_pmt';
+if (is_array($cart) || empty($cart)) {
+    $paymentMethodInput = $_POST['payment_method'] ?? 'cash_pmt';
+}
 
 if (!is_string($paymentMethodInput)) {
     $_SESSION['error'] = 'Invalid payment method.';
@@ -194,12 +244,14 @@ $items = trim($items);
 $status = 'Pending';
 
 $sql = 'INSERT INTO orders (
-    order_number, 
+    order_number,
+    request_id,
     customer_name, 
     items, 
     total, 
     status, 
-    payment_method) VALUES (?, ?, ?, ?, ?, ?)';
+    payment_method
+    ) VALUES (?, ?, ?, ?, ?, ?, ?)';
 
 $stmt = $conn->prepare($sql);
 if (!$stmt) {
@@ -209,8 +261,9 @@ if (!$stmt) {
 }
 
 if (!$stmt->bind_param(
-    'sssdss',
+    'ssssdss',
     $orderNumber,
+    $requestId,
     $customer,
     $items,
     $total,
@@ -223,11 +276,76 @@ if (!$stmt->bind_param(
 }
 
 if (!$stmt->execute()) {
+    $insertError = $stmt->error;
+
+    $stmt->close();
     $conn->rollback();
-    error_log('place_order.php: Failed to insert order: '.$stmt->error);
+
+    if (stripos($insertError, 'request_id') !== false || stripos($insertError, 'uq_orders_request_id') !== false) {
+        $existingStmt = $conn->prepare(
+            'SELECT order_number
+            FROM orders
+            WHERE request_id = ?
+            LIMIT 1'
+        );
+
+        if (
+            $existingStmt
+            && $existingStmt->bind_param('s', $requestId)
+            && $existingStmt->execute()
+        ) {
+            $existingResult = $existingStmt->get_result();
+            $existingOrder = $existingResult
+                ? $existingResult->fetch_assoc()
+                : null;
+
+            $existingStmt->close();
+
+            if ($existingOrder) {
+                header('Content-Type: application/json');
+
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Order already placed.',
+                    'order_number' => $existingOrder['order_number'],
+                ]);
+
+                exit();
+            }
+        }
+
+        if ($existingStmt) {
+            $existingStmt->close();
+        }
+    }
+
+    error_log(
+        'place_order.php: Failed to insert order: '.$insertError
+    );
+
     jsonError('Failed to place the order. Please try again.');
 }
+
+$stmt->close();
+
     $orderId = $conn->insert_id;
+
+    recordAudit(
+        $conn,
+        (int) $_SESSION['user_id'],
+        'order',
+        (int) $orderId,
+        'CREATE',
+        [
+            'order_number' => [null, $orderNumber],
+            'status' => [null, $status],
+            'payment_method' => [null,
+            $paymentMethod, ],
+            'total' => [null,
+            number_format((float) $total, 2, '-', ''),
+            ],
+        ]
+    );
 
     $itemStmt = $conn->prepare(
         'INSERT INTO order_items(order_id, product_id, quantity, price) 
@@ -275,9 +393,15 @@ if (!$stmt->execute()) {
 
     $itemStmt->close();
 
+        logActivity(
+            $conn,
+            (int) $_SESSION['user_id'],
+            'Created order: '.$orderNumber
+        );
+
     if (!$conn->commit()) {
-        $conn->rollback();
         error_log('place_order.php: Failed to commit transaction: '.$conn->error);
+
         jsonError('Failed to place the order. Please try again.');
     }
 
