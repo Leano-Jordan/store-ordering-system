@@ -5,7 +5,7 @@ SwiftOrder POS — script.js  v0.8.4
 let count = 0;
 let total = 0;
 let cart = [];
-let paymentMethod = 'cash';
+let paymentMethod = 'cash_pmt';
 
 // ── Bootstrap from localStorage (JSON source of truth) ──────────────
 cart = loadCartFromStorage();
