@@ -177,10 +177,10 @@ if ($id <= 0) {
 
         /* CREATING GOODS RECEIVED NOTE */
 
-        $grnNumber = 'GRN-'.
-date('YmdHis').
-'-'.
-str_pad(random_int(1, 999), 3, '0', STR_PAD_LEFT);
+        $grnNumber = 'GRN-PO-'
+        .str_pad((string) $id, 6, '0', STR_PAD_LEFT).
+        '-'.date('YmdHis').
+'-'.str_pad(random_int(1, 999), 3, '0', STR_PAD_LEFT);
 
         $grnStmt = $conn->prepare('INSERT INTO goods_received_notes
 (purchase_order_id, supplier_id, grn_number, received_by, total, notes)
@@ -242,6 +242,18 @@ WHERE purchase_order_id = ?
         }
 
         $itemCopy->close();
+
+        $receiptChanges = ['status' => ['Pending', 'Received'], 'grn_number' => [null, $grnNumber],
+    ];
+
+        recordAudit(
+            $conn,
+            (int) $_SESSION['user_id'],
+            'purchase_order',
+            (int) $id,
+            'RECEIVE',
+            $receiptChanges
+        );
 
         if (!$conn->commit()) {
             throw new Exception('Transaction commit failed: '.$conn->error);

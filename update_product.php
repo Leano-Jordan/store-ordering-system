@@ -150,7 +150,7 @@ category=?,
 stock=? 
 WHERE id=?';
 
-if (!executeStatement(
+$updatedSucceeded = executeStatement(
     $conn,
     $sql,
     'ssdssii',
@@ -163,7 +163,7 @@ if (!executeStatement(
         $stock,
         $id,
         ]
-)) {
+); if (!$updatedSucceeded) {
     $conn->rollback();
 
     if ($newImageUploaded && $newImagePath !== null && is_file($newImagePath)) {
@@ -217,8 +217,8 @@ if ((int) ($currentProduct['stock'] ?? 0) !== (int) $stock) {
 
 if ($currentImage !== $image) {
     $changes['image'] = [
-        $currentImage,
-        $image,
+        $currentImage === '' ? null : 'IMAGE',
+        $image === '' ? null : 'IMAGE',
     ];
 }
 
@@ -237,7 +237,7 @@ try {
     if (!$conn->commit()) {
         throw new RuntimeException('Product update transaction commit failed.');
     }
-} catch (RuntimeException $exception) {
+} catch (\Throwable $exception) {
     $conn->rollback();
 
     error_log(

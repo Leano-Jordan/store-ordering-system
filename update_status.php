@@ -8,6 +8,8 @@ require_once 'includes/csrf.php';
 verifyCsrfToken();
 require_once 'includes/helpers.php';
 require_once 'includes/logger.php';
+require_once 'includes/audit.php';
+require_once 'includes/invoice.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit('Invalid request.');
@@ -36,6 +38,7 @@ try {
 
     $currentStatus = $orderData['status'];
     $orderNumber = $orderData['order_number'];
+    $invoiceNumber = null;
 
     if ($currentStatus === 'Collected' || $currentStatus === 'Cancelled') {
         throw new Exception("Cannot change status of an order that is already $currentStatus.");
@@ -161,6 +164,25 @@ WHERE id = ? AND status = ?',
                 throw new Exception("Failed to create stock history for product ID $productId");
             }
         }
+
+        $invoiceNumber = issueInvoiceNumber($conn, $id, (int) $_SESSION['user_id']);
+    }
+
+    if ($currentStatus !== $status) {
+        $auditChanges = ['status' => [$currentStatus, $status]];
+
+        if ($status === 'Collected' && $invoiceNumber !== null) {
+            $auditChanges['invoice_number'] = [null, $invoiceNumber];
+        }
+
+        recordAudit(
+            $conn,
+            (int) $_SESSION['user_id'],
+            'order',
+            $id,
+            'STATUS_CHANGE',
+            $auditChanges
+        );
     }
 
     if (!$conn->commit()) {

@@ -84,7 +84,7 @@ $chartData = [];
 
 $topProducts = $conn->query("SELECT p.name, 
 SUM(oi.quantity) AS quantity_sold FROM order_items oi
-JOIN products p ON oi.product_id = p.id JOIN orders o ON oi.order_id = o.id
+LEFT JOIN products p ON oi.product_id = p.id JOIN orders o ON oi.order_id = o.id
 WHERE $where AND o.status = 'Collected' GROUP BY oi.product_id
 ORDER BY quantity_sold DESC LIMIT 5");
 
@@ -94,7 +94,7 @@ WHERE $where AND status = 'Collected' GROUP BY customer_name ORDER BY spent DESC
 
 $topCategories = $conn->query("SELECT p.category, 
 SUM(oi.quantity) AS quantity_sold FROM order_items oi
-JOIN products p ON oi.product_id = p.id JOIN orders o ON oi.order_id = o.id
+LEFT JOIN products p ON oi.product_id = p.id JOIN orders o ON oi.order_id = o.id
 WHERE $where AND o.status = 'Collected' GROUP BY p.category
 ORDER BY quantity_sold DESC");
 

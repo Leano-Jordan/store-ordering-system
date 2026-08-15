@@ -5,6 +5,7 @@ require_once 'includes/permissions.php';
 requireRole([ROLE_ADMIN, ROLE_MANAGER]);
 require_once 'includes/db.php';
 require_once 'includes/csrf.php';
+require_once 'includes/audit.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: purchase_orders.php');
@@ -18,6 +19,14 @@ $supplierId = filter_input(INPUT_POST, 'supplier_id', FILTER_VALIDATE_INT);
 if ($supplierId === false || $supplierId <= 0) {
     $_SESSION['error'] = 'Invalid supplier selected.';
     header('Location: add_purchase_orders.php');
+    exit();
+}
+
+$notesInput = $_POST['notes'] ?? '';
+
+if (!is_string($notesInput)) {
+    $_SESSION['error'] = 'Invalid purchase order notes.';
+    header('Location: add_purchase_order.php');
     exit();
 }
 
@@ -39,20 +48,6 @@ if (
     $_SESSION['error'] = 'Invalid purchase order item data.';
     header('Location: add_purchase_orders.php');
     exit();
-}
-
-if ($supplierId <= 0) {
-    exit('Please select a supplier.');
-}
-
-if (empty($productIds) ||
-    empty($quantities) ||
-    empty($prices)) {
-    exit('Please add at least one purchase order item.');
-}
-
-if (count($productIds) !== count($quantities) || count($productIds) !== count($prices)) {
-    exit('Purchase order item data is invalid');
 }
 
 $supplierStmt = $conn->prepare('SELECT id FROM suppliers WHERE id = ? AND status = "Active"');
@@ -117,25 +112,29 @@ for ($i = 0; $i < count($productIds); ++$i) {
     $productId = (int) $productIds[$i];
 
     if (!isset($validateProducts[$productId])) {
-        $conn->rollback();
-        exit('One or more selected products are not available.');
+        $_SESSION['error'] = 'One or more selected products are not available.';
+        header('Location: add_purchase_order.php');
+        exit();
     }
 
-    $qty = (float) $quantities[$i];
+    $qty = filter_var($quantities[$i], FILTER_VALIDATE_INT);
     $price = (float) $prices[$i];
 
     if ($qty <= 0 || $price <= 0) {
-        $conn->rollback();
-        exit('Invalid quantity or unit cost.');
+        $_SESSION['error'] = 'Invalid quantity or unit cost.';
+        header('Location: add_purchase_order.php');
+        exit();
     }
+
     $grandTotal += ($qty * $price);
 }
 
-$poNumber = 'PO-'.date('YmdHis').'-'.str_pad(random_int(0, 999), 3, '0', STR_PAD_LEFT);
+$poNumber = 'PO-'.date('YmdHis').'-'.str_pad((string) random_int(0, 9999), 4, '0', STR_PAD_LEFT);
 
 $conn->begin_transaction();
 
-$stmt = $conn->prepare('INSERT INTO purchase_orders 
+try {
+    $stmt = $conn->prepare('INSERT INTO purchase_orders 
 (
 supplier_id,
 po_number,
@@ -145,65 +144,80 @@ notes
 ) VALUES(?, ?, ?, ?, ?)
 ');
 
-if (!$stmt) {
-    error_log('save_purchase_order.php: Failed to prepare purchase order insert: '.$conn->error);
-    exit('Unable to save purchase order.');
-}
-
-$stmt->bind_param(
-    'isdss',
-    $supplierId,
-    $poNumber,
-    $grandTotal,
-    $status,
-    $notes
-);
-
-if (!$stmt->execute()) {
-    $conn->rollback();
-    error_log('save_purchase_order.php: Failed to execute purchase order insert: '.$stmt->error);
-    exit('Unable to save purchase order.');
-}
-
-$purchaseOrderId = $conn->insert_id;
-$stmt->close();
-
-for ($i = 0; $i < count($productIds);
-++$i) {
-    $productId = filter_var($productIds[$i], FILTER_VALIDATE_INT);
-    $qty = filter_var($quantities[$i], FILTER_VALIDATE_FLOAT);
-    $price = filter_var($prices[$i], FILTER_VALIDATE_FLOAT);
-
-    if ($productId === false || $productId <= 0 || $qty === false || $qty <= 0 || $price === false || $price <= 0) {
-        throw new Exception('Invalid purchase order item data.');
+    if (!$stmt) {
+        throw new Exception('Failed to prepare purchase order insert: '.$conn->error);
     }
 
-    $lineTotal = $qty * $price;
+    $stmt->bind_param(
+        'isdss',
+        $supplierId,
+        $poNumber,
+        $grandTotal,
+        $status,
+        $notes
+    );
 
-    $itemStmt = $conn->prepare('INSERT INTO 
+    if (!$stmt->execute()) {
+        throw new Exception('Failed to execute purchase order insert: '.$stmt->error);
+    }
+
+    $purchaseOrderId = $conn->insert_id;
+    $stmt->close();
+
+    for ($i = 0; $i < count($productIds);
+++$i) {
+        $productId = filter_var($productIds[$i], FILTER_VALIDATE_INT);
+        $qty = filter_var($quantities[$i], FILTER_VALIDATE_INT);
+        $price = filter_var($prices[$i], FILTER_VALIDATE_FLOAT);
+
+        if ($productId === false || $productId <= 0 || $qty === false || $qty <= 0 || $price === false || $price <= 0) {
+            throw new Exception('Invalid purchase order item data.');
+        }
+
+        $lineTotal = $qty * $price;
+
+        $itemStmt = $conn->prepare('INSERT INTO 
     purchase_order_items(purchase_order_id, product_id, quantity, cost_price, line_total) 
     VALUES (?, ?, ?, ?, ?)');
 
-    if (!$itemStmt) {
-        $conn->rollback();
-        error_log('save_purchase_order.php: Failed to prepare purchase order item insert: '.$conn->error);
-        exit('Unable to save purchase order item(s).');
+        if (!$itemStmt) {
+            throw new Exception('Failed to prepare purchase order item insert: '.$conn->error);
+        }
+
+        $itemStmt->bind_param('iiddd', $purchaseOrderId, $productId, $qty, $price, $lineTotal);
+
+        if (!$itemStmt->execute()) {
+            throw new Exception('Failed to execute purchase order item insert: '.$itemStmt->error);
+        }
+
+        $itemStmt->close();
     }
 
-    $itemStmt->bind_param('iiddd', $purchaseOrderId, $productId, $qty, $price, $lineTotal);
+    recordAudit(
+        $conn,
+        (int) $_SESSION['user_id'],
+        'purchase_order',
+        (int) $purchaseOrderId,
+        'CREATE',
+        ['supplier_id' => [null,
+    (string) $supplierId, ],
+    'status' => [null, $status],
+    'total' => [null, number_format($grandTotal, 2, '.', '')],
+    'po_number' => [null, $poNumber],
+]
+    );
 
-    if (!$itemStmt->execute()) {
-        $conn->rollback();
-        error_log('save_purchase_order.php: Failed to execute purchase order item insert: '.$itemStmt->error);
-        exit('Unable to save purchase order item(s).');
+    if (!$conn->commit()) {
+        throw new Exception('Failed to commit purchase order transaction: '.$conn->error);
     }
+} catch (Throwable $e) {
+    $conn->rollback();
 
-    $itemStmt->close();
-}
+    error_log('save_purchase_order.php: Transaction failed: '.$e->getMessage());
 
-if (!$conn->commit()) {
-    error_log('save_purchase_order.php: Failed to commit purchase order transaction: '.$conn->error);
-    exit('Unable to complete purchase order.');
+    $_SESSION['error'] = 'Unable to save purchase order. Please try again.';
+    header('Location: add_purchase_orders.php');
+    exit();
 }
 
 require_once 'includes/logger.php';

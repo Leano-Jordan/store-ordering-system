@@ -5,6 +5,7 @@ require_once 'includes/permissions.php';
 requireRole([ROLE_ADMIN, ROLE_MANAGER]);
 require_once 'includes/db.php';
 require_once 'includes/csrf.php';
+require_once 'includes/audit.php';
 verifyCsrfToken();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -20,9 +21,13 @@ if ($productId === false || $productId === null || $productId <= 0) {
     exit();
 }
 
-$type = $_POST['adjustment_type'];
-if (!in_array($type, ['Increase', 'Decrease'], true)
+$type = $_POST['adjustment_type'] ?? null;
+
+if (
+    !is_string($type) ||
+    !in_array($type, ['Increase', 'Decrease'], true)
 ) {
+    $_SESSION['error'] = 'Invalid adjustment type.';
     header('Location: adjust_stock.php');
     exit();
 }
@@ -35,8 +40,17 @@ if ($quantity === false || $quantity === null || $quantity <= 0) {
     exit();
 }
 
-$reason = trim($_POST['reason'] ?? '');
-$notes = trim($_POST['notes'] ?? '');
+$reasonInput = trim($_POST['reason'] ?? null);
+$notesInput = trim($_POST['notes'] ?? null);
+
+if (!is_string($reasonInput) || !is_string($notesInput)) {
+    $_SESSION['error'] = 'Invalid adjustment stock adjustment details.';
+    header('Location: adjust_stock.php');
+    exit();
+}
+
+$reason = trim($reasonInput);
+$notes = trim($notesInput);
 
 if ($reason === '') {
     $_SESSION['error'] = 'Please provide a reason for the stock adjustment.';
@@ -98,6 +112,7 @@ WHERE id = ? FOR UPDATE');
     }
 
     $stmt->bind_param('ii', $newStock, $productId);
+
     if (!$stmt->execute()) {
         throw new Exception($stmt->error);
     }
@@ -129,6 +144,18 @@ INTO stock_adjustments
     }
 
     $stmt->close();
+
+    $changes = ['stock' => [(string) $currentStock, (string) $newStock],
+];
+
+    recordAudit(
+        $conn,
+        (int) $userId,
+        'product',
+        (int) $productId,
+        'STOCK_ADJUST',
+        $changes
+    );
 
     if (!$conn->commit()) {
         throw new Exception('Commit failed: '.$conn->error);

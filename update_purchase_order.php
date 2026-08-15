@@ -4,6 +4,8 @@ require_once 'includes/auth.php';
 require_once 'includes/permissions.php';
 requireRole([ROLE_ADMIN, ROLE_MANAGER]);
 require_once 'includes/db.php';
+require_once 'includes/logger.php';
+require_once 'includes/audit.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: purchase_orders.php');
