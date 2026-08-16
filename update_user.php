@@ -68,7 +68,9 @@ if (!in_array($status, $allowedStatuses, true)) {
     exit();
 }
 
-$currentUserStmt = $conn->prepare('SELECT profile_image, role, status FROM users WHERE id = ?');
+$conn->begin_transaction();
+
+$currentUserStmt = $conn->prepare('SELECT profile_image, role, status FROM users WHERE id = ? FOR UPDATE');
 
 if (!$currentUserStmt) {
     error_log('update_user.php: Failed to prepare current user lookup: '.$conn->error);
@@ -118,8 +120,16 @@ if ($id === (int) $_SESSION['user_id'] && ($role !== ROLE_ADMIN || $status !== '
     exit();
 }
 
-if ($currentUser['role'] === ROLE_ADMIN && $currentUser['status'] === 'Active' && ($role !== ROLE_ADMIN || $status !== 'Active')) {
-    $adminCheck = $conn->prepare("SELECT COUNT(*) AS total FROM users WHERE role = ? AND status = 'Active' AND id != ?");
+if (
+    $currentUser['role'] === ROLE_ADMIN && $currentUser['status'] === 'Active' && ($role !== ROLE_ADMIN || $status !== 'Active')) {
+    $adminCheck = $conn->prepare(
+        "SELECT COUNT(*) AS total 
+        FROM users 
+        WHERE role = ? 
+        AND status = 'Active' 
+        AND id != ? 
+        FOR UPDATE"
+    );
 
     if (!$adminCheck) {
         error_log('update_user.php: Failed to prepare active admin check: '.$conn->error);
@@ -147,7 +157,7 @@ if ($currentUser['role'] === ROLE_ADMIN && $currentUser['status'] === 'Active' &
     }
 
     $adminResult = $adminCheck->get_result();
-    $activeAdminCount = (int) $adminResult->fetch_assoc()['total'];
+    $activeAdminCount = $adminResult->num_rows;
 
     $adminCheck->close();
 
@@ -281,15 +291,26 @@ if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] !== UPL
     );
 
 if (!$success) {
+    $conn->rollback();
+
     if ($newProfileImageUploaded && $newProfileImagePath !== null && is_file($newProfileImagePath)) {
         if (!unlink($newProfileImagePath)) {
             error_log('update_user.php: Failed to clean up new profile image after database failure: '.$newProfileImagePath);
         }
     }
 
-    error_log('update_user.php: Failed to update user ID: '.$id);
-
     $_SESSION['error'] = 'Unable to update user. Please try again.';
+    header('Location: edit_user.php?id='.$id);
+    exit();
+}
+
+if (!$conn->commit()) {
+    $conn->rollback();
+
+    error_log('update_user.php: Commit failed for user ID '.$id);
+
+    $_SESSION['error'] = 'Unable to complete user update. Please try again.';
+
     header('Location: edit_user.php?id='.$id);
     exit();
 }

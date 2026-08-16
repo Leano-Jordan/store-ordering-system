@@ -17,14 +17,38 @@ $totalProducts = $row['totalProducts'];
 
 //                                                          ORDERS TODAY
 
-$sql = "SELECT COUNT(*) AS todayOrders FROM orders 
-WHERE DATE(created_at) = CURDATE() 
+$todayStart = (new DateTimeImmutable('today'))
+->format('Y-m-d H:i:s');
+
+$tomorrowStart = (new DateTimeImmutable('tomorrow'))
+->format('Y-m-d H:i:s');
+
+$sql = "SELECT COUNT(*) AS todayOrders 
+FROM orders 
+WHERE created_at >= ? 
+AND created_at < ?
 AND status != 'Cancelled'";
 
-$result = $conn->query($sql);
+$stmt = $conn->prepare($sql);
+
+if (!$stmt) {
+    error_log('dashboard.php: Failed to prepare today orders query: '.$conn->error);
+    exit('Unable to load dashboard data.');
+}
+
+$stmt->bind_param('ss', $todayStart, $tomorrowStart);
+
+if (!$stmt->execute()) {
+    error_log('dashboard.php: Failed to execute today orders query: '.$conn->error);
+    exit('Unable to load dashboard data.');
+}
+
+$result = $stmt->get_result();
 $row = $result->fetch_assoc();
 
-$todayOrders = $row['todayOrders'];
+$stmt->close();
+
+$todayOrders = (int) ($row['todayOrders'] ?? 0);
 
 //                                                        PENDING ORDERS
 
@@ -36,12 +60,33 @@ $pendingOrders = $row['pendingOrders'];
 
 //                                                       TODAY'S REVENUE
 
-$sql = "SELECT SUM(total) AS todayRevenue FROM orders WHERE DATE(created_at) = 
-CURDATE() AND status = 'Collected'";
-$result = $conn->query($sql);
+$sql = "SELECT SUM(total) AS 
+todayRevenue 
+FROM orders 
+WHERE created_at >= ? 
+AND created_at < ?
+AND status = 'Collected'";
+
+$stmt = $conn->prepare($sql);
+
+if (!$stmt) {
+    error_log('dashboard.php: Failed to prepare today revenue query: '.$conn->error);
+    exit('Unable to load dashboard revenue.');
+}
+
+$stmt->bind_param('ss', $todayStart, $tomorrowStart);
+
+if (!$stmt->execute()) {
+    error_log('dashboard.php: Failed to execute today revenue query: '.$conn->error);
+    exit('Unable to load dashboard revenue.');
+}
+
+$result = $stmt->get_result();
 $row = $result->fetch_assoc();
 
-$todayRevenue = $row['todayRevenue'] ?? 0;
+$stmt->close();
+
+$todayRevenue = (int) ($row['todayRevenue'] ?? 0);
 
 //                                                       AVERAGE ORDER VALUE
 
@@ -53,11 +98,40 @@ $averageOrder = $row['averageOrder'] ?? 0;
 
 //                                                          THIS MONTH'S ORDERS
 
-$sql = "SELECT SUM(total) AS monthRevenue FROM orders 
-WHERE YEAR(created_at) = YEAR(CURDATE()) AND MONTH(created_at) = MONTH(CURDATE()) AND status = 'Collected'";
+$monthStart = (new DateTimeImmutable('First day of this month.'))
+->setTime(0, 0)
+->format('Y-m-d H:i:s');
 
-$result = $conn->query($sql);
+$nextMonthStart = (new DateTimeImmutable('First day of next month.'))
+->setTime(0, 0)
+->format('Y-m-d H:i:s');
+
+$sql = "SELECT SUM(total) AS monthRevenue 
+FROM orders 
+WHERE created_at >= ? 
+AND created_at < ?
+AND status = 'Collected'";
+
+$stmt = $conn->prepare($sql);
+
+if (!$stmt) {
+    error_log('dashboard.php: Failed to prepare monthly revenue query: '.$conn->error);
+    exit('Unable to load monthly revenue.');
+}
+
+$stmt->bind_param('ss', $monthStart, $nextMonthStart);
+
+if (!$stmt->execute()) {
+    $stmt->close();
+
+    error_log('dashboard.php: Failed to execute monthly revenue query: '.$conn->error);
+    exit('Unable to load monthly revenue.');
+}
+
+$result = $stmt->get_result();
 $row = $result->fetch_assoc();
+
+$stmt->close();
 
 $monthRevenue = $row['monthRevenue'] ?? 0;
 
@@ -127,23 +201,68 @@ $recentOrders = $conn->query($sql);
 
 $range = $_GET['range'] ?? '7';
 
-if ($range === '30') {
-    $where = 'created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)';
-} elseif ($range === 'month') {
-    $where = 'YEAR(created_at) = YEAR(CURDATE()) AND MONTH(created_at) = MONTH(CURDATE())';
-} else {
-    $where = 'created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)';
+$allowedRanges = ['7', '30', 'month'];
+
+if (!in_array($range, $allowedRanges, true)) {
+    $range = '7';
+}
+
+$now = new DateTimeImmutable('now');
+
+switch ($range) {
+    case '30':
+        $rangeStart = $now
+        ->modify('-30 days')
+        ->setTime(0, 0)
+        ->format('Y-m-d H:i:s');
+
+        $rangeEnd = $tomorrowStart;
+        break;
+
+    case 'month':
+        $rangeStart = $monthStart;
+        $rangeEnd = $nextMonthStart;
+        break;
+
+    default:
+            $rangeStart = $now
+            ->modify('-6 days')
+            ->setTime(0, 0)
+            ->format('Y-m-d H:i:s');
+
+            $rangeEnd = $tomorrowStart;
+            break;
 }
 
 $sql = "SELECT DATE(created_at) AS 
 sale_date, 
 SUM(total) AS daily_total 
 FROM orders 
-WHERE $where AND status = 'Collected'
+WHERE created_at >= ?
+AND created_at < ?
+AND status = 'Collected'
 GROUP BY DATE(created_at) 
 ORDER BY sale_date";
 
-$chartResult = $conn->query($sql);
+$stmt = $conn->prepare($sql);
+
+if (!$stmt) {
+    error_log('dashboard.php: Failed to prepare sales chart query: '.$conn->error);
+    exit('Unable to load dashboard sales chart.');
+}
+
+$stmt->bind_param('ss', $rangeStart, $rangeEnd);
+
+if (!$stmt->execute()) {
+    $stmt->close();
+
+    error_log('dashboard.php: Failed to execute sales chart query: '.$conn->error);
+    exit('Unable to load dashboard sales chart.');
+}
+
+$chartResult = $stmt->get_result();
+
+$stmt->close();
 
 if (!$chartResult) {
     error_log('dashboard.php: Failed to load sales chart data: '.$conn->error);

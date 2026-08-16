@@ -5,6 +5,7 @@ require_once 'includes/permissions.php';
 requireRole([ROLE_ADMIN, ROLE_MANAGER]);
 require_once 'includes/db.php';
 require_once 'includes/logger.php';
+require_once 'includes/audit.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: purchase_orders.php');
@@ -21,44 +22,108 @@ if ($id <= 0) {
     exit();
 }
 
-    $stmt = $conn->prepare('SELECT status FROM purchase_orders WHERE id = ?');
+$conn->begin_transaction();
+
+try {
+    $stmt = $conn->prepare(
+        'SELECT status 
+        FROM purchase_orders 
+        WHERE id = ? 
+        FOR UPDATE'
+    );
+
     if (!$stmt) {
-        error_log('cancel_purchase_order.php: Failed to prepare purchase order status lookup: '.$conn->error);
-        exit('Unable to cancel purchase order.');
+        throw new RuntimeException('Failed to prepare purchase order lookup.');
     }
 
-    $stmt->bind_param('i', $id);
-    $stmt->execute();
-    $po = $stmt->get_result()->fetch_assoc();
+    if (!$stmt->bind_param('i', $id)) {
+        $stmt->close();
+
+        throw new RuntimeException('Failed to bind purchase order lookup.');
+    }
+
+    if (!$stmt->execute()) {
+        $stmt->close();
+
+        throw new RuntimeException('Failed to execute purchase order lookup.');
+    }
+    $result = $stmt->get_result();
+    $po = $result ? $result->fetch_assoc() : null;
+
+    $stmt->close();
 
     if (!$po) {
-        header('Location: purchase_orders.php');
-        exit();
+        throw new RuntimeException('Purchase order not found.');
     }
 
-    if ($po['status'] !== 'Pending' && $po['status'] !== 'Draft') {
-        header('Location: purchase_orders.php');
-        exit();
+    if (
+        $po['status'] !== 'Pending'
+        && $po['status'] !== 'Draft') {
+        throw new RuntimeException('Only Draft or Pending purchase orders can be cancelled.');
     }
 
-    $updateStmt = $conn->prepare("UPDATE purchase_orders SET status = 'Cancelled' WHERE id = ? AND status IN ('Pending', 'Draft')");
+    $updateStmt = $conn->prepare(
+        "UPDATE purchase_orders 
+        SET status = 'Cancelled' 
+        WHERE id = ? 
+        AND status IN ('Pending', 'Draft')"
+    );
+
     if (!$updateStmt) {
-        error_log('cancel_purchase_order.php: Failed to prepare purchase order cancellation: '.$conn->error);
-        exit('Unable to cancel purchase order.');
+        throw new RuntimeException('Failed to prepare purchase order cancellation.');
     }
 
-    $updateStmt->bind_param('i', $id);
+    if (!$updateStmt->bind_param('i', $id)) {
+        $updateStmt->close();
+
+        throw new RuntimeException('Failed to bind purchase order cancellation.');
+    }
 
     if (!$updateStmt->execute()) {
-        error_log('cancel_purchase_order.php: Failed to execute purchase order cancellation: '.$updateStmt->error);
-        exit('Unable to cancel purchase order.');
+        $error = $updateStmt->error;
+        $updateStmt->close();
+
+        throw new RuntimeException('Failed to execute purchase order cancellation: '.$error);
     }
 
-    if ($updateStmt->affected_rows === 0) {
-        exit('Purchase order could not be cancelled. It may have already been processed or cancelled.');
+    if ($updateStmt->affected_rows !== 1) {
+        $updateStmt->close();
+
+        throw new RuntimeException('Purchase order could not be cancelled.');
     }
 
-    logActivity($conn, $_SESSION['user_id'], 'Cancelled Purchase Order ID '.$id);
+    $updateStmt->close();
+
+    recordAudit(
+        $conn,
+        (int) $_SESSION['user_id'],
+        'purchase_order',
+        $id,
+        'CANCEL',
+        ['status' => [$po['status'], 'Cancelled']]
+    );
+
+    if (!$conn->commit()) {
+        throw new RuntimeException('Purchase order cancellation commit failed.');
+    }
+
+    logActivity(
+        $conn,
+        (int) $_SESSION['user_id'],
+        'Cancelled Purchase Order ID '.$id
+    );
+
+    $_SESSION['success'] = 'Purchase order cancelled successfully.';
 
     header('Location: purchase_orders.php');
     exit();
+} catch (Throwable $e) {
+    $conn->rollback();
+
+    error_log('cancel_purchase_order.php: '.$e->getMessage());
+
+    $_SESSION['error'] = 'Unable to cancel purchase order. Please try again.';
+
+    header('Location: purchase_orders.php');
+    exit();
+}

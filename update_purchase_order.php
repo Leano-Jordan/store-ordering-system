@@ -157,7 +157,7 @@ for ($i = 0; $i < count($productIds); ++$i) {
     $qtyRaw = $quantities[$i] ?? null;
     $priceRaw = $prices[$i] ?? null;
 
-    $qty = filter_var($qtyRaw, FILTER_VALIDATE_FLOAT);
+    $qty = filter_var($qtyRaw, FILTER_VALIDATE_INT);
     $price = filter_var($priceRaw, FILTER_VALIDATE_FLOAT);
 
     if ($qty === false || $price === false) {
@@ -320,7 +320,7 @@ for ($i = 0; $i < $itemCount; ++$i) {
     $qtyRaw = $quantities[$i] ?? null;
     $priceRaw = $prices[$i] ?? null;
 
-    $qty = filter_var($qtyRaw, FILTER_VALIDATE_FLOAT);
+    $qty = filter_var($qtyRaw, FILTER_VALIDATE_INT);
     $price = filter_var($priceRaw, FILTER_VALIDATE_FLOAT);
 
     if ($qty === false || $price === false || $qty <= 0 || $price <= 0) {

@@ -13,6 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 verifyCsrfToken();
 
 require_once 'includes/db.php';
+require_once 'includes/audit.php';
 
 $conn->begin_transaction();
 
@@ -22,7 +23,10 @@ $id = (int) ($_POST['id'] ?? 0);
 
 /*********                *******  PREVENT DEACTIVATION MYSELF *******       ****************/
 
-if ($id === (int) $_SESSION['user_id']) {
+if ($id === (int)
+$_SESSION['user_id']) {
+    $conn->rollback();
+
     $_SESSION['error'] = 'Cannot Deactivate your own account';
     header('Location: users.php');
     exit();
@@ -136,8 +140,20 @@ if ($updateStmt->affected_rows !== 1) {
 
 $updateStmt->close();
 
+recordAudit(
+    $conn,
+    (int) $_SESSION['user_id'],
+    'user',
+    $id,
+    'DEACTIVATE',
+    [
+        'status' => ['Active', 'Inactive'],
+        ]
+);
+
 if (!$conn->commit()) {
     $conn->rollback();
+
     error_log('deactivate_user.php commit failed. ');
     $_SESSION['error'] = 'Unable to complete user deactivation.';
     header('Location: users.php');

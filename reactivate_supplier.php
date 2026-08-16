@@ -6,6 +6,7 @@ requireRole([ROLE_ADMIN]);
 require_once 'includes/db.php';
 require_once 'includes/logger.php';
 require_once 'includes/csrf.php';
+require_once 'includes/audit.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: suppliers.php');
@@ -21,45 +22,72 @@ if ($id <= 0) {
     exit();
 }
 
-$stmt = $conn->prepare("
-UPDATE suppliers
-SET status = 'Active'
-WHERE id = ?
-");
+$conn->begin_transaction();
 
-if (!$stmt) {
-    error_log('reactivate_supplier.php: Failed to prepare supplier reactivation: '.$conn->error);
-    exit('Unable to reactivate supplier.');
-}
+try {
+    $stmt = $conn->prepare(
+        "UPDATE suppliers
+        SET status = 'Active' 
+        WHERE id = ?
+        AND status 'Inactive'"
+    );
 
-$stmt->bind_param('i', $id);
+    if (!$stmt) {
+        throw new RuntimeException('Failed to prepare Supplier Reactivation.');
+    }
 
-if (!$stmt->execute()) {
-    error_log('reactivate_supplier.php reactivation failed: '.$stmt->error);
+    if (!$stmt->bind_param('i', $id)) {
+        $stmt->close();
+
+        throw new RuntimeException('Failed to bind Supplier Reactivation.');
+    }
+
+    if (!$stmt->execute()) {
+        $error = $stmt->error;
+        $stmt->close();
+
+        throw new RuntimeException('Supplier Reactivation failed: '.$error);
+    }
+
+    if ($stmt->affected_rows !== 1) {
+        $stmt->close();
+
+        throw new RuntimeException('Supplier was not Inactive.');
+    }
 
     $stmt->close();
 
-    $_SESSION['error'] = 'Unable to reactivate supplier.';
+    recordAudit(
+        $conn,
+        (int) $_SESSION['user_id'],
+        'supplier',
+        $id,
+        'REACTIVATE',
+        ['status' => ['Inactive', 'Active'],
+        ]
+    );
+
+    if (!$conn->commit()) {
+        throw new RuntimeException('Supplier Reactivation commit failed.');
+    }
+
+    logActivity(
+        $conn,
+        (int) $_SESSION['user_id'],
+        'Reactivated supplier ID '.$id
+    );
+
+    $_SESSION['success'] = 'Supplier Reactivated successfully.';
+
+    header('Location: suppliers.php');
+    exit();
+} catch (Throwable $e) {
+    $conn->rollback();
+
+    error_log('reactivate_supplier.php: '.$e->getMessage());
+
+    $_SESSION['error'] = 'Unable to Reactivate supplier. Please try again.';
+
     header('Location: suppliers.php');
     exit();
 }
-
-if ($stmt->affected_rows !== 1) {
-    $stmt->close();
-
-    $_SESSION['error'] = 'Supplier was not reactivated.';
-    header('Location: suppliers.php');
-    exit();
-}
-
-$stmt->close();
-
-logActivity(
-    $conn,
-    $_SESSION['user_id'],
-    'Reactivated supplier ID '.$id
-);
-
-    $_SESSION['success'] = 'Supplier reactivated successfully.';
-    header('Location: suppliers.php');
-    exit();

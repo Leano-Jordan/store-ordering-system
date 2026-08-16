@@ -37,6 +37,19 @@ $password = $passwordRaw;
 $role = trim($roleRaw);
 $status = trim($statusRaw);
 
+if (
+    $fullName === '' ||
+    $username === '' ||
+    $password === '' ||
+    $role === '' ||
+    $status === ''
+) {
+    $_SESSION['error'] = 'Please complete all required fields.';
+
+    header('Location: add_user.php');
+    exit();
+}
+
 $allowedRoles = [ROLE_ADMIN, ROLE_MANAGER, ROLE_CASHIER, ROLE_KITCHEN];
 
 if (!in_array($role, $allowedRoles, true)) {
@@ -105,24 +118,29 @@ if (
     }
 }
 
-if (
-    empty($fullName) ||
-    empty($username) ||
-    empty($password) ||
-    empty($role) ||
-    empty($status)
-) {
-    exit('Please complete all required fields.');
-}
-
 $check = $conn->prepare('SELECT id FROM users WHERE username = ?');
 $check->bind_param('s', $username);
 $check->execute();
 $existingUser = $check->get_result();
 
 if ($existingUser->num_rows > 0) {
-    exit('Username already exists.');
+    $check->close();
+
+    if (
+        $profileImage !== null
+        && isset($destination)
+        && is_file($destination)
+        && !unlink($destination)
+        ) {
+        error_log('save_user.php: Failed to remove orphan profile image: '.$destination);
+    }
+
+    $_SESSION['error'] = 'Username already exists.';
+    header('Location: add_user.php');
+    exit();
 }
+
+$check->close();
 
 $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 

@@ -4,6 +4,7 @@ require_once __DIR__.'/includes/session.php';
 
 require_once 'includes/db.php';
 require_once 'includes/session_tracker.php';
+require_once 'includes/login_rate_limit.php';
 
 if (!isset($conn)) {
     exit('Database connection not established.');
@@ -13,21 +14,16 @@ require_once 'includes/csrf.php';
 
 $error = '';
 
-$lockoutTime = 300; // 5 minutes
-$maxAttempts = 5;
-
-if (!isset($_SESSION['login_attempts'])) {
-    $_SESSION['login_attempts'] = 0;
-    $_SESSION['last_login_attempt'] = 0;
-}
-
-if (!isset($_SESSION['login_lock_until'])) {
-    $_SESSION['login_lock_until'] = 0;
-}
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (time() < $_SESSION['login_lock_until']) {
-        $error = 'Too many failed login attempts. Please try again later.';
+    verifyCsrfToken();
+
+    $username = trim((string) ($$_POST['username'] ?? ''));
+    $password = trim((string) ($$_POST['password'] ?? ''));
+
+    if ($username === '' || $password === '') {
+        $error = 'Invalid username or password.';
+    } elseif (isLoginRateLimited($conn, $username)) {
+        $error = 'Too many failed attempts. Please try again.';
     } else {
         verifyCsrfToken();
 
@@ -44,12 +40,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $user = $result->fetch_assoc();
 
             if (password_verify($password, $user['password'])) {
-                $_SESSION['login_attempts'] = 0;
-                $_SESSION['last_login_attempt'] = 0;
-                $_SESSION['login_lock_until'] = 0;
+                clearLoginFailures($conn, $username);
 
                 session_regenerate_id(true);
 
+                $_SESSION['session_started_at'] = time();
                 $_SESSION['user_id'] = $user['id'] ?? '';
                 $_SESSION['full_name'] = $user['full_name'] ?? '';
                 $_SESSION['role'] = $user['role'] ?? '';
@@ -90,26 +85,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 exit();
             } else {
+                recordLoginFailure($conn, $username);
                 $error = 'Invalid username or password.';
-
-                ++$_SESSION['login_attempts'];
-                $_SESSION['last_login_attempt'] = time();
-
-                if ($_SESSION['login_attempts'] >= $maxAttempts) {
-                    $_SESSION['login_lock_until'] = time() + $lockoutTime;
-                    $error = 'Too many failed login attempts. Please try again later.';
-                }
             }
         } else {
+            recordLoginFailure($conn, $username);
             $error = 'Invalid username or password.';
-
-            ++$_SESSION['login_attempts'];
-            $_SESSION['last_login_attempt'] = time();
-
-            if ($_SESSION['login_attempts'] >= $maxAttempts) {
-                $_SESSION['login_lock_until'] = time() + $lockoutTime;
-                $error = 'Too many failed login attempts. Please try again later.';
-            }
         }
     }
 }

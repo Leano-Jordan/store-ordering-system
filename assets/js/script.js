@@ -62,7 +62,19 @@ function refreshCartMeta() {
     const badgeEl = document.getElementById('cart-badge');
     const vatEl = document.getElementById('vat');
 
-    const vat = total - (total / 1.15);
+    let vatEnabled = false;
+    let vatRate = 0;
+
+    if (vatEl) {
+        vatEnabled = vatEl.dataset.vatEnabled === '1';
+        vatRate = Number(vatEl.dataset.vatRate);
+
+        if (!Number.isFinite(vatRate) || vatRate < 0) {
+            vatRate = 0;
+        }
+    }
+
+    const vat = vatEnabled && vatRate > 0 ? total - (total / (1 * vatRate / 100)) : 0;
 
     if (cartEl) cartEl.innerHTML = count;
     if (totalEl) totalEl.innerHTML = 'R' + total.toFixed(2);

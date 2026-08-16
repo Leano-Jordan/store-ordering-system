@@ -12,11 +12,27 @@ $search = trim($_GET['search'] ?? '');
 $filter = $_GET['filter'] ?? '';
 
 $whereConditions = [];
+$bindTypes = '';
+$bindValues = [];
 
-$searchParam = null;
+$todayStart = (new DateTimeImmutable('today'))
+->format('Y-m-d H:i:s');
+
+$tomorrowStart = (new DateTimeImmutable('tomorrow'))
+->format('Y-m-d H:i:s');
+
 if ($search !== '') {
     $searchParam = '%'.$search.'%';
-    $whereConditions[] = '(p.name LIKE ? OR u.username LIKE ? OR sa.reason LIKE ?)';
+
+    $whereConditions[] =
+    '(p.name LIKE ? OR u.username 
+    LIKE ? OR sa.reason LIKE ?)';
+
+    $bindTypes .= 'sss';
+
+    $bindValues[] = $searchParam;
+    $bindValues[] = $searchParam;
+    $bindValues[] = $searchParam;
 }
 
 if ($filter === 'increase') {
@@ -30,7 +46,12 @@ if ($filter === 'increase') {
 } elseif ($filter === 'manual') {
     $whereConditions[] = "sa.reason NOT IN ('Purchase Order Receipt', 'Order Collected')";
 } elseif ($filter === 'today') {
-    $whereConditions[] = 'DATE(sa.created_at)=CURDATE()';
+    $whereConditions[] = 'sa.created_at >= ? AND sa.created_at < ?';
+
+    $bindTypes .= 'ss';
+
+    $bindValues[] = $todayStart;
+    $bindValues[] = $tomorrowStart;
 }
 
 $where = !empty($whereConditions) ? 'WHERE '.implode(' AND ', $whereConditions) : '';
@@ -51,11 +72,20 @@ $stmt = $conn->prepare("SELECT sa.created_at,
     LIMIT $limit OFFSET $offset
 ");
 
-if ($searchParam !== null) {
-    $stmt->bind_param('sss', $searchParam, $searchParam, $searchParam);
+if ($bindTypes !== '') {
+    $stmt->bind_param(
+        $bindTypes,
+        ...$bindValues
+    );
 }
 
-$stmt->execute();
+if ($stmt->execute()) {
+    error_log('stock_history.php: Failed to load stock history: '.$conn->error);
+    $stmt->close();
+
+    exit('Unable to load stock history.');
+}
+
 $result = $stmt->get_result();
 
 $countStmt = $conn->prepare("SELECT COUNT(*) AS total
@@ -68,11 +98,15 @@ $countStmt = $conn->prepare("SELECT COUNT(*) AS total
 if ($searchParam !== null) {
     $countStmt->bind_param('sss', $searchParam, $searchParam, $searchParam);
 }
-$countStmt->execute();
-$totalResult = $countStmt->get_result();
 
-$totalRows = $totalResult->fetch_assoc()['total'];
-$totalPages = ceil($totalRows / $limit);
+if (!$countStmt->execute()) {
+    error_log('stock_history.php: Failed to count stock history: '.$conn->error);
+    $stmt->close();
+
+    exit('Unable to load stock history.');
+}
+
+$totalResult = $countStmt->get_result();
 
 include 'includes/header.php';
 ?>

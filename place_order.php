@@ -17,7 +17,14 @@ if (
     jsonError('Invalid request.');
 }
 
-$orderNumber = 'SW'.str_pad(random_int(1, 999999), 6, '0', STR_PAD_LEFT);
+$orderNumber = 'SW'
+    .date('ymdHis')
+    .str_pad(
+        (string) random_int(1, 9999),
+        4,
+        '0',
+        STR_PAD_LEFT
+    );
 
 $requestIdInput = $_POST['request_id'] ?? null;
 
@@ -342,7 +349,7 @@ $stmt->close();
             'payment_method' => [null,
             $paymentMethod, ],
             'total' => [null,
-            number_format((float) $total, 2, '-', ''),
+            number_format((float) $total, 2, '.', ''),
             ],
         ]
     );

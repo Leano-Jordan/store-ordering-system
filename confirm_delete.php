@@ -35,24 +35,67 @@ $imageStmt->close();
 
 $conn->begin_transaction();
 
-$sql = "UPDATE products SET status = 'Inactive' WHERE id=?";
+try {
+    $sql = "UPDATE products SET status = 'Inactive' WHERE id=? AND status = 'Active'";
 
-$stmt = $conn->prepare($sql);
+    $stmt = $conn->prepare($sql);
 
-$stmt->bind_param('i', $id);
+    if (!$stmt) {
+        throw new RuntimeException('Failed to prepare product deactivation.');
+    }
 
-if ($stmt->execute()) {
+    if (!$stmt->bind_param('i', $id)) {
+        $stmt->close();
+
+        throw new RuntimeException('Failed to bind product deactivation.');
+    }
+
+    if ($stmt->execute()) {
+        $stmt->close();
+
+        throw new RuntimeException('Failed to execute product deactivation.');
+    }
+
+    if ($stmt->affected_rows !== 1) {
+        $stmt->close();
+
+        throw new RuntimeException('Product was not active or could not be deactivated.');
+    }
+
+    $stmt->close();
+
     logActivity(
         $conn,
-        $_SESSION['user_id'],
+        (int) $_SESSION['user_id'],
         'Deactivated product: '.$productName
     );
 
+    recordAudit(
+        $conn,
+        (int) $_SESSION['user_id'],
+        'product',
+        $id,
+        'DEACTIVATE',
+        [
+        'status' => ['Active', 'Inactive'],
+]
+    );
+
+    if (!$conn->commit()) {
+        throw new RuntimeException('Product deactivation commit failed.');
+    }
+
+    $_SESSION['success'] = 'Product deactivated successfully.';
+
     header('Location: products.php');
     exit();
-} else {
-    error_log('SwiftOrder product deactivation failed. Product ID: '.$id);
+} catch (Throwable $e) {
+    $conn->rollback();
+
+    error_log('confirm_delete.php: '.$e->getMessage());
+
     $_SESSION['error'] = 'Unable to deactivate the product. Please try again.';
+
     header('Location: products.php');
     exit();
 }

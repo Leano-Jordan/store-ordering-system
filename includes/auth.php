@@ -6,7 +6,7 @@ require_once __DIR__.'/session.php';
 require_once __DIR__.'/db.php';
 require_once __DIR__.'/session_tracker.php';
 
-const SESSION_IDLE_TIMEOUT = 1800; // 30-minute idle session timeout.
+const SESSION_ABSOLUTE_TIMEOUT = 28800; // 8 hours.
 
 if (!isset($_SESSION['user_id'])) {
     $requestUri = $_SERVER['REQUEST_URI'] ?? 'dashboard.php';
@@ -36,12 +36,47 @@ if ($userId === false || $userId < 1) {
 }
 
 $currentTime = time();
+$sessionStartedAt = filter_var($_SESSION['session_started_at'] ?? null, FILTER_VALIDATE_INT);
+
+if (
+    $sessionStartedAt === false ||
+    $sessionStartedAt < 1 ||
+    (
+        $currentTime - $sessionStartedAt
+    ) > SESSION_ABSOLUTE_TIMEOUT) {
+    if (
+        isset($_SESSION['session_log_id'],
+        $_SESSION['user_id']
+        )
+        && is_int($_SESSION['session_log_id'])
+        && $_SESSION['session_log_id'] > 0
+        && is_int($_SESSION['user_id'])
+        && $_SESSION['user_id'] > 0
+        ) {
+        $sessionClosed = closeSessionRecord(
+            $conn,
+            $_SESSION['session_log_id'],
+            $_SESSION['user_id'],
+            'TIMED_OUT'
+        );
+
+        if (!$sessionClosed) {
+            error_log('SwiftOrder absolute-timeout session could not be closed');
+        }
+    }
+
+    $_SESSION = [];
+    session_destroy();
+
+    header('Location: login.php');
+    exit();
+}
 
 if (
     isset(
         $_SESSION['last_activity'])
         && (!is_int($_SESSION['last_activity'])
-        || ($currentTime - $_SESSION['last_activity']) > SESSION_IDLE_TIMEOUT)
+        || ($currentTime - $_SESSION['last_activity']) > SESSION_ABSOLUTE_TIMEOUT)
 ) {
     if (
         isset(
@@ -114,6 +149,11 @@ $_SESSION['user_id'] = (int) $user['id'];
 $_SESSION['full_name'] = (string) ($user['full_name'] ?? '');
 $_SESSION['role'] = (string) ($user['role'] ?? '');
 $_SESSION['profile_image'] = (string) ($user['profile_image'] ?? '');
+
+if (!isset($_SESSION['session_started_at']) || !is_int($_SESSION['session_started_at'])) {
+    $_SESSION['session_started_at'] = $currentTime;
+}
+
 $_SESSION['last_activity'] = $currentTime;
 
 if (
@@ -136,7 +176,7 @@ if (
 
     if (!$sessionUpdated) {
         error_log(
-            'SwiftOrder authenticated session is no longer active for user ID '.$user['id']
+            'SwiftOrder authenticated session missing valid session record. '.'User ID: '.$userId
         );
 
         $_SESSION = [];

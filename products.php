@@ -64,6 +64,20 @@ if (isset($sql) && $sql !== null) {
     }
 }
 
+if (!isset($totalRows)) {
+    if (!$totalResult) {
+        error_log('products.php: Failed to receive product count: '.$conn->error);
+
+        exit('Unable to load product pagination.');
+    }
+
+    $countRow = $totalResult->fetch_assoc();
+
+    $totalRows = (int) ($countRow['total'] ?? 0);
+}
+
+$totalPages = max(1, (int) ceil($totalRows / $limit));
+
 include 'includes/header.php';
 ?>
 

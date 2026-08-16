@@ -21,11 +21,9 @@ $name = trim((string) ($_POST['name'] ?? ''));
 $description = trim((string) ($_POST['description'] ?? ''));
 $priceRaw = $_POST['price'] ?? null;
 $category = trim((string) ($_POST['category'] ?? ''));
-$stockRaw = $_POST['stock'] ?? null;
 
 $id = filter_var($idRaw, FILTER_VALIDATE_INT);
 $price = filter_var($priceRaw, FILTER_VALIDATE_FLOAT);
-$stock = filter_var($stockRaw, FILTER_VALIDATE_INT);
 
 if ($id === false || $id <= 0) {
     exit('Invalid product ID.');
@@ -35,15 +33,11 @@ if ($price === false || $price < 0) {
     exit('Invalid price.');
 }
 
-if ($stock === false || $stock < 0) {
-    exit('Invalid stock.');
-}
-
     if ($name === '' || $category === '') {
         exit('Name and category cannot be empty.');
     }
 
-$currentProductStmt = $conn->prepare('SELECT name, description, price, image, category, stock FROM products WHERE id = ?');
+$currentProductStmt = $conn->prepare('SELECT name, description, price, image, category FROM products WHERE id = ?');
 
 if (!$currentProductStmt) {
     error_log('update_product.php: Failed to prepare current product lookup: '.$conn->error);
@@ -147,20 +141,18 @@ description=?,
 price=?, 
 image=?, 
 category=?, 
-stock=? 
 WHERE id=?';
 
 $updatedSucceeded = executeStatement(
     $conn,
     $sql,
-    'ssdssii',
+    'ssdssi',
     [
         $name,
         $description,
         $price,
         $image,
         $category,
-        $stock,
         $id,
         ]
 ); if (!$updatedSucceeded) {
@@ -205,13 +197,6 @@ if ((string) ($currentProduct['category'] ?? '') !== $category) {
     $changes['category'] = [
         (string) ($currentProduct['category'] ?? ''),
         $category,
-    ];
-}
-
-if ((int) ($currentProduct['stock'] ?? 0) !== (int) $stock) {
-    $changes['stock'] = [
-        (string) ($currentProduct['stock'] ?? 0),
-        (string) $stock,
     ];
 }
 

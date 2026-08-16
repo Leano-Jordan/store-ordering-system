@@ -4,6 +4,44 @@ require_once 'includes/permissions.php';
 require_once 'includes/db.php';
 requireRole([ROLE_ADMIN, ROLE_MANAGER, ROLE_CASHIER]);
 
+$vatEnabled = false;
+$vatRate = 0.00;
+
+$vatStmt = $conn->prepare(
+    'SELECT vat_enabled, vat_rate 
+    FROM business_settings 
+    ORDER BY id ASC 
+    LIMIT 1'
+);
+
+if ($vatStmt) {
+    if ($vatStmt->execute()) {
+        $vatResult = $vatStmt->get_result();
+
+        if ($vatResult) {
+            $vatSettings = $vatResult->fetch_assoc();
+
+            if ($vatSettings) {
+                $vatEnabled = (int) $vatSettings['vat_enabled'] === 1;
+                $vatRate = max(
+                    0.00,
+                    (float) $vatSettings['vat_rate']
+                );
+            }
+        }
+    } else {
+        error_log(
+            'index.php: Failed to load VAT settings: '.$vatStmt->error
+        );
+    }
+
+    $vatStmt->close();
+} else {
+    error_log(
+        'index.php: Failed to prepare VAT settings lookup: '.$conn->error
+    );
+}
+
 $loadScript = true;
 
 $sql = "SELECT id, name, description, price, image, category, stock FROM products 
@@ -130,9 +168,23 @@ include 'includes/header.php';
     </strong>
 
         <div class="summary-row">
-                <span>VAT Incl. (15%):</span>
+                <span>
+                    VAT Incl.
+                    <?php if ($vatEnabled) { ?>
+                        (
+                            <?php echo number_format($vatRate, 2); ?>%
+                            ):
+                    <?php } else { ?>
+                            :
+                    <?php } ?>
+                </span>
             <strong>
-            <span id="vat">R0.00</span>
+
+            <span id="vat"
+                data-vat-enabled="<?php echo $vatEnabled ? '1' : 0; ?>"
+                data-vat-rate="<?php echo htmlspecialchars(number_format($vatRate, 2, '-', ''), ENT_QUOTES, 'UTF-8');
+                ?>">R0.00</span>
+
     </strong>
         </div>
 
