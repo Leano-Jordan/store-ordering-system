@@ -41,9 +41,6 @@ if ($where === '') {
         }
     }
 
-    $stmt->execute();
-    $result = $stmt->get_result();
-
     $countStmt = $conn->prepare("SELECT COUNT(*) AS total FROM orders $where");
 
     if ($countStmt === false) {
@@ -63,9 +60,6 @@ if ($where === '') {
             $totalResult = $countStmt->get_result();
         }
     }
-
-    $countStmt->execute();
-    $totalResult = $countStmt->get_result();
 }
 
 if ($totalResult === false) {

@@ -208,6 +208,14 @@ if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] !== UPL
         exit();
     }
 
+    $maxProfileImageSize = 2 * 1024 * 1024;
+
+    if ($_FILES['profile_image']['size'] > $maxProfileImageSize) {
+        $_SESSION['error'] = 'Profile image must not exceed 2MB.';
+        header('Location: edit_user.php?id='.$id);
+        exit();
+    }
+
     $finfo = new finfo(FILEINFO_MIME_TYPE);
     $mimeType = $finfo->file($_FILES['profile_image']['tmp_name']);
 

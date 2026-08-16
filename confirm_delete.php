@@ -6,6 +6,7 @@ requireRole([ROLE_ADMIN]);
 require_once 'includes/db.php';
 require_once 'includes/logger.php';
 require_once 'includes/csrf.php';
+require_once 'includes/audit.php';
 verifyCsrfToken();
 
 /************          **************  CONFIRM DELETE PRODUCT  ***********            **************/
@@ -31,6 +32,8 @@ if (!$product) {
 $productName = $product['name'];
 
 $imageStmt->close();
+
+$conn->begin_transaction();
 
 $sql = "UPDATE products SET status = 'Inactive' WHERE id=?";
 

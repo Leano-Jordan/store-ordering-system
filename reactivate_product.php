@@ -33,10 +33,22 @@ $stmt->bind_param('i', $id);
 
 if (!$stmt->execute()) {
     error_log('reactivate_product.php execute failed: '.$stmt->error);
+    $stmt->close();
+
     $_SESSION['error'] = 'Unable to reactivate product.';
     header('Location: products.php');
     exit();
 }
+
+if ($stmt->affected_rows !== 1) {
+    $stmt->close();
+
+    $_SESSION['error'] = 'Product was not reactivated.';
+    header('Location: products.php');
+    exit();
+}
+
+$stmt->close();
 
 $_SESSION['success'] = 'Product reactivated successfully.';
 header('Location: products.php');

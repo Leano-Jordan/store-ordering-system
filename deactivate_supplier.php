@@ -31,12 +31,32 @@ if (!$stmt) {
     exit('Unable to deactivate supplier.');
 }
 
-$stmt->bind_param('i', $id);
+if (!$stmt->execute()) {
+    error_log('deactivate_supplier.php deactivation failed: '.$stmt->error);
 
-if ($stmt->execute()) {
-    logActivity($conn, $_SESSION['user_id'], 'Deactivated supplier ID '.$id);
+    $stmt->close();
+
+    $_SESSION['error'] = 'Unable to deactivate supplier.';
     header('Location: suppliers.php');
     exit();
 }
 
-exit('Unable to deactivate supplier.');
+if ($stmt->affected_rows !== 1) {
+    $stmt->close();
+
+    $_SESSION['error'] = 'Supplier was not deactivated.';
+    header('Location: suppliers.php');
+    exit();
+}
+
+$stmt->close();
+
+logActivity(
+    $conn,
+    $_SESSION['user_id'],
+    'Deactivated supplier ID '.$id
+);
+
+    $_SESSION['success'] = 'Supplier deactivated successfully.';
+    header('Location: suppliers.php');
+    exit();
