@@ -178,7 +178,7 @@ if (executeStatement(
         }
     }
 
-    error_log('save_user.php: Failed to save user: '.$username);
+    error_log('save_user.php: Failed to save user.');
 
     $_SESSION['error'] = 'Unable to save user. Please try again.';
     header('Location: add_user.php');

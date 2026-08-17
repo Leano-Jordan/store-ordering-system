@@ -165,6 +165,76 @@ WHERE id = ? AND status = ?',
             }
         }
 
+        $vatStmt = $conn->prepare('SELECT vat_enabled, vat_rate FROM business_settings ORDER BY id ASC LIMIT 1');
+
+        if (!$vatStmt) {
+            throw new RuntimeException('Failed to prepare VAT settings lookup.');
+        }
+
+        if (!$vatStmt->execute()) {
+            $error = $vatStmt->error;
+            $vatStmt->close();
+
+            throw new RuntimeException('Failed to load VAT settings: '.$error);
+        }
+
+        $vatResult = $vatStmt->get_result();
+
+        if (!$vatResult) {
+            $vatStmt->close();
+
+            throw new RuntimeException('Failed to retrieve VAT settings.');
+        }
+
+        $vatSettings = $vatResult->fetch_assoc();
+
+        $vatStmt->close();
+
+        if (!$vatSettings) {
+            throw new RuntimeException('VAT settings are not configured.');
+        }
+
+        $vatEnabledAtSale = (int) $vatSettings['vat_enabled'] === 1;
+
+        $vatRateAtSate = max(0.00, (float) $vatSettings['vat_rate']);
+
+        $orderTotal = (float) ($orderData['total'] ?? 0);
+
+        $vatAmount = 0.00;
+
+        if ($vatEnabledAtSale && $vatRateAtSate > 0) {
+            $vatAmount = round(
+                $orderTotal - (
+                    $orderTotal / (1 + ($vatRateAtSate / 100))
+                ),
+                2
+            );
+        }
+
+        $subTotal = round($orderTotal - $vatAmount, 2);
+
+        $taxUpdated = executeStatementAffectedRows(
+            $conn,
+            'UPDATE orders 
+            SET 
+                vat_enabled_at_sale = ?,
+                vat_rate_at_sale = ?,
+                vat_amount = ?,
+                subtotal = ? WHERE id = ?',
+            'idddi',
+            [
+                    $vatEnabledAtSale ? 1 : 0,
+                    $vatRateAtSate,
+                    $vatAmount,
+                    $subTotal,
+                    $id,
+                ]
+        );
+
+        if ($taxUpdated !== 1) {
+            throw new RuntimeException('Failed to store VAT snapshot.');
+        }
+
         $invoiceNumber = issueInvoiceNumber($conn, $id, (int) $_SESSION['user_id']);
     }
 
@@ -185,6 +255,12 @@ WHERE id = ? AND status = ?',
         );
     }
 
+    logActivity(
+        $conn,
+        $_SESSION['user_id'],
+        "Changed Order $orderNumber from $currentStatus to $status"
+    );
+
     if (!$conn->commit()) {
         throw new Exception('Failed to commit order status update.');
     }
@@ -198,12 +274,6 @@ WHERE id = ? AND status = ?',
     header('Location: order_details.php?id='.(int) $id);
     exit();
 }
-
-        logActivity(
-            $conn,
-            $_SESSION['user_id'],
-            "Changed Order $orderNumber from $currentStatus to $status"
-        );
 
     if (($_POST['return_to'] ?? '') === 'orders') {
         header('Location: orders.php');

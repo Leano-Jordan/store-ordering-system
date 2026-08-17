@@ -8,12 +8,60 @@ let cart = [];
 let paymentMethod = 'cash_pmt';
 let currentOrderRequestId = null;
 
+const swiftOrderUserId = Number(window.SwiftOrderUserId);
+
+const swiftOrderStoragePrefix = Number.isSafeInteger(swiftOrderUserId) &&
+    swiftOrderUserId > 0 ? 'swiftOrder_user_' + swiftOrderUserId : 'swiftorder_invalid_user';
+
+const CART_STORAGE_KEY = swiftOrderStoragePrefix + '_cart';
+const COUNT_STORAGE_KEY = swiftOrderStoragePrefix + '_count';
+const TOTAL_STORAGE_KEY = swiftOrderStoragePrefix + '_total';
+
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function createOrderRequestId() {
+    if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+        return window.crypto.randomUUID();
+    }
+
+    if (window.crypto && typeof window.crypto.getRandomValues === 'function') {
+        const bytes = new Uint8Array(16);
+
+        window.crypto.getRandomValues(bytes);
+
+        bytes[6] = (bytes[6] & 0x0f) | 0x40;
+        bytes[8] = (bytes[8] & 0x3f) | 0x80;
+
+        const hex = Array.from(bytes, function(byte) {
+            return byte.toString(16).padStart(2, '0');
+        }).join('');
+
+        return (
+            hex.slice(0, 8) + '-' +
+            hex.slice(8, 12) + '-' +
+            hex.slice(12, 16) + '-' +
+            hex.slice(16, 20) + '-' +
+            hex.slice(20)
+        );
+    }
+    throw new Error(
+        'Secure order request ID generation is unavailable.'
+    );
+}
+
 // ── Bootstrap from localStorage (JSON source of truth) ──────────────
 cart = loadCartFromStorage();
 
 // Restore count + total scalars so they are ready before DOMContentLoaded
-const savedCount = localStorage.getItem('count');
-const savedTotal = localStorage.getItem('total');
+const savedCount = localStorage.getItem(COUNT_STORAGE_KEY);
+const savedTotal = localStorage.getItem(TOTAL_STORAGE_KEY);
 
 if (savedCount) count = Number(savedCount);
 if (savedTotal) total = Number(savedTotal);
@@ -25,14 +73,14 @@ let selectedCategory = 'All';
    ───────────────────────────────────────────────────────────────────── */
 
 function loadCartFromStorage() {
-    const raw = localStorage.getItem('cart');
+    const raw = localStorage.getItem(CART_STORAGE_KEY);
     if (!raw) return [];
 
     try {
         const parsed = JSON.parse(raw);
         return Array.isArray(parsed) ? parsed : [];
     } catch (error) {
-        localStorage.removeItem('cart');
+        localStorage.removeItem(CART_STORAGE_KEY);
         return [];
     }
 }
@@ -74,7 +122,8 @@ function refreshCartMeta() {
         }
     }
 
-    const vat = vatEnabled && vatRate > 0 ? total - (total / (1 * vatRate / 100)) : 0;
+    const vat = vatEnabled && vatRate > 0 ? total - (total / (1 + vatRate / 100)) :
+        0;
 
     if (cartEl) cartEl.innerHTML = count;
     if (totalEl) totalEl.innerHTML = 'R' + total.toFixed(2);
@@ -125,9 +174,9 @@ function clearCart() {
     refreshCartMeta();
     updateCartDisplay();
 
-    localStorage.removeItem('cart');
-    localStorage.removeItem('count');
-    localStorage.removeItem('total');
+    localStorage.removeItem(CART_STORAGE_KEY);
+    localStorage.removeItem(COUNT_STORAGE_KEY);
+    localStorage.removeItem(TOTAL_STORAGE_KEY);
     // 'items' key removed from all writes; clean up legacy key if present
     localStorage.removeItem('items');
 }
@@ -137,9 +186,9 @@ PERSIST CART (single source of truth — JSON only)
    ───────────────────────────────────────────────────────────────────── */
 
 function persistCart() {
-    localStorage.setItem('cart', JSON.stringify(cart));
-    localStorage.setItem('count', count);
-    localStorage.setItem('total', total);
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+    localStorage.setItem(COUNT_STORAGE_KEY, count);
+    localStorage.setItem(TOTAL_STORAGE_KEY, total);
 }
 
 /* ─────────────────────────────────────────────────────────────────────
@@ -148,7 +197,10 @@ UPDATE CART DISPLAY
 
 function updateCartDisplay() {
     const cartItems = document.getElementById('cart-items');
-    if (!cartItems) return;
+
+    if (!cartItems) {
+        return;
+    }
 
     if (!Array.isArray(cart) || cart.length === 0) {
         cartItems.innerHTML = "<p style='text-align:center; color:#bbb; padding:20px 0; font-size:13px;'>Your cart is empty.</p>";
@@ -158,21 +210,37 @@ function updateCartDisplay() {
     let html = '';
 
     for (let i = 0; i < cart.length; i++) {
-        const subTotal = (cart[i].price * cart[i].quantity).toFixed(2);
+        const itemId = Number.parseInt(cart[i].id, 10);
+        const itemQuantity = Number.parseInt(cart[i].quantity, 10);
+        const itemPrice = Number(cart[i].price);
+
+        if (!Number.isSafeInteger(itemId) ||
+            itemId <= 0 ||
+            !Number.isSafeInteger(itemQuantity) ||
+            itemQuantity <= 0 ||
+            !Number.isFinite(itemPrice) ||
+            itemPrice < 0
+        ) {
+            continue;
+        }
+
+        const safeName = escapeHtml(cart[i].name);
+        const safeImage = escapeHtml(cart[i].image);
+        const subTotal = (itemPrice * itemQuantity).toFixed(2);
 
         html += `<div class='cart-item'>
-            <img class="cart-image" src="assets/images/products/${cart[i].image}" alt="${cart[i].name}" onerror="this.onerror=null;this.remove();">
+            <img class="cart-image" src="assets/images/products/${safeImage}" alt="${safeName}" onerror="this.onerror=null;this.remove();">
             <div class='cart-name'>
-                ${cart[i].name}
+                ${safeName}
             </div>
 
             <div class='cart-controls'>
-                <button onclick="decreaseQuantity(${cart[i].id})">-</button>
+                <button onclick="decreaseQuantity(${itemId})">-</button>
                     <span>
-                        ${cart[i].quantity}
+                        ${itemQuantity}
                     </span>
 
-                <button onclick='increaseQuantity(${cart[i].id})'>+</button>
+                <button onclick='increaseQuantity(${itemId})'>+</button>
             </div>
             <div class='cart-price'>
                 R${subTotal}
@@ -189,12 +257,20 @@ INCREASE QUANTITY
 
 function increaseQuantity(id) {
     for (let i = 0; i < cart.length; i++) {
-        if (cart[i].id === id) {
-            cart[i].quantity++;
-            count++;
-            total += cart[i].price;
-            break;
+
+        const itemId = Number.parseInt(cart[i].id, 10);
+
+        if (itemId !== id) {
+            continue;
         }
+
+        cart[i].quantity = Number(cart[i].quantity) + 1;
+
+        count++;
+        total += Number(cart[i].price);
+
+        break;
+
     }
 
     refreshCartMeta();
@@ -208,26 +284,38 @@ DECREASE QUANTITY
 
 function decreaseQuantity(id) {
     for (let i = 0; i < cart.length; i++) {
-        if (cart[i].id === id) {
-            if (cart[i].quantity > 1) {
-                cart[i].quantity--;
-            } else {
-                cart.splice(i, 1);
-                break;
-            }
+        const itemId = Number.parseInt(cart[i].id, 10);
+
+        if (itemId !== id) {
+            continue;
         }
+
+        const itemQuantity = Number.parseInt(
+            cart[i].quantity, 10
+        );
+
+        if (itemQuantity > 1) {
+            cart[i].quantity = itemQuantity - 1;
+        } else {
+            cart.splice(i, 1);
+        }
+
+        break;
     }
 
-    // BUG FIX #6: recalculate total from cart to avoid float accumulation drift
-    total = cart.reduce(function(sum, item) {
-        return sum + item.price * item.quantity;
+    count = cart.reduce(function(sum, item) {
+        return sum + Number(item.quantity);
     }, 0);
 
-    if (count > 0) count--;
+    // recalculate total from cart to avoid float accumulation drift
+    total = cart.reduce(function(sum, item) {
+        return sum + Number(item.price) * Number(item.quantity);
+    }, 0);
+
 
     refreshCartMeta();
     updateCartDisplay();
-    persistCart(); // BUG FIX: count was not saved in original decreaseQuantity
+    persistCart();
 }
 
 /* ─────────────────────────────────────────────────────────────────────
@@ -287,7 +375,7 @@ PLACE ORDER
 
 function placeOrder() {
     if (!currentOrderRequestId) {
-        currentOrderRequestId = crypto.randomUUID();
+        currentOrderRequestId = createOrderRequestId();
     }
 
     if (window.orderSubmitting) return;
@@ -331,8 +419,18 @@ function placeOrder() {
     formData.append('csrf_token', csrfEl.value);
 
 
-    fetch('place_order.php', { method: 'POST', body: formData })
-        .then(function(response) { return response.json(); })
+    fetch('place_order.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(function(response) {
+            if (!response.ok) {
+                throw new Error('Order request failed with HTTP ' + response.status);
+            }
+
+            return response.json();
+
+        })
         .then(function(data) {
             alert(data.message);
 
@@ -368,7 +466,7 @@ function addPurchaseOrderRow(item) {
 
     window.poProducts.forEach(function(product) {
         const selected = (item && Number(item.product_id) === Number(product.id)) ? 'selected' : '';
-        options += '<option value="' + product.id + '" ' + selected + '>' + product.name + '</option>';
+        options += '<option value="' + product.id + '" ' + selected + '>' + escapeHtml(product.name) + '</option>';
     });
 
     const quantity = item ? item.quantity : 1;
@@ -416,8 +514,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Re-read cart from JSON (single source of truth)
     cart = loadCartFromStorage();
-    count = Number(localStorage.getItem('count')) || 0;
-    total = Number(localStorage.getItem('total')) || 0;
+
+    count = cart.reduce(function(sum, item) {
+        return sum + Number(item.quantity);
+    }, 0);
+
+    total = cart.reduce(function(sum, item) {
+        return sum + Number(item.price) * Number(item.quantity);
+    }, 0);
 
     refreshCartMeta();
     updateCartDisplay();

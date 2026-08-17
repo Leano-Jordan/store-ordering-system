@@ -7,6 +7,16 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 require_once 'includes/permissions.php';
 require_once 'includes/helpers.php';
 require_once 'includes/csrf.php';
+
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: DENY');
+header('Referrer-Policy: strict-origin-when-cross-origin');
+header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
+
+if (defined('APP_ENV') && APP_ENV === 'production' && isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+    header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
+}
+
 ?>
 
 <!DOCTYPE html>

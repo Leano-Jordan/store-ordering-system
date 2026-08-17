@@ -60,10 +60,8 @@ $pendingOrders = $row['pendingOrders'];
 
 //                                                       TODAY'S REVENUE
 
-$sql = "SELECT SUM(total) AS 
-todayRevenue 
-FROM orders 
-WHERE created_at >= ? 
+$sql = "SELECT SUM(total) AS todayRevenue
+FROM orders WHERE created_at >= ?
 AND created_at < ?
 AND status = 'Collected'";
 
@@ -86,7 +84,7 @@ $row = $result->fetch_assoc();
 
 $stmt->close();
 
-$todayRevenue = (int) ($row['todayRevenue'] ?? 0);
+$todayRevenue = (float) ($row['todayRevenue'] ?? 0);
 
 //                                                       AVERAGE ORDER VALUE
 
@@ -133,7 +131,7 @@ $row = $result->fetch_assoc();
 
 $stmt->close();
 
-$monthRevenue = $row['monthRevenue'] ?? 0;
+$monthRevenue = (float) ($row['monthRevenue'] ?? 0);
 
 //                                                     LOW STOCK PRODUCTS               //
 

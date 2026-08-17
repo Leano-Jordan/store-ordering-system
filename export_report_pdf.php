@@ -24,8 +24,18 @@ if ($range === '30') {
     $where = 'created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)';
 }
 
-$totalRevenue = $conn->query("SELECT SUM(total) 
-AS revenue FROM orders WHERE $where AND status = 'Collected'")->fetch_assoc()['revenue'] ?? 0;
+$revenueResult = $conn->query("SELECT SUM(total) 
+AS revenue FROM orders WHERE $where AND status = 'Collected'");
+
+if (!$revenueResult) {
+    error_log('export_report_pdf.php: Failed to load revenue: '.$conn->error);
+
+    http_response_code(500);
+
+    exit('Unable to export report');
+}
+
+$totalRevenue = (float) ($revenueResult->fetch_assoc()['revenue'] ?? 0);
 
 $totalOrders = $conn->query("SELECT COUNT(*) 
 AS total FROM orders WHERE $where")->fetch_assoc()['total'] ?? 0;

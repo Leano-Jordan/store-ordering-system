@@ -51,9 +51,11 @@ try {
     }
 
     if ($stmt->execute()) {
+        $error = $stmt->error;
+
         $stmt->close();
 
-        throw new RuntimeException('Failed to execute product deactivation.');
+        throw new RuntimeException('Failed to execute product deactivation: '.$error);
     }
 
     if ($stmt->affected_rows !== 1) {

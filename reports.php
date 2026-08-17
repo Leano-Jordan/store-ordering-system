@@ -41,6 +41,28 @@ switch ($range) {
 
 $status = 'Collected';
 
+function reportScalar(
+    mysqli $conn,
+    string $sql,
+    string $column
+): float {
+    $result = $conn->query($sql);
+
+    if (!$result) {
+        error_log('reports.php: Query failed. '.$conn->error);
+
+        exit('Unable to generate report.');
+    }
+
+    $row = $result->fetch_assoc();
+
+    if (!$row) {
+        return 0.00;
+    }
+
+    return (float) ($row[$column] ?? 0);
+}
+
 $revenueStmt = $conn->prepare("SELECT SUM(total) AS revenue
     FROM orders
     WHERE $where
@@ -59,17 +81,17 @@ $totalRevenue = $revenueStmt->get_result()->fetch_assoc()['revenue'] ?? 0;
 
 $revenueStmt->close();
 
-$totalOrders = $conn->query("SELECT COUNT(*) 
-AS total FROM orders WHERE $where")->fetch_assoc()['total'] ?? 0;
+$totalOrders = reportScalar($conn, "SELECT COUNT(*) 
+AS total FROM orders WHERE $where", 'total');
 
-$completedOrders = $conn->query("SELECT COUNT(*) 
-AS total FROM orders WHERE $where AND status = 'Collected'")->fetch_assoc()['total'] ?? 0;
+$completedOrders = reportScalar($conn, "SELECT COUNT(*) 
+AS total FROM orders WHERE $where AND status = 'Collected'", 'total');
 
-$cancelledOrders = $conn->query("SELECT COUNT(*) 
-AS total FROM orders WHERE $where AND status = 'Cancelled'")->fetch_assoc()['total'] ?? 0;
+$cancelledOrders = reportScalar($conn, "SELECT COUNT(*) 
+AS total FROM orders WHERE $where AND status = 'Cancelled'", 'total');
 
-$averageOrder = $conn->query("SELECT AVG(total) 
-AS avg FROM orders WHERE $where AND status = 'Collected'")->fetch_assoc()['avg'] ?? 0;
+$averageOrder = reportScalar($conn, "SELECT AVG(total) 
+AS avg FROM orders WHERE $where AND status = 'Collected'", 'avg');
 
 $dailySales = $conn->query("SELECT DATE(created_At) 
 AS sale_date, COUNT(*) AS order_count, SUM(total) AS daily_total FROM orders WHERE $where 
@@ -78,6 +100,12 @@ AND status = 'Collected' GROUP BY DATE(created_at) ORDER BY sale_date DESC");
 $chartResult = $conn->query("SELECT DATE(created_At) 
 AS sale_date, SUM(total) AS daily_total FROM orders WHERE $where 
 AND status = 'Collected' GROUP BY DATE(created_at) ORDER BY sale_date ASC");
+
+if (!$chartResult) {
+    error_log('reports.php: Failed to load chart data: '.$conn->error);
+
+    exit('Unable to generate report.');
+}
 
 $chartLabels = [];
 $chartData = [];
@@ -104,6 +132,7 @@ while ($chart = $chartResult->fetch_assoc()) {
 }
 
 require_once 'includes/header.php';
+
 ?>
 
 <div class="page-header">

@@ -125,9 +125,7 @@ if (json_last_error() !== JSON_ERROR_NONE) {
     jsonError('Invalid cart data. Please try again.');
 }
 
-if (is_array($cart) || empty($cart)) {
     $paymentMethodInput = $_POST['payment_method'] ?? 'cash_pmt';
-}
 
 if (!is_string($paymentMethodInput)) {
     $_SESSION['error'] = 'Invalid payment method.';

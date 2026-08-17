@@ -21,6 +21,14 @@ $result = $conn->query("SELECT DATE(created_at) AS sale_date,
 COUNT(*) AS orders, SUM(total) AS revenue FROM orders WHERE $where 
 AND status = 'Collected' GROUP BY DATE(created_at) ORDER BY sale_date DESC");
 
+if (!$result) {
+    error_log('export_report_csv.php: Failed to generate report query: '.$conn->error);
+
+    http_response_code(500);
+
+    exit('Unable to export report.');
+}
+
 header('Content-Type: text/csv; charset=UTF-8');
 header('Content-Disposition: attachment; filename=sales_report.csv');
 

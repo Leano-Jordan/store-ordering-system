@@ -93,7 +93,14 @@ include 'includes/header.php';
                 📃 All
             </button>
             <?php foreach ($categories as $cat) { ?>
-                <button class="category-btn" onclick="filterProducts('<?php echo htmlspecialchars($cat, ENT_QUOTES); ?>', this)">
+                <button class="category-btn" onclick="filterProducts(<?php echo htmlspecialchars(json_encode(
+    $cat,
+    JSON_HEX_TAG
+                    | JSON_HEX_AMP
+                    | JSON_HEX_APOS
+                    | JSON_HEX_QUOT
+                    | JSON_THROW_ON_ERROR
+), ENT_QUOTES, 'UTF-8'); ?>, this)">
                     <?php echo htmlspecialchars($cat); ?>
                 </button>
             <?php } ?>
@@ -117,13 +124,30 @@ include 'includes/header.php';
                     <p>R<?php echo number_format($row['price'], 2); ?></p>
 
                     <?php if ($row['stock'] > 0) { ?>
+
                         <button class="add-to-cart" onclick="addToCart(
-                    <?php echo $row['id']; ?>, 
-                    '<?php echo htmlspecialchars($row['name'], ENT_QUOTES); ?>', 
-                    <?php echo $row['price']; ?>,
-                    '<?php echo htmlspecialchars($row['image'], ENT_QUOTES); ?>')">
-                            + Add
-                        </button>
+                        <?php echo (int) $row['id']; ?>,
+
+                        <?php echo htmlspecialchars(json_encode(
+    (string) $row['name'],
+    JSON_HEX_TAG
+                    | JSON_HEX_AMP
+                    | JSON_HEX_APOS
+                    | JSON_HEX_QUOT
+                    | JSON_THROW_ON_ERROR
+), ENT_QUOTES, 'UTF-8'); ?>,
+<?php echo json_encode((float) $row['price'], JSON_THROW_ON_ERROR); ?>,
+
+<?php echo htmlspecialchars(json_encode(
+    (string) $row['image'],
+    JSON_HEX_TAG
+                    | JSON_HEX_AMP
+                    | JSON_HEX_APOS
+                    | JSON_HEX_QUOT
+                    | JSON_THROW_ON_ERROR
+), ENT_QUOTES, 'UTF-8'); ?>
+)"
+    >+ Add</button>
 
                     <?php } else { ?>
 
@@ -182,7 +206,7 @@ include 'includes/header.php';
 
             <span id="vat"
                 data-vat-enabled="<?php echo $vatEnabled ? '1' : 0; ?>"
-                data-vat-rate="<?php echo htmlspecialchars(number_format($vatRate, 2, '-', ''), ENT_QUOTES, 'UTF-8');
+                data-vat-rate="<?php echo htmlspecialchars(number_format($vatRate, 2, '.', ''), ENT_QUOTES, 'UTF-8');
                 ?>">R0.00</span>
 
     </strong>
@@ -210,5 +234,10 @@ include 'includes/header.php';
 <!-- =================== / CART PANEL =================== -->
 </div>
 </div>
-<input type="hidden" id="csrf_token" value="<?php echo htmlspecialchars(csrfToken(), ENT_QUOTES); ?>">
+
+<script>window.SwiftOrderUserId = <?php echo (int) $_SESSION['user_id']; ?>;</script>
+
+<input type="hidden" id="csrf_token" value=
+"<?php echo htmlspecialchars(csrfToken(), ENT_QUOTES); ?>">
+
 <?php include 'includes/footer.php'; ?>

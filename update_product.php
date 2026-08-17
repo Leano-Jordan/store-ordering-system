@@ -140,8 +140,7 @@ name=?,
 description=?, 
 price=?, 
 image=?, 
-category=?, 
-WHERE id=?';
+category=? WHERE id=?';
 
 $updatedSucceeded = executeStatement(
     $conn,

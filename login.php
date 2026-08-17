@@ -25,50 +25,78 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (isLoginRateLimited($conn, $username)) {
         $error = 'Too many failed attempts. Please try again.';
     } else {
-        $username = trim($_POST['username']);
-        $password = $_POST['password'];
+        $stmt = $conn->prepare(
+            "SELECT * FROM users 
+            WHERE username = ? 
+            AND status = 'Active'
+            "
+        );
 
-        $stmt = $conn->prepare("SELECT * FROM users WHERE username = ? AND status = 'Active'");
-        $stmt->bind_param('s', $username);
-        $stmt->execute();
+        if (!$stmt) {
+            error_log(
+                'login.php: Failed to prepare user lookup: '
+                .$conn->error
+            );
 
-        $result = $stmt->get_result();
+            $error = 'Unable to sign in. Please try again.';
+        } elseif (!$stmt->bind_param('s', $username)) {
+            error_log(
+                'login.php: Failed to bind user lookup: '
+                .$stmt->error
+            );
 
-        if ($result->num_rows === 1) {
-            $user = $result->fetch_assoc();
+            $stmt->close();
 
-            if (password_verify($password, $user['password'])) {
-                clearLoginFailures($conn, $username);
+            $error = 'Unable to sign in. Please try again.';
+        } else {
+            $result = $stmt->get_result();
 
-                session_regenerate_id(true);
+            if (!$result) {
+                error_log(
+                    'login.php: Failed to retrieve user lookup result: '
+                    .$stmt->error
+                );
 
-                $_SESSION['session_started_at'] = time();
-                $_SESSION['user_id'] = $user['id'] ?? '';
-                $_SESSION['full_name'] = $user['full_name'] ?? '';
-                $_SESSION['role'] = $user['role'] ?? '';
-                $_SESSION['profile_image'] = $user['profile_image'] ?? '';
+                $stmt->close();
 
-                try {
-                    $_SESSION['session_log_id'] = createSessionRecord($conn, (int) $_SESSION['user_id']);
-                    $_SESSION['last_activity'] = time();
-                } catch (RuntimeException $exception) {
-                    error_log('SwiftOrder session record creation failed: '.$exception->getMessage());
+                $error = 'Unable to sign in. Please try again.';
+            } elseif ($result->num_rows === 1) {
+                $user = $result->fetch_assoc();
 
-                    $_SESSION = [];
-                    session_destroy();
+                $stmt->close();
 
-                    header('Location: login.php');
-                    exit();
-                }
+                if (password_verify($password, $user['password'])) {
+                    clearLoginFailures($conn, $username);
 
-                if (isset($_SESSION['redirect_after_login'])) {
-                    $redirect = $_SESSION['redirect_after_login'];
-                    unset($_SESSION['redirect_after_login']);
+                    session_regenerate_id(true);
 
-                    header('Location: '.(strpos($redirect, '/')
+                    $_SESSION['session_started_at'] = time();
+                    $_SESSION['user_id'] = $user['id'] ?? '';
+                    $_SESSION['full_name'] = $user['full_name'] ?? '';
+                    $_SESSION['role'] = $user['role'] ?? '';
+                    $_SESSION['profile_image'] = $user['profile_image'] ?? '';
+
+                    try {
+                        $_SESSION['session_log_id'] = createSessionRecord($conn, (int) $_SESSION['user_id']);
+                        $_SESSION['last_activity'] = time();
+                    } catch (RuntimeException $exception) {
+                        error_log('SwiftOrder session record creation failed: '.$exception->getMessage());
+
+                        $_SESSION = [];
+                        session_destroy();
+
+                        header('Location: login.php');
+                        exit();
+                    }
+
+                    if (isset($_SESSION['redirect_after_login'])) {
+                        $redirect = $_SESSION['redirect_after_login'];
+                        unset($_SESSION['redirect_after_login']);
+
+                        header('Location: '.(strpos($redirect, '/')
                     === 0 && strpos($redirect, '//') !== 0 ? $redirect : 'dashboard.php'));
-                } else {
-                    switch ($user['role']) {
+                    } else {
+                        switch ($user['role']) {
                     case ROLE_KITCHEN:
                         header('Location: orders.php');
                         break;
@@ -79,16 +107,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     default:
                         header('Location: dashboard.php');
                         break;
+                    }
+                    }
+
+                    exit();
                 }
-                }
-                exit();
+
+                recordLoginFailure(
+                    $conn,
+                    $username
+                );
+
+                $error = 'Invalid username or password.';
             } else {
-                recordLoginFailure($conn, $username);
+                $stmt->close();
+
+                recordLoginFailure(
+                    $conn,
+                    $username
+                );
+
                 $error = 'Invalid username or password.';
             }
-        } else {
-            recordLoginFailure($conn, $username);
-            $error = 'Invalid username or password.';
         }
     }
 }
