@@ -211,6 +211,8 @@ if (!$currentPO) {
 $statusRaw = $_POST['status'] ?? $currentPO['status'];
 
 if (!is_string($statusRaw)) {
+    $conn->rollback();
+
     error_log('update_purchase_order.php: Invalid status input structure for Purchase order ID '.$purchaseOrderId);
     exit('Invalid Purchase Order Status.');
 }

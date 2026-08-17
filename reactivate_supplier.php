@@ -29,7 +29,7 @@ try {
         "UPDATE suppliers
         SET status = 'Active' 
         WHERE id = ?
-        AND status 'Inactive'"
+        AND status = 'Inactive'"
     );
 
     if (!$stmt) {

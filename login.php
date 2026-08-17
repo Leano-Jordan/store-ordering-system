@@ -17,16 +17,14 @@ $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verifyCsrfToken();
 
-    $username = trim((string) ($$_POST['username'] ?? ''));
-    $password = trim((string) ($$_POST['password'] ?? ''));
+    $username = trim((string) ($_POST['username'] ?? ''));
+    $password = (string) ($_POST['password'] ?? '');
 
     if ($username === '' || $password === '') {
         $error = 'Invalid username or password.';
     } elseif (isLoginRateLimited($conn, $username)) {
         $error = 'Too many failed attempts. Please try again.';
     } else {
-        verifyCsrfToken();
-
         $username = trim($_POST['username']);
         $password = $_POST['password'];
 
