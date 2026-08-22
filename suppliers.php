@@ -10,7 +10,13 @@ $page = max(1, (int) ($_GET['page'] ?? 1));
 
 $offset = ($page - 1) * $limit;
 
-$search = trim($_GET['search'] ?? '');
+$searchRaw = $_GET['search'] ?? '';
+
+if (!is_string($searchRaw)) {
+    $searchRaw = '';
+}
+
+$search = trim($searchRaw);
 
 if ($search !== '') {
     $searchTerm = '%'.$search.'%';
@@ -35,9 +41,32 @@ if ($search !== '') {
         exit();
     }
 
-    $stmt->bind_param('ssss', $searchTerm, $searchTerm, $searchTerm, $searchTerm);
-    $stmt->execute();
+    if (!$stmt->bind_param(
+        'ssss',
+        $searchTerm,
+        $searchTerm,
+        $searchTerm,
+        $searchTerm
+    )
+        ) {
+        error_log('suppliers.php: Failed to bind search parameters: '.$stmt->error);
+        $stmt->close();
+        exit('Unable to load suppliers.');
+    }
+
+    if (!$stmt->execute()) {
+        error_log('suppliers.php: Failed to execute supplier search parameters: '.$stmt->error);
+        $stmt->close();
+        exit('Unable to load suppliers.');
+    }
+
     $result = $stmt->get_result();
+
+    if (!$result) {
+        error_log('activity_logs.php: Failed to retrieve search parameters: '.$stmt->error);
+        $stmt->close();
+        exit('Unable to load suppliers.');
+    }
 
     $countStmt = $conn->prepare('SELECT COUNT(*) AS total FROM suppliers WHERE company_name LIKE ? 
     OR contact_person LIKE ? 
@@ -54,6 +83,12 @@ if ($search !== '') {
     $countStmt->bind_param('ssss', $searchTerm, $searchTerm, $searchTerm, $searchTerm);
     $countStmt->execute();
     $totalResult = $countStmt->get_result();
+
+    if (!$totalResult) {
+        error_log('Failed to retrieve supplier count result: '.$countStmt->error);
+        $countStmt->close();
+        exit('Unable to load supplier count.');
+    }
 } else {
     $result = $conn->query("SELECT id, company_name, contact_person, phone, email, status 
 FROM suppliers 

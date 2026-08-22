@@ -13,6 +13,41 @@ if ($id <= 0) {
 
 $sql = 'SELECT id, order_number, customer_name, total, status, created_at FROM orders WHERE id = ?';
 $stmt = $conn->prepare($sql);
+
+if (!$stmt) {
+    error_log('order_details.php: Failed to prepare order query: '.$conn->error);
+    header('Location: orders.php');
+    exit();
+}
+
+if (!$stmt->bind_param('i', $id)) {
+    error_log('order_details.php: Failed to bind order ID: '.$stmt->error);
+    $stmt->close();
+    header('Location: orders.php');
+    exit();
+}
+
+if (!$stmt->execute()) {
+    error_log('order_details.php: Failed to execute order query: '.$stmt->error);
+    $stmt->close();
+    header('Location: orders.php');
+    exit();
+}
+
+$result = $stmt->get_result();
+
+if (!$result) {
+    error_log('order_details.php: Failed to retrieve order result: '.$stmt->error);
+    header('Location: orders.php');
+    exit();
+}
+
+$order = $result->fetch_assoc();
+$stmt->close();
+
+$totalSuppliers = (int) ($row['totalSuppliers'] ?? 0);
+$result->free();
+
 $stmt->bind_param('i', $id);
 $stmt->execute();
 $order = $stmt->get_result()->fetch_assoc();
@@ -34,10 +69,33 @@ if (!empty($_SESSION['flash_error'])) { ?>
 $sql = 'SELECT p.name, oi.quantity, oi.price FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.order_id = ?';
 
 $stmt = $conn->prepare($sql);
-$stmt->bind_param('i', $id);
-$stmt->execute();
+
+if (!$stmt) {
+    error_log('order_details.php: Failed to prepare order-items query: '.$conn->error);
+    exit('Unable to load order items.');
+}
+
+if (!$stmt->bind_param('i', $id)) {
+    error_log('order_details.php: Failed to bind order-items ID: '.$stmt->error);
+    $stmt->close();
+    exit('Unable to load order items.');
+}
+
+if (!$stmt->execute()) {
+    error_log('order_details.php: Failed to execute order-items query: '.$stmt->error);
+    $stmt->close();
+    exit('Unable to load order items.');
+}
 
 $items = $stmt->get_result();
+
+if (!$items) {
+    error_log('order_details.php: Failed to retrieve order-items result: '.$stmt->error);
+    $stmt->close();
+    exit('Unable to load order items.');
+}
+
+$stmt->close();
 ?>
 
 <div class="page-header">

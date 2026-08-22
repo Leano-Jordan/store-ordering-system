@@ -255,12 +255,6 @@ WHERE id = ? AND status = ?',
         );
     }
 
-    logActivity(
-        $conn,
-        $_SESSION['user_id'],
-        "Changed Order $orderNumber from $currentStatus to $status"
-    );
-
     if (!$conn->commit()) {
         throw new Exception('Failed to commit order status update.');
     }
@@ -274,6 +268,12 @@ WHERE id = ? AND status = ?',
     header('Location: order_details.php?id='.(int) $id);
     exit();
 }
+
+logActivity(
+    $conn,
+    $_SESSION['user_id'],
+    "Changed Order $orderNumber from $currentStatus to $status"
+);
 
     if (($_POST['return_to'] ?? '') === 'orders') {
         header('Location: orders.php');

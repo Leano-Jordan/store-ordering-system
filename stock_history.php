@@ -8,7 +8,13 @@ $limit = 20;
 $page = max(1, (int) ($_GET['page'] ?? 1));
 $offset = ($page - 1) * $limit;
 
-$search = trim($_GET['search'] ?? '');
+$searchRaw = $_GET['search'] ?? '';
+
+if (!is_string($searchRaw)) {
+    $searchRaw = '';
+}
+
+$search = trim($searchRaw);
 $filter = $_GET['filter'] ?? '';
 
 $whereConditions = [];
@@ -79,8 +85,8 @@ if ($bindTypes !== '') {
     );
 }
 
-if ($stmt->execute()) {
-    error_log('stock_history.php: Failed to load stock history: '.$conn->error);
+if (!$stmt->execute()) {
+    error_log('stock_history.php: Failed to load stock history: '.$stmt->error);
     $stmt->close();
 
     exit('Unable to load stock history.');
@@ -107,6 +113,13 @@ if (!$countStmt->execute()) {
 }
 
 $totalResult = $countStmt->get_result();
+if (!$totalResult) {
+    error_log('stock_history.php: Failed to retrieve stock-history count result: '.$countStmt->error);
+    $countStmt->close();
+    exit('Unable to load stock history.');
+}
+
+$countStmt->close();
 
 include 'includes/header.php';
 ?>

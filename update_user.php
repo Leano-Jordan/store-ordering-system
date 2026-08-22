@@ -157,7 +157,8 @@ if (
     }
 
     $adminResult = $adminCheck->get_result();
-    $activeAdminCount = $adminResult->num_rows;
+    $adminRow = $adminResult ? $adminResult->fetch_assoc() : null;
+    $activeAdminCount = (int) ($adminRow['total'] ?? 0);
 
     $adminCheck->close();
 

@@ -175,7 +175,7 @@ for ($i = 0; $i < count($productIds); ++$i) {
 
 /* CHECK IF PURCHASE ORDER IS EDIT-ABLE */
 
-$checkStmt = $conn->prepare('SELECT status FROM purchase_orders WHERE id = ? FOR UPDATE');
+$checkStmt = $conn->prepare('SELECT supplier_id, status, total FROM purchase_orders WHERE id = ? FOR UPDATE');
 if (!$checkStmt) {
     $conn->rollback();
     error_log('update_purchase_order.php: Failed to prepare purchase order check query: '.$conn->error);
@@ -201,6 +201,10 @@ if (!$checkResult) {
 $currentPO = $checkResult->fetch_assoc();
 
 $checkStmt->close();
+
+$originalSupplierId = (int) $currentPO['supplier_id'];
+$originalStatus = (string) $currentPO['status'];
+$originalTotal = (float) $currentPO['total'];
 
 if (!$currentPO) {
     $conn->rollback();
@@ -362,6 +366,28 @@ for ($i = 0; $i < $itemCount; ++$i) {
 }
 
 $itemStmt->close();
+
+recordAudit(
+    $conn,
+    (int) $_SESSION['user_id'],
+    'purchase_order',
+    (int) $purchaseOrderId,
+    'UPDATE',
+    [
+        'supplier_id' => [
+            (string) $originalSupplierId,
+            (string) $supplierId,
+        ],
+        'status' => [
+            $originalStatus,
+            $status,
+        ],
+    'total' => [
+        number_format($originalTotal, 2, '.', ''),
+        number_format((float) $grandTotal, 2, '.', ''),
+        ],
+    ]
+);
 
 if (!$conn->commit()) {
     error_log('update_purchase_order.php: Failed to commit transaction for purchase order ID '.$purchaseOrderId.': '.$conn->error);

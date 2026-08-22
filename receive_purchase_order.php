@@ -265,7 +265,13 @@ WHERE purchase_order_id = ?
         exit('Failed to receive purchase order');
     }
 
-    logActivity($conn, $_SESSION['user_id'], "Received Purchase Order ID $id");
+    if (!logActivity(
+        $conn,
+        (int) $_SESSION['user_id'],
+        'Received Purchase Order ID '.$id
+    )) {
+        error_log('receive_purchase_order.php: Activity log failed for purchase order ID '.$id);
+    }
 
     header('Location: purchase_orders.php');
     exit();

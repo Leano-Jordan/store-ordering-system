@@ -18,7 +18,7 @@ $supplierId = filter_input(INPUT_POST, 'supplier_id', FILTER_VALIDATE_INT);
 
 if ($supplierId === false || $supplierId <= 0) {
     $_SESSION['error'] = 'Invalid supplier selected.';
-    header('Location: add_purchase_orders.php');
+    header('Location: add_purchase_order.php');
     exit();
 }
 
@@ -46,7 +46,7 @@ if (
     count($productIds) !== count($prices)
     ) {
     $_SESSION['error'] = 'Invalid purchase order item data.';
-    header('Location: add_purchase_orders.php');
+    header('Location: add_purchase_order.php');
     exit();
 }
 

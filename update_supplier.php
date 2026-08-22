@@ -17,13 +17,33 @@ verifyCsrfToken();
 
 $id = (int) $_POST['id'];
 
-$companyName = trim($_POST['company_name']);
-$contactPerson = trim($_POST['contact_person']);
-$phone = trim($_POST['phone']);
-$email = trim($_POST['email']);
-$address = trim($_POST['address']);
-$notes = trim($_POST['notes']);
-$status = trim($_POST['status']);
+$companyNameRaw = $_POST['company_name'] ?? null;
+$contactPersonRaw = $_POST['contact_person'] ?? null;
+$phoneRaw = $_POST['phone'] ?? null;
+$emailRaw = $_POST['email'] ?? null;
+$addressRaw = $_POST['address'] ?? null;
+$notesRaw = $_POST['notes'] ?? null;
+$statusRaw = $_POST['status'] ?? null;
+
+if (
+    !is_string($companyNameRaw) ||
+    !is_string($contactPersonRaw) ||
+    !is_string($phoneRaw) ||
+    !is_string($emailRaw) ||
+    !is_string($addressRaw) ||
+    !is_string($notesRaw) ||
+    !is_string($statusRaw)
+    ) {
+    exit('Invalid supplier data.');
+}
+
+$companyName = trim($companyNameRaw);
+$contactPerson = trim($contactPersonRaw);
+$phone = trim($phoneRaw);
+$email = trim($emailRaw);
+$address = trim($addressRaw);
+$notes = trim($notesRaw);
+$status = trim($statusRaw);
 
 $allowedStatuses = ['Active', 'Inactive'];
 if (!in_array($status, $allowedStatuses, true)) {

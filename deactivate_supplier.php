@@ -71,11 +71,13 @@ try {
         throw new RuntimeException('Supplier Deactivation commit failed.');
     }
 
-    logActivity(
+    if (!logActivity(
         $conn,
         (int) $_SESSION['user_id'],
-        'Deactivated supplier ID '.$id
-    );
+        'Deactivate supplier ID '.$id
+    )) {
+        error_log('deactivate_supplier.php: Activity log failed for supplier ID '.$id);
+    }
 
     $_SESSION['success'] = 'Supplier Deactivated Successfully.';
 

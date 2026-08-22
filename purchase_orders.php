@@ -9,7 +9,13 @@ $limit = 10;
 $page = max(1, (int) ($_GET['page'] ?? 1));
 $offset = ($page - 1) * $limit;
 
-$search = trim($_GET['search'] ?? '');
+$searchRaw = $_GET['search'] ?? '';
+
+if (!is_string($searchRaw)) {
+    $searchRaw = '';
+}
+
+$search = trim($searchRaw);
 
 if (!empty($search)) {
     $searchTerm = '%'.$search.'%';
@@ -30,9 +36,25 @@ if (!empty($search)) {
         exit('Unable to load purchase orders.');
     }
 
-    $stmt->bind_param('ss', $searchTerm, $searchTerm);
-    $stmt->execute();
+    if (!$stmt->bind_param('ss', $term, $term)) {
+        error_log('purchase_orders.php: Failed to bind search parameters: '.$stmt->error);
+        $stmt->close();
+        exit('Unable to load Purchase Order.');
+    }
+
+    if (!$stmt->execute()) {
+        error_log('purchase_orders.php: Failed to execute Purchase Order search: '.$stmt->error);
+        $stmt->close();
+        exit('Unable to load Purchase Order.');
+    }
+
     $result = $stmt->get_result();
+
+    if (!$result) {
+        error_log('purchase_orders.php: Failed to retrieve Purchase Order search result: '.$stmt->error);
+        $stmt->close();
+        exit('Unable to load Purchase Order.');
+    }
 
     $countStmt = $conn->prepare('SELECT COUNT(*) AS total 
         FROM purchase_orders 
@@ -45,9 +67,31 @@ if (!empty($search)) {
         exit('Unable to load purchase orders count.');
     }
 
-    $countStmt->bind_param('ss', $searchTerm, $searchTerm);
-    $countStmt->execute();
-    $totalRows = $countStmt->get_result()->fetch_assoc()['total'];
+    if (!$countStmt->bind_param('ss', $searchTerm, $searchTerm)) {
+        error_log('purchase_orders.php: Failed to bind count parameters: '.$stmt->error);
+        $countStmt->close();
+        exit('Unable to load Purchase Order count.');
+    }
+
+    if (!$countStmt->execute()) {
+        error_log('purchase_orders.php: Failed to execute Purchase Order count: '.$countStmt->error);
+        $stmt->close();
+        exit('Unable to load Purchase Order count.');
+    }
+
+    $countResult = $countStmt->get_result();
+
+    if (!$countResult) {
+        error_log('purchase_orders.php: Failed to retrieve Purchase Order count: '.$countStmt->error);
+        $countStmt->close();
+        exit('Unable to load Purchase Order count.');
+    }
+
+    $totalRow = $countResult->fetch_assoc();
+    $totalRows = (int) ($totalRow['total'] ?? 0);
+
+    $countStmt->close();
+    $stmt->close();
 } else {
     $result = $conn->query("SELECT purchase_orders.*, 
     suppliers.company_name

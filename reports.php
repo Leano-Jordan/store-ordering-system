@@ -75,9 +75,24 @@ if (!$revenueStmt) {
 }
 
 $revenueStmt->bind_param('s', $status);
-$revenueStmt->execute();
 
-$totalRevenue = $revenueStmt->get_result()->fetch_assoc()['revenue'] ?? 0;
+if (!$revenueStmt->execute()) {
+    error_log('reports.php: Revenue query execution failed: '.$revenueStmt->error);
+    $revenueStmt->close();
+    exit('Unable to to generate report. Please try again later.');
+}
+
+$revenueResult = $revenueStmt->get_result();
+
+if (!$revenueResult) {
+    error_log('reports.php: Revenue query result failed: '.$revenueStmt->error);
+    $revenueStmt->close();
+    exit('Unable to to generate report. Please try again later.');
+}
+
+$revenueRow = $revenueResult->fetch_assoc();
+
+$totalRevenue = (float) ($revenueRow['revenue'] ?? 0);
 
 $revenueStmt->close();
 
@@ -96,6 +111,11 @@ AS avg FROM orders WHERE $where AND status = 'Collected'", 'avg');
 $dailySales = $conn->query("SELECT DATE(created_At) 
 AS sale_date, COUNT(*) AS order_count, SUM(total) AS daily_total FROM orders WHERE $where 
 AND status = 'Collected' GROUP BY DATE(created_at) ORDER BY sale_date DESC");
+
+if (!$dailySales) {
+    error_log('reports.php: Daily sales query failed: '.$conn->error);
+    exit('Unable to to generate report. Please try again later.');
+}
 
 $chartResult = $conn->query("SELECT DATE(created_At) 
 AS sale_date, SUM(total) AS daily_total FROM orders WHERE $where 
@@ -116,15 +136,30 @@ LEFT JOIN products p ON oi.product_id = p.id JOIN orders o ON oi.order_id = o.id
 WHERE $where AND o.status = 'Collected' GROUP BY oi.product_id
 ORDER BY quantity_sold DESC LIMIT 5");
 
+if (!$topProducts) {
+    error_log('reports.php: Top-products query failed: '.$conn->error);
+    exit('Unable to to generate report.');
+}
+
 $topCustomers = $conn->query("SELECT customer_name, 
 COUNT(*) AS orders, SUM(total) AS spent FROM orders 
 WHERE $where AND status = 'Collected' GROUP BY customer_name ORDER BY spent DESC LIMIT 5");
+
+if (!$topCustomers) {
+    error_log('reports.php: Top-customers query failed: '.$conn->error);
+    exit('Unable to to generate report.');
+}
 
 $topCategories = $conn->query("SELECT p.category, 
 SUM(oi.quantity) AS quantity_sold FROM order_items oi
 LEFT JOIN products p ON oi.product_id = p.id JOIN orders o ON oi.order_id = o.id
 WHERE $where AND o.status = 'Collected' GROUP BY p.category
 ORDER BY quantity_sold DESC");
+
+if (!$topCategories) {
+    error_log('reports.php: Top-categories query failed: '.$conn->error);
+    exit('Unable to to generate report.');
+}
 
 while ($chart = $chartResult->fetch_assoc()) {
     $chartLabels[] = date('d M', strtotime($chart['sale_date']));

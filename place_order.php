@@ -8,6 +8,7 @@ require_once 'includes/permissions.php';
 require_once 'includes/helpers.php';
 require_once 'includes/shared/errors.php';
 require_once 'includes/audit.php';
+require_once 'includes/logger.php';
 requireRole([ROLE_ADMIN, ROLE_MANAGER, ROLE_CASHIER]);
 
 if (
@@ -402,7 +403,11 @@ $stmt->close();
         );
 
     if (!$conn->commit()) {
-        error_log('place_order.php: Failed to commit transaction: '.$conn->error);
+        $commitError = $conn->error;
+
+        $conn->rollback();
+
+        error_log('place_order.php: Failed to commit transaction: '.$conn->$commitError);
 
         jsonError('Failed to place the order. Please try again.');
     }

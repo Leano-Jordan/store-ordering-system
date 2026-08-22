@@ -40,17 +40,17 @@ if ($quantity === false || $quantity === null || $quantity <= 0) {
     exit();
 }
 
-$reasonInput = trim($_POST['reason'] ?? null);
-$notesInput = trim($_POST['notes'] ?? null);
+$reasonRaw = $_POST['reason'] ?? null;
+$notesRaw = $_POST['notes'] ?? null;
 
-if (!is_string($reasonInput) || !is_string($notesInput)) {
+if (!is_string($reasonRaw) || !is_string($notesRaw)) {
     $_SESSION['error'] = 'Invalid adjustment stock adjustment details.';
     header('Location: adjust_stock.php');
     exit();
 }
 
-$reason = trim($reasonInput);
-$notes = trim($notesInput);
+$reasonInput = trim($reasonRaw);
+$notesInput = trim($notesRaw);
 
 if ($reason === '') {
     $_SESSION['error'] = 'Please provide a reason for the stock adjustment.';
@@ -167,10 +167,13 @@ INTO stock_adjustments
 }
 
 require_once 'includes/logger.php';
-logActivity(
+
+if (!logActivity(
     $conn,
     $_SESSION['user_id'],
     'Stock adjustment: '.$type.' '.$quantity.' x '.$reason.' (Product ID: '.$productId.')'
-);
+)) {
+    error_log('save_stock_adjustment.php: Activity log failed for product ID '.$productId);
+}
 header('Location: stock_history.php');
 exit();

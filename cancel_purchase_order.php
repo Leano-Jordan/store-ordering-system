@@ -107,11 +107,13 @@ try {
         throw new RuntimeException('Purchase order cancellation commit failed.');
     }
 
-    logActivity(
+    if (!logActivity(
         $conn,
         (int) $_SESSION['user_id'],
         'Cancelled Purchase Order ID '.$id
-    );
+    )) {
+        error_log('cancel_purchase_order.php: Activity log failed for purchase order ID '.$id);
+    }
 
     $_SESSION['success'] = 'Purchase order cancelled successfully.';
 

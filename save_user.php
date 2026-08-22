@@ -7,6 +7,8 @@ require_once 'includes/csrf.php';
 verifyCsrfToken();
 require_once 'includes/db.php';
 require_once 'includes/helpers.php';
+require_once 'includes/logger.php';
+require_once 'includes/upload_helpers.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: users.php');

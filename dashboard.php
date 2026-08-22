@@ -142,6 +142,15 @@ AND stock > 0
 AND stock <= 10";
 
 $result = $conn->query($sql);
+
+if (!$result) {
+    error_log('dashboard.php: Low-stock query failed: '.$conn->error);
+    $lowStock = 0;
+} else {
+    $row = $result->fetch_assoc();
+    $lowStock = (int) ($row['lowStock'] ?? 0);
+}
+
 $row = $result->fetch_assoc();
 $lowStock = $row['lowStock'];
 
@@ -153,8 +162,14 @@ WHERE status = 'Active'
 AND stock = 0";
 
 $result = $conn->query($sql);
+if (!$result) {
+    error_log('dashboard.php: Failed to load Out-of-stock query failed: '.$conn->error);
+    exit('Unable to load dashboard inventory data.');
+}
+
 $row = $result->fetch_assoc();
-$outOfStock = $row['outOfStock'];
+$outOfStock = (int) ($row['outOfStock'] ?? 0);
+$result->free();
 
 //                                                            INVENTORY VALUE                                                //
 
@@ -163,7 +178,15 @@ $result = $conn->query("SELECT SUM(price * stock)
     FROM products 
     WHERE status = 'Active'
         ");
-    $inventoryValue = $result->fetch_assoc()['inventoryValue'] ?? 0;
+
+if (!$result) {
+    error_log('dashboard.php: Failed to load inventory value: '.$conn->error);
+    exit('Unable to load dashboard inventory data.');
+}
+
+$row = $result->fetch_assoc();
+$outOfStock = (float) ($row['inventoryValue'] ?? 0);
+$result->free();
 
 //                                                             PENDING PURCHASE ORDERS                                                      //
 
@@ -171,7 +194,15 @@ $result = $conn->query("SELECT COUNT(*)
     AS pendingPOs 
     FROM purchase_orders 
     WHERE status = 'Pending'");
-$pendingPOs = $result->fetch_assoc()['pendingPOs'];
+
+    if (!$result) {
+        error_log('dashboard.php: Failed to load pending purchase orders: '.$conn->error);
+        exit('Unable to load dashboard purchase order data.');
+    }
+
+    $row = $result->fetch_assoc();
+    $pendingPOs = (int) ($row['pendingPOs'] ?? 0);
+    $result->free();
 
 //                                                                ACTIVE SUPPLIERS                                                       //
 
@@ -179,7 +210,15 @@ $result = $conn->query("SELECT COUNT(*)
         AS totalSuppliers 
         FROM suppliers 
         WHERE status = 'Active'");
-$totalSuppliers = $result->fetch_assoc()['totalSuppliers'];
+
+if (!$result) {
+    error_log('dashboard.php: Failed to load Supplier count: '.$conn->error);
+    exit('Unable to load dashboard supplier data.');
+}
+
+$row = $result->fetch_assoc();
+$totalSuppliers = (int) ($row['totalSuppliers'] ?? 0);
+$result->free();
 
 //                                                     LOW STOCK PRODUCT LIST (FOR THE ALERT WIDGETS)                                      //
 
@@ -188,12 +227,26 @@ $lowStockProducts = $conn->query("SELECT
     stock FROM products 
     WHERE status = 'Active' AND stock > 0 AND stock <= 10 ORDER BY stock ASC LIMIT 5");
 
+    if (!$lowStockProducts) {
+        error_log('dashboard.php: Failed to load low-stock products: '.$conn->error);
+        exit('Unable to load dashboard inventory alerts.');
+    }
+
 //                                                                  RECENT ORDERS                                                                 //
 
 $sql = 'SELECT id, order_number, customer_name, total, status, created_at 
         FROM orders ORDER BY created_at DESC LIMIT 10';
 
 $recentOrders = $conn->query($sql);
+
+if (!$recentOrders) {
+    error_log('dashboard.php: Failed to load recent orders: '.$conn->error);
+    exit('Unable to load recent orders.');
+}
+
+$row = $result->fetch_assoc();
+$totalSuppliers = (int) ($row['totalSuppliers'] ?? 0);
+$result->free();
 
 //                                                    SALES FOR THE LAST 7 DAYS - CHART ANALYTICS
 
@@ -279,11 +332,17 @@ while ($chart = $chartResult->fetch_assoc()) {
 
 $sql = 'SELECT p.name, SUM(io.quantity) AS totalSold FROM order_items io
         JOIN products p ON io.product_id = p.id
-        GROUP BY io.product_id
+        JOIN orders o ON io.order_id = o.id WHERE o.status = "Collected"
+        GROUP BY io.product_id,
         ORDER BY totalSold DESC
         LIMIT 5';
 
 $topProducts = $conn->query($sql);
+
+if (!$topProducts) {
+    error_log('dashboard.php: Failed to load top-selling products: '.$conn->error);
+    exit('Unable to load dashboard sales data.');
+}
 
 require_once 'includes/header.php';
 ?>

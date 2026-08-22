@@ -11,7 +11,14 @@ $limit = 10;
 $page = max(1, (int) ($_GET['page'] ?? 1));
 $offset = ($page - 1) * $limit;
 $stockFilter = $_GET['stock'] ?? '';
-$search = trim($_GET['search'] ?? '');
+
+$searchRaw = $_GET['search'] ?? '';
+
+if (!is_string($searchRaw)) {
+    $searchRaw = '';
+}
+
+$search = trim($searchRaw);
 
 if ($stockFilter === 'low') {
     $sql = "SELECT * FROM products 

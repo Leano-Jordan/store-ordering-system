@@ -25,8 +25,7 @@ if ($where === '') {
 
     if ($stmt === false) {
         error_log('SwiftOrder orders query prepare failed: '.$conn->error);
-
-        return false;
+        $result = false;
     } else {
         $param = trim($_GET['order']);
         $paramLike = "%{$param}%";
@@ -35,7 +34,7 @@ if ($where === '') {
         if (!$stmt->execute()) {
             error_log('SwiftOrder orders query execute failed: '.$conn->error);
 
-            return false;
+            $result = false;
         } else {
             $result = $stmt->get_result();
         }

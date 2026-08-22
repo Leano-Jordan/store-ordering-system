@@ -71,11 +71,13 @@ try {
         throw new RuntimeException('Supplier Reactivation commit failed.');
     }
 
-    logActivity(
+    if (!logActivity(
         $conn,
         (int) $_SESSION['user_id'],
-        'Reactivated supplier ID '.$id
-    );
+        'Reactivate supplier ID '.$id
+    )) {
+        error_log('reactivate_supplier.php: Activity log failed for supplier ID '.$id);
+    }
 
     $_SESSION['success'] = 'Supplier Reactivated successfully.';
 

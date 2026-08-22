@@ -4,7 +4,13 @@ require_once 'includes/permissions.php';
 requireRole([ROLE_ADMIN, ROLE_MANAGER]);
 require_once 'includes/db.php';
 
-$search = trim($_GET['search'] ?? '');
+$searchRaw = $_GET['search'] ?? '';
+
+if (!is_string($searchRaw)) {
+    $searchRaw = '';
+}
+
+$search = trim($searchRaw);
 $range = $_GET['range'] ?? '7';
 
 $limit = 50;
@@ -41,10 +47,25 @@ if ($search !== '') {
         ORDER BY activity_logs.created_at DESC LIMIT $limit OFFSET $offset"
     );
 
-    $stmt->bind_param('ss', $term, $term);
-    $stmt->execute();
+    if (!$stmt->bind_param('ss', $term, $term)) {
+        error_log('activity_logs.php: Failed to bind search parameters: '.$stmt->error);
+        $stmt->close();
+        exit('Unable to load activity logs.');
+    }
+
+    if (!$stmt->execute()) {
+        error_log('activity_logs.php: Failed to execute search parameters: '.$stmt->error);
+        $stmt->close();
+        exit('Unable to load activity logs.');
+    }
 
     $result = $stmt->get_result();
+
+    if (!$result) {
+        error_log('activity_logs.php: Failed to retrieve search parameters: '.$stmt->error);
+        $stmt->close();
+        exit('Unable to load activity logs.');
+    }
 } else {
     $result = $conn->query("SELECT activity_logs.action, 
 activity_logs.created_at,
