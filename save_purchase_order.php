@@ -216,7 +216,7 @@ notes
     error_log('save_purchase_order.php: Transaction failed: '.$e->getMessage());
 
     $_SESSION['error'] = 'Unable to save purchase order. Please try again.';
-    header('Location: add_purchase_orders.php');
+    header('Location: add_purchase_order.php');
     exit();
 }
 

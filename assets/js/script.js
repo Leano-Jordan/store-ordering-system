@@ -383,11 +383,6 @@ function placeOrder() {
     const customerEl = document.getElementById('customer');
     const customer = (customerEl ? customerEl.value : '').trim();
 
-    if (customer === '') {
-        alert('Please enter a customer name.');
-        return;
-    }
-
     if (cart.length === 0) {
         alert('Cart is empty.');
         return;

@@ -109,9 +109,6 @@ if (!is_string($customerInput)) {
 }
 
 $customer = trim($customerInput);
-if ($customer === '') {
-    jsonError('Customer name is required');
-}
 
 $cartRaw = $_POST['cart'] ?? '[]';
 

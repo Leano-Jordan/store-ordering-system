@@ -1,13 +1,13 @@
 <?php
 
-function logActivity(mysqli $conn, int $userId, string $action): void
+function logActivity(mysqli $conn, int $userId, string $action): bool
 {
     $stmt = $conn->prepare('INSERT INTO activity_logs (user_id, action) VALUES (?, ?)');
 
     if (!$stmt) {
         error_log('SwiftOrder logActivity prepare failed: '.$conn->error);
 
-        return;
+        return false;
     }
     $stmt->bind_param('is', $userId, $action);
 
@@ -16,8 +16,10 @@ function logActivity(mysqli $conn, int $userId, string $action): void
 
         $stmt->close();
 
-        return;
+        return false;
     }
 
     $stmt->close();
+
+    return true;
 }

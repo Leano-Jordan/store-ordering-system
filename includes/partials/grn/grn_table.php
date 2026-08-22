@@ -32,15 +32,15 @@ require_once __DIR__.'/../../db.php';
 
             <tr>
                 <td>
-                    <?php echo htmlspecialchars($row['grn_number']), ENT_QUOTES, 'UTF-8'; ?>
+                    <?php echo htmlspecialchars($row['grn_number'], ENT_QUOTES, 'UTF-8'); ?>
                 </td>
 
                 <td>
-                    <?php echo htmlspecialchars($row['po_number']), ENT_QUOTES, 'UTF-8'; ?>
+                    <?php echo htmlspecialchars($row['po_number'], ENT_QUOTES, 'UTF-8'); ?>
                 </td>
 
                 <td>
-                    <?php echo htmlspecialchars($row['company_name']), ENT_QUOTES, 'UTF-8'; ?>
+                    <?php echo htmlspecialchars($row['company_name'], ENT_QUOTES, 'UTF-8'); ?>
                 </td>
 
                 <td>R 
@@ -48,7 +48,7 @@ require_once __DIR__.'/../../db.php';
                 </td>
 
                 <td>
-                    <?php echo htmlspecialchars($row['username']), ENT_QUOTES, 'UTF-8'; ?>
+                    <?php echo htmlspecialchars($row['username'], ENT_QUOTES, 'UTF-8'); ?>
                 </td>
 
                 <td>
