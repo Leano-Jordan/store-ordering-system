@@ -44,7 +44,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             AND status = 'Active'
             "
             );
-        }
     }
 
     if (!$stmt) {
