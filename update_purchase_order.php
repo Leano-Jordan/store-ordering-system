@@ -202,15 +202,20 @@ $currentPO = $checkResult->fetch_assoc();
 
 $checkStmt->close();
 
+if (!$currentPO) {
+    $conn->rollback();
+
+    error_log(
+        'update_purchase_order.php: Purchase order not found for ID '
+        .$purchaseOrderId
+    );
+
+    exit('Purchase order not found.');
+}
+
 $originalSupplierId = (int) $currentPO['supplier_id'];
 $originalStatus = (string) $currentPO['status'];
 $originalTotal = (float) $currentPO['total'];
-
-if (!$currentPO) {
-    $conn->rollback();
-    error_log('update_purchase_order.php: Purchase order not found for ID '.$purchaseOrderId);
-    exit('Purchase order not found.');
-}
 
 $statusRaw = $_POST['status'] ?? $currentPO['status'];
 
@@ -389,16 +394,35 @@ recordAudit(
     ]
 );
 
+require_once 'includes/logger.php';
+
+if (!logActivity(
+    $conn,
+    (int) $_SESSION['user_id'],
+    'Updated Purchase Order ID '.$purchaseOrderId
+)) {
+    $conn->rollback();
+
+    error_log(
+        'update_purchase_order.php: Activity logging failed for purchase order ID '
+        .$purchaseOrderId
+    );
+
+    exit('Failed to record Purchase Order activity.');
+}
+
 if (!$conn->commit()) {
-    error_log('update_purchase_order.php: Failed to commit transaction for purchase order ID '.$purchaseOrderId.': '.$conn->error);
+    $commitError = $conn->error;
 
     $conn->rollback();
 
+    error_log(
+        'update_purchase_order.php: Failed to commit transaction for purchase order ID '
+        .$purchaseOrderId.': '.$commitError
+    );
+
     exit('Failed to save Purchase Order changes. Please try again.');
 }
-
-    require_once 'includes/logger.php';
-    logActivity($conn, $_SESSION['user_id'], 'Updated Purchase Order ID '.$purchaseOrderId);
 
 header('Location: purchase_orders.php');
 exit();

@@ -151,7 +151,6 @@ if (!$result) {
     $lowStock = (int) ($row['lowStock'] ?? 0);
 }
 
-$row = $result->fetch_assoc();
 $lowStock = $row['lowStock'];
 
 //                                                     OUT OF STOCK PRODUCTS               //
@@ -185,7 +184,7 @@ if (!$result) {
 }
 
 $row = $result->fetch_assoc();
-$outOfStock = (float) ($row['inventoryValue'] ?? 0);
+$inventoryValue = (float) ($row['inventoryValue'] ?? 0);
 $result->free();
 
 //                                                             PENDING PURCHASE ORDERS                                                      //
@@ -243,10 +242,6 @@ if (!$recentOrders) {
     error_log('dashboard.php: Failed to load recent orders: '.$conn->error);
     exit('Unable to load recent orders.');
 }
-
-$row = $result->fetch_assoc();
-$totalSuppliers = (int) ($row['totalSuppliers'] ?? 0);
-$result->free();
 
 //                                                    SALES FOR THE LAST 7 DAYS - CHART ANALYTICS
 
@@ -330,10 +325,12 @@ while ($chart = $chartResult->fetch_assoc()) {
 
 //                                                         THE TOP 5 SELLING PRODUCTS
 
-$sql = 'SELECT p.name, SUM(io.quantity) AS totalSold FROM order_items io
+$sql = 'SELECT p.name, SUM(io.quantity) AS totalSold
+        FROM order_items io
         JOIN products p ON io.product_id = p.id
-        JOIN orders o ON io.order_id = o.id WHERE o.status = "Collected"
-        GROUP BY io.product_id,
+        JOIN orders o ON io.order_id = o.id
+        WHERE o.status = "Collected"
+        GROUP BY io.product_id, p.name
         ORDER BY totalSold DESC
         LIMIT 5';
 

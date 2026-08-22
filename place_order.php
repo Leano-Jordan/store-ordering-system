@@ -396,21 +396,33 @@ $stmt->close();
 
     $itemStmt->close();
 
-        logActivity(
-            $conn,
-            (int) $_SESSION['user_id'],
-            'Created order: '.$orderNumber
-        );
-
-    if (!$conn->commit()) {
-        $commitError = $conn->error;
-
+    if (!logActivity(
+        $conn,
+        (int) $_SESSION['user_id'],
+        'Created order: '.$orderNumber
+    )) {
         $conn->rollback();
-
-        error_log('place_order.php: Failed to commit transaction: '.$conn->$commitError);
-
-        jsonError('Failed to place the order. Please try again.');
+    
+        error_log(
+            'place_order.php: Activity log failed for order '
+            .$orderNumber
+        );
+    
+        jsonError('Failed to record order activity.');
     }
+
+        if (!$conn->commit()) {
+            $commitError = $conn->error;
+        
+            $conn->rollback();
+        
+            error_log(
+                'place_order.php: Failed to commit transaction: '
+                .$commitError
+            );
+        
+            jsonError('Failed to place the order. Please try again.');
+        }
 
     header('Content-Type: application/json');
     echo json_encode([
