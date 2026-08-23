@@ -56,8 +56,19 @@ if (!$stmt->execute()) {
 }
 
 $result = $stmt->get_result();
-$row = $result->fetch_assoc();
 
+if (!$result) {
+    $stmt->close();
+
+    error_log(
+        'dashboard.php: Failed to retrieve today orders result: '.$conn->error
+    );
+
+    exit('Unable to load dashboard data.');
+}
+
+$row = $result->fetch_assoc();
+$result->free();
 $stmt->close();
 
 $todayOrders = (int) ($row['todayOrders'] ?? 0);

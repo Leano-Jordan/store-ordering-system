@@ -166,7 +166,12 @@ WHERE id = ? AND status = ?',
             }
         }
 
-        $vatStmt = $conn->prepare('SELECT vat_enabled, vat_rate FROM business_settings ORDER BY id ASC LIMIT 1');
+        $vatStmt = $conn->prepare(
+            'SELECT vat_enabled, vat_rate
+             FROM business_settings
+             WHERE id = 1
+             LIMIT 1'
+        );
 
         if (!$vatStmt) {
             throw new RuntimeException('Failed to prepare VAT settings lookup.');

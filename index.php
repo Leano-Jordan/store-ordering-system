@@ -8,9 +8,9 @@ $vatEnabled = false;
 $vatRate = 0.00;
 
 $vatStmt = $conn->prepare(
-    'SELECT vat_enabled, vat_rate 
-    FROM business_settings 
-    ORDER BY id ASC 
+    'SELECT vat_enabled, vat_rate
+    FROM business_settings
+    WHERE id = 1
     LIMIT 1'
 );
 
@@ -53,13 +53,25 @@ name ASC
 
 $result = $conn->query($sql);
 
+if (!$result) {
+    error_log('index.php: Failed to load active products: '.$conn->error);
+    http_response_code(500);
+    exit('Unable to load products.');
+}
+
 $catResult = $conn->query(
-    "SELECT DISTINCT category 
-    FROM products 
-    WHERE status = 'Active' 
-    ORDER BY category 
-    ASC"
+    "SELECT DISTINCT category
+    FROM products
+    WHERE status = 'Active'
+    ORDER BY category ASC"
 );
+
+if (!$catResult) {
+    $result->free();
+    error_log('index.php: Failed to load product categories: '.$conn->error);
+    http_response_code(500);
+    exit('Unable to load product categories.');
+}
 
 $categories = [];
 while ($cat = $catResult->fetch_assoc()) {
