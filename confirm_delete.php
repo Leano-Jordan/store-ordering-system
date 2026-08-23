@@ -50,7 +50,7 @@ try {
         throw new RuntimeException('Failed to bind product deactivation.');
     }
 
-    if ($stmt->execute()) {
+    if (!$stmt->execute()) {
         $error = $stmt->error;
 
         $stmt->close();
@@ -66,11 +66,13 @@ try {
 
     $stmt->close();
 
-    logActivity(
+    if (!logActivity(
         $conn,
         (int) $_SESSION['user_id'],
         'Deactivated product: '.$productName
-    );
+    )) {
+        throw new RuntimeException('Failed to record product activity.');
+    }
 
     recordAudit(
         $conn,

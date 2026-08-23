@@ -151,8 +151,6 @@ if (!$result) {
     $lowStock = (int) ($row['lowStock'] ?? 0);
 }
 
-$lowStock = $row['lowStock'];
-
 //                                                     OUT OF STOCK PRODUCTS               //
 
 $sql = "SELECT COUNT(*) AS outOfStock 

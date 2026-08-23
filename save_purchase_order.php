@@ -221,7 +221,9 @@ notes
 }
 
 require_once 'includes/logger.php';
-logActivity($conn, $_SESSION['user_id'], 'Created Purchase Order. '.$poNumber);
+if (!logActivity($conn, (int) $_SESSION['user_id'], 'Created Purchase Order. '.$poNumber)) {
+    error_log('save_purchase_order.php: Activity log failed for purchase order '.$poNumber);
+}
 
 header('Location: purchase_orders.php');
 exit();

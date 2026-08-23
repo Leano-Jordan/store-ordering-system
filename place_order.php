@@ -174,192 +174,45 @@ $types = str_repeat('i', count($productIds));
 
 $conn->begin_transaction();
 
-$productStmt = $conn->prepare("SELECT id, name, price, stock FROM products WHERE id IN ($placeholders) AND status = 'Active' FOR UPDATE");
+try {
+        $productStmt = $conn->prepare("SELECT id, name, price, stock FROM products WHERE id IN ($placeholders) AND status = 'Active' FOR UPDATE");
 
-if (!$productStmt) {
-    $conn->rollback();
-    error_log('place_order.php: Failed to prepare product query: '.$conn->error);
-    jsonError('Failed to load products.');
-}
-
-if (!$productStmt->bind_param($types, ...$productIds)) {
-    $conn->rollback();
-    error_log('place_order.php: Failed to bind product query parameters: '.$productStmt->error);
-    jsonError('Failed to load products.');
-}
-
-if (!$productStmt->execute()) {
-    $conn->rollback();
-    error_log('place_order.php: Failed to execute product query: '.$productStmt->error);
-    jsonError('Failed to load products.');
-}
-
-$result = $productStmt->get_result();
-
-if (!$result) {
-    $conn->rollback();
-    error_log('place_order.php: Failed to get product result: '.$productStmt->error);
-    jsonError('Failed to load products.');
-}
-
-$productMap = [];
-while ($p = $result->fetch_assoc()) {
-    $productMap[$p['id']] = $p;
-}
-
-$productStmt->close();
-
-$items = '';
-$total = 0;
-$dbPrices = [];
-
-foreach ($cart as $item) {
-    $productId = filter_var($item['id'], FILTER_VALIDATE_INT);
-    $quantity = filter_var($item['quantity'], FILTER_VALIDATE_INT);
-
-    if ($productId === false || $quantity === false || $productId <= 0 || $quantity <= 0) {
+    if (!$productStmt) {
         $conn->rollback();
-        jsonError('Invalid cart item.');
+        error_log('place_order.php: Failed to prepare product query: '.$conn->error);
+        jsonError('Failed to load products.');
     }
 
-    if (!isset($productMap[$productId])) {
+    if (!$productStmt->bind_param($types, ...$productIds)) {
         $conn->rollback();
-        jsonError("Product ID $productId not found.");
+        error_log('place_order.php: Failed to bind product query parameters: '.$productStmt->error);
+        jsonError('Failed to load products.');
     }
 
-    $product = $productMap[$productId];
-
-    if ($quantity > $product['stock']) {
+    if (!$productStmt->execute()) {
         $conn->rollback();
-        header('Content-Type: application/json');
-        echo json_encode(['success' => false,
-        'message' => 'Only '.$product['stock'].' '.$product['name'].'(s) available in stock.', ]);
-        exit();
+        error_log('place_order.php: Failed to execute product query: '.$productStmt->error);
+        jsonError('Failed to load products.');
     }
 
-    $total += $product['price'] * $quantity;
-    $dbPrices[$productId] = $product['price'];
-    $items .= $product['name'].' x '.$quantity.', ';
-}
+    $result = $productStmt->get_result();
 
-$items = trim($items);
-
-$status = 'Pending';
-
-$sql = 'INSERT INTO orders (
-    order_number,
-    request_id,
-    customer_name, 
-    items, 
-    total, 
-    status, 
-    payment_method
-    ) VALUES (?, ?, ?, ?, ?, ?, ?)';
-
-$stmt = $conn->prepare($sql);
-if (!$stmt) {
-    $conn->rollback();
-    error_log('place_order.php: Failed to prepare order insert: '.$conn->error);
-    jsonError('Failed to place the order. Please try again.');
-}
-
-if (!$stmt->bind_param(
-    'ssssdss',
-    $orderNumber,
-    $requestId,
-    $customer,
-    $items,
-    $total,
-    $status,
-    $paymentMethod
-)) {
-    $conn->rollback();
-    error_log('place_order.php: Failed to bind order insert parameters: '.$stmt->error);
-    jsonError('Failed to place the order. Please try again.');
-}
-
-if (!$stmt->execute()) {
-    $insertError = $stmt->error;
-
-    $stmt->close();
-    $conn->rollback();
-
-    if (stripos($insertError, 'request_id') !== false || stripos($insertError, 'uq_orders_request_id') !== false) {
-        $existingStmt = $conn->prepare(
-            'SELECT order_number
-            FROM orders
-            WHERE request_id = ?
-            LIMIT 1'
-        );
-
-        if (
-            $existingStmt
-            && $existingStmt->bind_param('s', $requestId)
-            && $existingStmt->execute()
-        ) {
-            $existingResult = $existingStmt->get_result();
-            $existingOrder = $existingResult
-                ? $existingResult->fetch_assoc()
-                : null;
-
-            $existingStmt->close();
-
-            if ($existingOrder) {
-                header('Content-Type: application/json');
-
-                echo json_encode([
-                    'success' => true,
-                    'message' => 'Order already placed.',
-                    'order_number' => $existingOrder['order_number'],
-                ]);
-
-                exit();
-            }
-        }
-
-        if ($existingStmt) {
-            $existingStmt->close();
-        }
-    }
-
-    error_log(
-        'place_order.php: Failed to insert order: '.$insertError
-    );
-
-    jsonError('Failed to place the order. Please try again.');
-}
-
-$stmt->close();
-
-    $orderId = $conn->insert_id;
-
-    recordAudit(
-        $conn,
-        (int) $_SESSION['user_id'],
-        'order',
-        (int) $orderId,
-        'CREATE',
-        [
-            'order_number' => [null, $orderNumber],
-            'status' => [null, $status],
-            'payment_method' => [null,
-            $paymentMethod, ],
-            'total' => [null,
-            number_format((float) $total, 2, '.', ''),
-            ],
-        ]
-    );
-
-    $itemStmt = $conn->prepare(
-        'INSERT INTO order_items(order_id, product_id, quantity, price) 
-    VALUES (?, ?, ?, ?)'
-    );
-
-    if (!$itemStmt) {
+    if (!$result) {
         $conn->rollback();
-        error_log('place_order.php: Failed to prepare order items insert: '.$conn->error);
-        jsonError('Failed to save order items. Please try again.');
+        error_log('place_order.php: Failed to get product result: '.$productStmt->error);
+        jsonError('Failed to load products.');
     }
+
+    $productMap = [];
+    while ($p = $result->fetch_assoc()) {
+        $productMap[$p['id']] = $p;
+    }
+
+    $productStmt->close();
+
+    $items = '';
+    $total = 0;
+    $dbPrices = [];
 
     foreach ($cart as $item) {
         $productId = filter_var($item['id'], FILTER_VALIDATE_INT);
@@ -370,60 +223,211 @@ $stmt->close();
             jsonError('Invalid cart item.');
         }
 
-        if (!isset($dbPrices[$productId])) {
+        if (!isset($productMap[$productId])) {
             $conn->rollback();
-            jsonError('Unable to determine product price.');
+            jsonError("Product ID $productId not found.");
         }
-        $price = $dbPrices[$productId];
 
-        if (!$itemStmt->bind_param('iiid', $orderId, $productId, $quantity, $price)) {
+        $product = $productMap[$productId];
+
+        if ($quantity > $product['stock']) {
             $conn->rollback();
-            error_log('place_order.php: Failed to bind order item parameters: '.$itemStmt->error);
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false,
+            'message' => 'Only '.$product['stock'].' '.$product['name'].'(s) available in stock.', ]);
+            exit();
+        }
+
+        $total += $product['price'] * $quantity;
+        $dbPrices[$productId] = $product['price'];
+        $items .= $product['name'].' x '.$quantity.', ';
+    }
+
+    $items = trim($items);
+
+    $status = 'Pending';
+
+    $sql = 'INSERT INTO orders (
+        order_number,
+        request_id,
+        customer_name, 
+        items, 
+        total, 
+        status, 
+        payment_method
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)';
+
+    $stmt = $conn->prepare($sql);
+    if (!$stmt) {
+        $conn->rollback();
+        error_log('place_order.php: Failed to prepare order insert: '.$conn->error);
+        jsonError('Failed to place the order. Please try again.');
+    }
+
+    if (!$stmt->bind_param(
+        'ssssdss',
+        $orderNumber,
+        $requestId,
+        $customer,
+        $items,
+        $total,
+        $status,
+        $paymentMethod
+    )) {
+        $conn->rollback();
+        error_log('place_order.php: Failed to bind order insert parameters: '.$stmt->error);
+        jsonError('Failed to place the order. Please try again.');
+    }
+
+    if (!$stmt->execute()) {
+        $insertError = $stmt->error;
+
+        $stmt->close();
+        $conn->rollback();
+
+        if (stripos($insertError, 'request_id') !== false || stripos($insertError, 'uq_orders_request_id') !== false) {
+            $existingStmt = $conn->prepare(
+                'SELECT order_number
+                FROM orders
+                WHERE request_id = ?
+                LIMIT 1'
+            );
+
+            if (
+                $existingStmt
+                && $existingStmt->bind_param('s', $requestId)
+                && $existingStmt->execute()
+            ) {
+                $existingResult = $existingStmt->get_result();
+                $existingOrder = $existingResult
+                    ? $existingResult->fetch_assoc()
+                    : null;
+
+                $existingStmt->close();
+
+                if ($existingOrder) {
+                    header('Content-Type: application/json');
+
+                    echo json_encode([
+                        'success' => true,
+                        'message' => 'Order already placed.',
+                        'order_number' => $existingOrder['order_number'],
+                    ]);
+
+                    exit();
+                }
+            }
+
+            if ($existingStmt) {
+                $existingStmt->close();
+            }
+        }
+
+        error_log(
+            'place_order.php: Failed to insert order: '.$insertError
+        );
+
+        jsonError('Failed to place the order. Please try again.');
+    }
+
+    $stmt->close();
+
+        $orderId = $conn->insert_id;
+
+        recordAudit(
+            $conn,
+            (int) $_SESSION['user_id'],
+            'order',
+            (int) $orderId,
+            'CREATE',
+            [
+                'order_number' => [null, $orderNumber],
+                'status' => [null, $status],
+                'payment_method' => [null,
+                $paymentMethod, ],
+                'total' => [null,
+                number_format((float) $total, 2, '.', ''),
+                ],
+            ]
+        );
+
+        $itemStmt = $conn->prepare(
+            'INSERT INTO order_items(order_id, product_id, quantity, price) 
+        VALUES (?, ?, ?, ?)'
+        );
+
+        if (!$itemStmt) {
+            $conn->rollback();
+            error_log('place_order.php: Failed to prepare order items insert: '.$conn->error);
             jsonError('Failed to save order items. Please try again.');
         }
 
-        if (!$itemStmt->execute()) {
-            $conn->rollback();
-            error_log('place_order.php: Failed to insert order item: '.$itemStmt->error);
-            header('Content-Type: application/json');
-            echo json_encode([
-                'success' => false,
-                'message' => 'Failed to save order items. Please try again.',
-            ]);
-            exit();
+        foreach ($cart as $item) {
+            $productId = filter_var($item['id'], FILTER_VALIDATE_INT);
+            $quantity = filter_var($item['quantity'], FILTER_VALIDATE_INT);
+
+            if ($productId === false || $quantity === false || $productId <= 0 || $quantity <= 0) {
+                $conn->rollback();
+                jsonError('Invalid cart item.');
+            }
+
+            if (!isset($dbPrices[$productId])) {
+                $conn->rollback();
+                jsonError('Unable to determine product price.');
+            }
+            $price = $dbPrices[$productId];
+
+            if (!$itemStmt->bind_param('iiid', $orderId, $productId, $quantity, $price)) {
+                $conn->rollback();
+                error_log('place_order.php: Failed to bind order item parameters: '.$itemStmt->error);
+                jsonError('Failed to save order items. Please try again.');
+            }
+
+            if (!$itemStmt->execute()) {
+                $conn->rollback();
+                error_log('place_order.php: Failed to insert order item: '.$itemStmt->error);
+                header('Content-Type: application/json');
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Failed to save order items. Please try again.',
+                ]);
+                exit();
+            }
         }
-    }
 
-    $itemStmt->close();
+        $itemStmt->close();
 
-    if (!logActivity(
-        $conn,
-        (int) $_SESSION['user_id'],
-        'Created order: '.$orderNumber
-    )) {
-        $conn->rollback();
-    
-        error_log(
-            'place_order.php: Activity log failed for order '
-            .$orderNumber
-        );
-    
-        jsonError('Failed to record order activity.');
-    }
-
-        if (!$conn->commit()) {
-            $commitError = $conn->error;
-        
+        if (!logActivity(
+            $conn,
+            (int) $_SESSION['user_id'],
+            'Created order: '.$orderNumber
+        )) {
             $conn->rollback();
-        
+    
             error_log(
-                'place_order.php: Failed to commit transaction: '
-                .$commitError
+                'place_order.php: Activity log failed for order '
+                .$orderNumber
             );
-        
-            jsonError('Failed to place the order. Please try again.');
+    
+            jsonError('Failed to record order activity.');
         }
 
+            if (!$conn->commit()) {
+                throw new RuntimeException(
+                    'Failed to commit order transaction: '.$conn->error
+                );
+            }
+
+} catch (Throwable $e) {
+    $conn->rollback();
+
+    error_log(
+        'place_order.php: Transaction failed for request '
+        .$requestId.': '.$e->getMessage()
+    );
+
+    jsonError('Failed to place the order. Please try again.');
+}
     header('Content-Type: application/json');
     echo json_encode([
         'success' => true,

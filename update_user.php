@@ -68,254 +68,217 @@ if (!in_array($status, $allowedStatuses, true)) {
     exit();
 }
 
-$conn->begin_transaction();
-
-$currentUserStmt = $conn->prepare('SELECT profile_image, role, status FROM users WHERE id = ? FOR UPDATE');
-
-if (!$currentUserStmt) {
-    error_log('update_user.php: Failed to prepare current user lookup: '.$conn->error);
-    $_SESSION['error'] = 'Unable to load user.';
-    header('Location: users.php');
-    exit();
-}
-
-if (!$currentUserStmt->bind_param('i', $id)) {
-    error_log('update_user.php: Failed to bind parameters for current user lookup: '.$currentUserStmt->error);
-    $currentUserStmt->close();
-    $_SESSION['error'] = 'Unable to load user.';
-    header('Location: users.php');
-    exit();
-}
-
-if (!$currentUserStmt->execute()) {
-    error_log('update_user.php: Failed to execute current user lookup: '.$currentUserStmt->error);
-    $currentUserStmt->close();
-    $_SESSION['error'] = 'Unable to load user.';
-    header('Location: users.php');
-    exit();
-}
-
-$currentUserResult = $currentUserStmt->get_result();
-
-if (!$currentUserResult) {
-    error_log('update_user.php: Failed to retrieve current user: '.$currentUserStmt->error);
-    $currentUserStmt->close();
-    $_SESSION['error'] = 'Unable to load user.';
-    header('Location: users.php');
-    exit();
-}
-
-$currentUser = $currentUserResult->fetch_assoc();
-$currentUserStmt->close();
-
-if (!$currentUser) {
-    $_SESSION['error'] = 'User not found.';
-    header('Location: users.php');
-    exit();
-}
-
-if ($id === (int) $_SESSION['user_id'] && ($role !== ROLE_ADMIN || $status !== 'Active')) {
-    $_SESSION['error'] = 'You cannot remove administrator access from your own account';
-    header('Location: users.php');
-    exit();
-}
-
-if (
-    $currentUser['role'] === ROLE_ADMIN && $currentUser['status'] === 'Active' && ($role !== ROLE_ADMIN || $status !== 'Active')) {
-    $adminCheck = $conn->prepare(
-        "SELECT COUNT(*) AS total 
-        FROM users 
-        WHERE role = ? 
-        AND status = 'Active' 
-        AND id != ? 
-        FOR UPDATE"
-    );
-
-    if (!$adminCheck) {
-        error_log('update_user.php: Failed to prepare active admin check: '.$conn->error);
-        $_SESSION['error'] = 'Unable to validate administrator access.';
-        header('Location: users.php');
-        exit();
-    }
-
-    $adminRole = ROLE_ADMIN;
-
-    if (!$adminCheck->bind_param('si', $adminRole, $id)) {
-        error_log('update_user.php: Failed to bind active admin check: '.$adminCheck->error);
-        $adminCheck->close();
-        $_SESSION['error'] = 'Unable to validate administrator access.';
-        header('Location: users.php');
-        exit();
-    }
-
-    if (!$adminCheck->execute()) {
-        error_log('update_user.php: Failed to execute admin check: '.$adminCheck->error);
-        $adminCheck->close();
-        $_SESSION['error'] = 'Unable to validate administrator access.';
-        header('Location: users.php');
-        exit();
-    }
-
-    $adminResult = $adminCheck->get_result();
-    $adminRow = $adminResult ? $adminResult->fetch_assoc() : null;
-    $activeAdminCount = (int) ($adminRow['total'] ?? 0);
-
-    $adminCheck->close();
-
-    if ($activeAdminCount === 0) {
-        $_SESSION['error'] = 'At least one active administrator must remain.';
-        header('Location: users.php');
-        exit();
-    }
-}
-
-$currentImage = basename((string) ($currentUser['profile_image'] ?? ''));
-
-$profileImage = $currentImage;
 $newProfileImageUploaded = false;
 $newProfileImagePath = null;
 
-$check = $conn->prepare('SELECT id FROM users WHERE username = ? AND id != ?');
+$conn->begin_transaction();
 
-if (!$check) {
-    error_log('update_user.php: Failed to prepare username check: '.$conn->error);
-    $_SESSION['error'] = 'Unable to validate username.';
-    header('Location: users.php');
-    exit('Unable to check username.');
-}
+try {
+    $currentUserStmt = $conn->prepare('SELECT profile_image, role, status FROM users WHERE id = ? FOR UPDATE');
 
-if (!$check->bind_param('si', $username, $id)) {
-    error_log('update_user.php: Failed to bind parameters for username check: '.$check->error);
+    if (!$currentUserStmt) {
+        error_log('update_user.php: Failed to prepare current user lookup: '.$conn->error);
+        throw new RuntimeException('Unable to load user.');
+    }
+
+    if (!$currentUserStmt->bind_param('i', $id)) {
+        error_log('update_user.php: Failed to bind parameters for current user lookup: '.$currentUserStmt->error);
+        $currentUserStmt->close();
+        throw new RuntimeException('Unable to load user.');
+    }
+
+    if (!$currentUserStmt->execute()) {
+        error_log('update_user.php: Failed to execute current user lookup: '.$currentUserStmt->error);
+        $currentUserStmt->close();
+        throw new RuntimeException('Unable to load user.');
+    }
+
+    $currentUserResult = $currentUserStmt->get_result();
+
+    if (!$currentUserResult) {
+        error_log('update_user.php: Failed to retrieve current user: '.$currentUserStmt->error);
+        $currentUserStmt->close();
+        throw new RuntimeException('Unable to load user.');
+    }
+
+    $currentUser = $currentUserResult->fetch_assoc();
+    $currentUserStmt->close();
+
+    if (!$currentUser) {
+        throw new RuntimeException('User not found.');
+    }
+
+    if ($id === (int) $_SESSION['user_id'] && ($role !== ROLE_ADMIN || $status !== 'Active')) {
+        throw new RuntimeException('You cannot remove administrator access from your own account');
+    }
+
+    if (
+        $currentUser['role'] === ROLE_ADMIN && $currentUser['status'] === 'Active' && ($role !== ROLE_ADMIN || $status !== 'Active')) {
+        $adminCheck = $conn->prepare(
+            "SELECT COUNT(*) AS total 
+            FROM users 
+            WHERE role = ? 
+            AND status = 'Active' 
+            AND id != ? 
+            FOR UPDATE"
+        );
+
+        if (!$adminCheck) {
+            error_log('update_user.php: Failed to prepare active admin check: '.$conn->error);
+            throw new RuntimeException('Unable to validate administrator access.');
+        }
+
+        $adminRole = ROLE_ADMIN;
+
+        if (!$adminCheck->bind_param('si', $adminRole, $id)) {
+            error_log('update_user.php: Failed to bind active admin check: '.$adminCheck->error);
+            $adminCheck->close();
+            throw new RuntimeException('Unable to validate administrator access.');
+        }
+
+        if (!$adminCheck->execute()) {
+            error_log('update_user.php: Failed to execute admin check: '.$adminCheck->error);
+            $adminCheck->close();
+            throw new RuntimeException('Unable to validate administrator access.');
+        }
+
+        $adminResult = $adminCheck->get_result();
+        $adminRow = $adminResult ? $adminResult->fetch_assoc() : null;
+        $activeAdminCount = (int) ($adminRow['total'] ?? 0);
+
+        $adminCheck->close();
+
+        if ($activeAdminCount === 0) {
+            throw new RuntimeException('At least one active administrator must remain.');
+        }
+    }
+
+    $currentImage = basename((string) ($currentUser['profile_image'] ?? ''));
+
+    $profileImage = $currentImage;
+
+    $check = $conn->prepare('SELECT id FROM users WHERE username = ? AND id != ?');
+
+    if (!$check) {
+        error_log('update_user.php: Failed to prepare username check: '.$conn->error);
+        throw new RuntimeException('Unable to validate username.');
+    }
+
+    if (!$check->bind_param('si', $username, $id)) {
+        error_log('update_user.php: Failed to bind parameters for username check: '.$check->error);
+        $check->close();
+        throw new RuntimeException('Unable to validate username.');
+    }
+
+    if (!$check->execute()) {
+        error_log('update_user.php: Failed to execute username check: '.$check->error);
+        $check->close();
+        throw new RuntimeException('Unable to validate username.');
+    }
+
+    $usernameResult = $check->get_result();
+
+    if ($usernameResult->num_rows > 0) {
+        $check->close();
+        throw new RuntimeException('Username already exists.');
+    }
+
     $check->close();
-    $_SESSION['error'] = 'Unable to validate username.';
-    header('Location: users.php');
-    exit();
-}
 
-if (!$check->execute()) {
-    error_log('update_user.php: Failed to execute username check: '.$check->error);
-    $check->close();
-    $_SESSION['error'] = 'Unable to validate username.';
-    header('Location: users.php');
-    exit();
-}
+    if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] !== UPLOAD_ERR_NO_FILE) {
+        if ($_FILES['profile_image']['error'] !== UPLOAD_ERR_OK) {
+            error_log('update_user.php: Profile image file upload error: '.$_FILES['profile_image']['error']);
+            throw new RuntimeException('Profile image upload failed.');
+        }
 
-$usernameResult = $check->get_result();
+        $maxProfileImageSize = 2 * 1024 * 1024;
 
-if ($usernameResult->num_rows > 0) {
-    $check->close();
-    $_SESSION['error'] = 'Username already exists.';
-    header('Location: users.php');
-    exit();
-}
+        if ($_FILES['profile_image']['size'] > $maxProfileImageSize) {
+            throw new RuntimeException('Profile image must not exceed 2MB.');
+        }
 
-$check->close();
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mimeType = $finfo->file($_FILES['profile_image']['tmp_name']);
 
-if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] !== UPLOAD_ERR_NO_FILE) {
-    if ($_FILES['profile_image']['error'] !== UPLOAD_ERR_OK) {
-        error_log('update_user.php: Profile image file upload error: '.$_FILES['profile_image']['error']);
-        $_SESSION['error'] = 'Profile image upload failed.';
-        header('Location: users.php');
-        exit();
+        $allowedMimeTypes = [
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            'image/webp' => 'webp',
+        ];
+
+        if ($mimeType === false || !isset($allowedMimeTypes[$mimeType])) {
+            throw new RuntimeException('Invalid profile image format. Allowed formats: JPEG, PNG, WEBP.');
+        }
+
+        if (getimagesize($_FILES['profile_image']['tmp_name']) === false) {
+            throw new RuntimeException('Uploaded file is not a valid image.');
+        }
+
+        if (!validateImageDimensions($_FILES['profile_image']['tmp_name'])) {
+            throw new RuntimeException('Profile image dimensions exceed the allowed limit of 2000x2000 pixels.');
+        }
+
+        $newProfileImage = bin2hex(random_bytes(16)).'.'.$allowedMimeTypes[$mimeType];
+
+        $newProfileImagePath = __DIR__.'/assets/images/profiles/'.$newProfileImage;
+
+        if (!move_uploaded_file($_FILES['profile_image']['tmp_name'], $newProfileImagePath)) {
+            error_log('update_user.php: Failed to store new profile image.');
+            throw new RuntimeException('Failed to upload profile image.');
+        }
+
+        $profileImage = $newProfileImage;
+        $newProfileImageUploaded = true;
     }
 
-    $maxProfileImageSize = 2 * 1024 * 1024;
+        $sql = 'UPDATE users
+                SET full_name = ?,
+                    username = ?,
+                    profile_image = ?,
+                    role = ?,
+                    status = ?
+                WHERE id = ?';
 
-    if ($_FILES['profile_image']['size'] > $maxProfileImageSize) {
-        $_SESSION['error'] = 'Profile image must not exceed 2MB.';
-        header('Location: edit_user.php?id='.$id);
-        exit();
+        $success = executeStatement(
+            $conn,
+            $sql,
+            'sssssi',
+            [
+                $fullName,
+                $username,
+                $profileImage,
+                $role,
+                $status,
+                $id,
+                ]
+        );
+
+    if (!$success) {
+        throw new RuntimeException('Unable to update user. Please try again.');
     }
 
-    $finfo = new finfo(FILEINFO_MIME_TYPE);
-    $mimeType = $finfo->file($_FILES['profile_image']['tmp_name']);
-
-    $allowedMimeTypes = [
-        'image/jpeg' => 'jpg',
-        'image/png' => 'png',
-        'image/webp' => 'webp',
-    ];
-
-    if ($mimeType === false || !isset($allowedMimeTypes[$mimeType])) {
-        $_SESSION['error'] = 'Invalid profile image format. Allowed formats: JPEG, PNG, WEBP.';
-        header('Location: edit_user.php');
-        exit();
+    if (!$conn->commit()) {
+        throw new RuntimeException('Commit failed for user ID '.$id.': '.$conn->error);
     }
 
-    if (getimagesize($_FILES['profile_image']['tmp_name']) === false) {
-        $_SESSION['error'] = 'Uploaded file is not a valid image.';
-        header('Location: edit_user.php?id='.$id);
-        exit();
-    }
-
-    if (!validateImageDimensions($_FILES['profile_image']['tmp_name'])) {
-        $_SESSION['error'] = 'Profile image dimensions exceed the allowed limit of 2000x2000 pixels.';
-        header('Location: edit_user.php?id='.$id);
-        exit();
-    }
-
-    $newProfileImage = bin2hex(random_bytes(16)).'.'.$allowedMimeTypes[$mimeType];
-
-    $newProfileImagePath = __DIR__.'/assets/images/profiles/'.$newProfileImage;
-
-    if (!move_uploaded_file($_FILES['profile_image']['tmp_name'], $newProfileImagePath)) {
-        error_log('update_user.php: Failed to store new profile image.');
-        $_SESSION['error'] = 'Failed to upload profile image.';
-        header('Location: edit_user.php?id='.$id);
-        exit();
-    }
-
-    $profileImage = $newProfileImage;
-    $newProfileImageUploaded = true;
-}
-
-    $sql = 'UPDATE users
-            SET full_name = ?,
-                username = ?,
-                profile_image = ?,
-                role = ?,
-                status = ?
-            WHERE id = ?';
-
-    $success = executeStatement(
-        $conn,
-        $sql,
-        'sssssi',
-        [
-            $fullName,
-            $username,
-            $profileImage,
-            $role,
-            $status,
-            $id,
-            ]
-    );
-
-if (!$success) {
+} catch (Throwable $e) {
     $conn->rollback();
 
     if ($newProfileImageUploaded && $newProfileImagePath !== null && is_file($newProfileImagePath)) {
         if (!unlink($newProfileImagePath)) {
-            error_log('update_user.php: Failed to clean up new profile image after database failure: '.$newProfileImagePath);
+            error_log(
+                'update_user.php: Failed to clean up new profile image after rollback: '
+                .$newProfileImagePath
+            );
         }
     }
 
-    $_SESSION['error'] = 'Unable to update user. Please try again.';
-    header('Location: edit_user.php?id='.$id);
-    exit();
-}
-
-if (!$conn->commit()) {
-    $conn->rollback();
-
-    error_log('update_user.php: Commit failed for user ID '.$id);
+    error_log('update_user.php: '.$e->getMessage());
 
     $_SESSION['error'] = 'Unable to complete user update. Please try again.';
-
     header('Location: edit_user.php?id='.$id);
     exit();
 }
-
 if ($newProfileImageUploaded && $currentImage !== '' && $currentImage !== 'default-profile.png') {
     $oldImagePath = __DIR__.'/assets/images/profiles/'.$currentImage;
 

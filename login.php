@@ -44,9 +44,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             AND status = 'Active'
             "
             );
-    }
 
-    if (!$stmt) {
+            if (!$stmt) {
         error_log(
             'login.php: Failed to prepare user lookup: '
                 .$conn->error
@@ -163,6 +162,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             $error = 'Invalid username or password.';
+        }
+        }
         }
     }
 }

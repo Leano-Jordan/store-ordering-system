@@ -25,7 +25,7 @@ $status = $_POST['status'] ?? '';
 $conn->begin_transaction();
 
 try {
-    $orderResult = executeQuery($conn, 'SELECT status, order_number FROM orders WHERE id = ? FOR UPDATE', 'i', [$id]);
+    $orderResult = executeQuery($conn, 'SELECT status, order_number, total FROM orders WHERE id = ? FOR UPDATE', 'i', [$id]);
 
     if (!$orderResult) {
         throw new Exception('Failed to retrieve order.');
@@ -269,11 +269,15 @@ WHERE id = ? AND status = ?',
     exit();
 }
 
-logActivity(
+if (!logActivity(
     $conn,
-    $_SESSION['user_id'],
+    (int) $_SESSION['user_id'],
     "Changed Order $orderNumber from $currentStatus to $status"
-);
+)) {
+    error_log(
+        'update_status.php: Activity log failed for order ID '.(int) $id
+    );
+}
 
     if (($_POST['return_to'] ?? '') === 'orders') {
         header('Location: orders.php');

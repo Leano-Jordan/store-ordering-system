@@ -44,13 +44,7 @@ if (!$result) {
 
 $order = $result->fetch_assoc();
 $stmt->close();
-
-$totalSuppliers = (int) ($row['totalSuppliers'] ?? 0);
 $result->free();
-
-$stmt->bind_param('i', $id);
-$stmt->execute();
-$order = $stmt->get_result()->fetch_assoc();
 
 if (!$order) {
     header('Location: orders.php');
