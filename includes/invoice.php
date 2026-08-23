@@ -12,12 +12,9 @@ function issueInvoiceNumber(
     }
 
     $settingsStmt = $conn->prepare(
-        'SELECT
-            id,
-            next_invoice_number
+        'SELECT id, next_invoice_number
         FROM business_settings
-        LIMIT 1
-        FOR UPDATE'
+        WHERE id = 1 LIMIT 1 FOR UPDATE'
     );
 
     if (!$settingsStmt) {

@@ -11,7 +11,7 @@ if ($id <= 0) {
     exit();
 }
 
-$sql = 'SELECT id, order_number, customer_name, total, status, created_at FROM orders WHERE id = ?';
+$sql = 'SELECT id, order_number, customer_name, total, status, invoice_number, created_at FROM orders WHERE id = ?';
 $stmt = $conn->prepare($sql);
 
 if (!$stmt) {
@@ -99,6 +99,13 @@ $stmt->close();
         <button onclick="window.print()" class="action-btn">
             🖨 Print Receipt
         </button>
+
+<?php if (!empty($order['invoice_number'])) { ?>
+    <a href="print_invoice.php?id=<?php echo (int) $order['id']; ?>"
+        class="action-btn" target="_blank" rel="noopener">
+            🧾 Print Tax Invoice
+    </a>
+<?php } ?>
     </div>
 
     <a href="orders.php" class="action-btn">⬅ Back to Orders</a>

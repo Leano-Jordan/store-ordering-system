@@ -9,11 +9,23 @@ $loadChart = true;
 
 //                                                        TOTAL PRODUCTS
 
-$sql = 'SELECT COUNT(*) AS totalProducts FROM products';
-$result = $conn->query($sql);
-$row = $result->fetch_assoc();
+$sql = 'SELECT COUNT(*) AS totalProducts 
+FROM products';
 
-$totalProducts = $row['totalProducts'];
+$result = $conn->query($sql);
+
+if (!$result) {
+    error_log(
+        'dashboard.php: Failed to load total product count: '
+        .$conn->error
+    );
+    exit('Unable to load dashboard product data.');
+}
+
+    $row = $result->fetch_assoc();
+    $totalProducts = (int) ($row['totalProducts'] ?? 0);
+
+    $result->free();
 
 //                                                          ORDERS TODAY
 
@@ -53,10 +65,18 @@ $todayOrders = (int) ($row['todayOrders'] ?? 0);
 //                                                        PENDING ORDERS
 
 $sql = "SELECT COUNT(*) AS pendingOrders FROM orders WHERE status = 'Pending'";
-$result = $conn->query($sql);
-$row = $result->fetch_assoc();
 
-$pendingOrders = $row['pendingOrders'];
+$result = $conn->query($sql); if (!$result) {
+    error_log(
+        'dashboard.php: Failed to load pending orders: '
+        .$conn->error
+    );
+    exit('Unable to load dashboard order data.');
+}
+        $row = $result->fetch_assoc();
+        $pendingOrders = (int) ($row['pendingOrders'] ?? 0);
+
+        $result->free();
 
 //                                                       TODAY'S REVENUE
 
@@ -80,19 +100,42 @@ if (!$stmt->execute()) {
 }
 
 $result = $stmt->get_result();
+
+if (!$result) {
+    $stmt->close();
+
+    error_log(
+        'dashboard.php: Failed to retrieve today revenue result: '
+        .$stmt->error
+    );
+
+    exit('Unable to load dashboard revenue.');
+}
+
 $row = $result->fetch_assoc();
 
-$stmt->close();
-
 $todayRevenue = (float) ($row['todayRevenue'] ?? 0);
+
+$result->free();
+
+$stmt->close();
 
 //                                                       AVERAGE ORDER VALUE
 
 $sql = "SELECT AVG(total) AS averageOrder FROM orders WHERE status = 'Collected'";
 $result = $conn->query($sql);
+
+if (!$result) {
+    error_log(
+        'dashboard.php: Failed to load average order value: '.$conn->error
+    );
+
+    exit('Unable to load dashboard sales data.');
+}
 $row = $result->fetch_assoc();
 
-$averageOrder = $row['averageOrder'] ?? 0;
+$averageOrder = (float) ($row['averageOrder'] ?? 0);
+$result->free();
 
 //                                                          THIS MONTH'S ORDERS
 
@@ -127,11 +170,22 @@ if (!$stmt->execute()) {
 }
 
 $result = $stmt->get_result();
+
+if (!$result) {
+    $stmt->close();
+
+    error_log(
+        'dashboard.php: Failed to retrieve monthly revenue result: '.$stmt->error
+    );
+
+    exit('Unable to load monthly revenue.');
+}
+
 $row = $result->fetch_assoc();
-
-$stmt->close();
-
 $monthRevenue = (float) ($row['monthRevenue'] ?? 0);
+
+$result->free();
+$stmt->close();
 
 //                                                     LOW STOCK PRODUCTS               //
 
@@ -187,10 +241,9 @@ $result->free();
 
 //                                                             PENDING PURCHASE ORDERS                                                      //
 
-$result = $conn->query("SELECT COUNT(*) 
-    AS pendingPOs 
-    FROM purchase_orders 
-    WHERE status = 'Pending'");
+$result = $conn->query("SELECT COUNT(*) AS pendingPOs 
+    FROM purchase_orders WHERE status = 'Pending'
+    ");
 
     if (!$result) {
         error_log('dashboard.php: Failed to load pending purchase orders: '.$conn->error);
@@ -203,10 +256,8 @@ $result = $conn->query("SELECT COUNT(*)
 
 //                                                                ACTIVE SUPPLIERS                                                       //
 
-$result = $conn->query("SELECT COUNT(*) 
-        AS totalSuppliers 
-        FROM suppliers 
-        WHERE status = 'Active'");
+$result = $conn->query("SELECT COUNT(*) AS totalSuppliers 
+        FROM suppliers WHERE status = 'Active'");
 
 if (!$result) {
     error_log('dashboard.php: Failed to load Supplier count: '.$conn->error);
@@ -220,8 +271,7 @@ $result->free();
 //                                                     LOW STOCK PRODUCT LIST (FOR THE ALERT WIDGETS)                                      //
 
 $lowStockProducts = $conn->query("SELECT 
-    name, 
-    stock FROM products 
+    name, stock FROM products 
     WHERE status = 'Active' AND stock > 0 AND stock <= 10 ORDER BY stock ASC LIMIT 5");
 
     if (!$lowStockProducts) {
@@ -244,7 +294,6 @@ if (!$recentOrders) {
 //                                                    SALES FOR THE LAST 7 DAYS - CHART ANALYTICS
 
 $range = $_GET['range'] ?? '7';
-
 $allowedRanges = ['7', '30', 'month'];
 
 if (!in_array($range, $allowedRanges, true)) {
@@ -278,15 +327,11 @@ switch ($range) {
             break;
 }
 
-$sql = "SELECT DATE(created_at) AS 
-sale_date, 
+$sql = "SELECT DATE(created_at) AS sale_date, 
 SUM(total) AS daily_total 
-FROM orders 
-WHERE created_at >= ?
-AND created_at < ?
-AND status = 'Collected'
-GROUP BY DATE(created_at) 
-ORDER BY sale_date";
+FROM orders WHERE created_at >= ?
+AND created_at < ? AND status = 'Collected'
+GROUP BY DATE(created_at) ORDER BY sale_date";
 
 $stmt = $conn->prepare($sql);
 

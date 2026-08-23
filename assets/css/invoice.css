@@ -1,0 +1,147 @@
+.invoice-page-actions {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto 18px;
+    text-align: right;
+}
+
+.invoice-print-button {
+    border: 1px solid #333;
+    background: #fff;
+    padding: 8px 14px;
+    cursor: pointer;
+}
+
+.invoice {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.invoice-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 32px;
+    padding-bottom: 18px;
+    margin-bottom: 22px;
+    border-bottom: 2px solid #111;
+}
+
+.invoice-business,
+.invoice-details {
+    flex: 1;
+}
+
+.invoice-business h1 {
+    margin: 0 0 8px;
+    font-size: 24px;
+}
+
+.invoice-business-address {
+    white-space: normal;
+}
+
+.invoice-details {
+    text-align: right;
+}
+
+.invoice-details h2 {
+    margin: 0 0 12px;
+    font-size: 22px;
+}
+
+.invoice-meta-row {
+    margin: 4px 0;
+}
+
+.invoice-meta-label {
+    font-weight: 700;
+}
+
+.invoice-customer {
+    margin-bottom: 22px;
+}
+
+.invoice-customer h3 {
+    margin: 0 0 8px;
+    font-size: 15px;
+}
+
+.invoice-items {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.invoice-items th,
+.invoice-items td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #ccc;
+    text-align: left;
+    vertical-align: top;
+}
+
+.invoice-items th {
+    border-top: 1px solid #111;
+    border-bottom: 2px solid #111;
+}
+
+.invoice-number-cell {
+    text-align: right !important;
+    white-space: nowrap;
+}
+
+.invoice-totals {
+    width: 360px;
+    max-width: 100%;
+    margin: 24px 0 0 auto;
+}
+
+.invoice-total-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 6px 0;
+}
+
+.invoice-grand-total {
+    margin-top: 6px;
+    padding-top: 10px;
+    border-top: 2px solid #111;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.invoice-footer {
+    margin-top: 36px;
+    padding-top: 14px;
+    border-top: 1px solid #ccc;
+    font-size: 12px;
+}
+
+@media (max-width: 700px) {
+    .invoice-page-actions {
+        margin-bottom: 12px;
+    }
+    .invoice-header {
+        flex-direction: column;
+        gap: 18px;
+    }
+    .invoice-details {
+        text-align: left;
+    }
+    .invoice-totals {
+        width: 100%;
+    }
+}
+
+@media print {
+    body {
+        padding: 0;
+    }
+    .invoice-page-actions {
+        display: none;
+    }
+    .invoice {
+        max-width: none;
+    }
+}

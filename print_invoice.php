@@ -123,8 +123,8 @@ if ($vatEnabled && !preg_match('/^\d{10}$/', $businessVatNumber)) {
 
 $itemStmt = $conn->prepare(
     'SELECT product_name_at_sale,
-        quantity,
-        price FROM order_items
+        quantity, price,
+        ROUND(quantity * price, 2) AS line_total FROM order_items
         WHERE order_id = ? ORDER BY id ASC'
 );
 
@@ -182,6 +182,7 @@ while ($row = $itemResult->fetch_assoc()) {
         ),
         'quantity' => (int) $row['quantity'],
         'price' => (float) $row['price'],
+        'line_total' => (float) $row['line_total'],
     ];
 }
 
@@ -204,6 +205,9 @@ $paymentLabels = [
     'card_pmt' => 'Card',
     'eft_pmt' => 'EFT',
 ];
+
+$customerName = trim((string)
+($order['customer_name'] ?? ''));
 
 $paymentMethod = $paymentLabels[
 (string) $order['payment_method']

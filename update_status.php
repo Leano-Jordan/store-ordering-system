@@ -242,6 +242,11 @@ WHERE id = ? AND status = ?',
             (int)
             $_SESSION['user_id']
         );
+
+        snapshotInvoiceBusinessDetails(
+            $conn,
+            $id
+        );
     }
 
     if ($currentStatus !== $status) {
