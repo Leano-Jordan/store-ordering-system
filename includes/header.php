@@ -49,10 +49,10 @@ if (defined('APP_ENV') && APP_ENV === 'production' && isset($_SERVER['HTTPS']) &
                 <a href="purchase_orders.php" class="<?php echo $currentPage === 'purchase_orders.php' ? 'active-nav' : ''; ?>">Purchase Orders</a>
                 <a href="goods_received_notes.php" class="<?php echo $currentPage === 'goods_received_notes.php' ? 'active-nav' : ''; ?>">GRNs</a>
                 <a href="users.php" class="<?php echo $currentPage === 'users.php' ? 'active-nav' : ''; ?>">Users</a>
+                <a href="business_settings.php" class="<?php echo $currentPage === 'business_settings.php' ? 'active-nav' : ''; ?>">Settings</a>
                 <a href="sessions.php" class="<?php echo $currentPage === 'sessions.php' ? 'active-nav' : ''; ?>">Sessions</a>
                 <a href="reports.php" class="<?php echo $currentPage === 'reports.php' ? 'active-nav' : ''; ?>">Reports</a>
                 <a href="activity_logs.php" class="<?php echo $currentPage === 'activity_logs.php' ? 'active-nav' : ''; ?>">Activity Logs</a>
-                <a href="about.php">About</a>
                 <form method="post" action="logout.php" class="logout-form">
                     <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrfToken(), ENT_QUOTES); ?>">
                     <button type="submit" class="logout-button">Logout</button>
@@ -69,7 +69,6 @@ if (defined('APP_ENV') && APP_ENV === 'production' && isset($_SERVER['HTTPS']) &
                 <a href="goods_received_notes.php" class="<?php echo $currentPage === 'goods_received_notes.php' ? 'active-nav' : ''; ?>">GRNs</a>
                 <a href="sessions.php" class="<?php echo $currentPage === 'sessions.php' ? 'active-nav' : ''; ?>">Sessions</a>
                 <a href="reports.php" class="<?php echo $currentPage === 'reports.php' ? 'active-nav' : ''; ?>">Reports</a>
-                <a href="about.php">About</a>
                 <form method="post" action="logout.php" class="logout-form">
                     <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrfToken(), ENT_QUOTES); ?>">
                     <button type="submit" class="logout-button">Logout</button>
@@ -89,7 +88,6 @@ if (defined('APP_ENV') && APP_ENV === 'production' && isset($_SERVER['HTTPS']) &
 
             if (isset($_SESSION['role']) && $_SESSION['role'] === ROLE_KITCHEN) { ?>
                 <a href="orders.php" class="<?php echo $currentPage === 'orders.php' ? 'active-nav' : ''; ?>">Orders</a>
-                <a href="about.php">About</a>
                 <form method="post" action="logout.php" class="logout-form">
                     <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrfToken(), ENT_QUOTES); ?>">
                     <button type="submit" class="logout-button">Logout</button>
