@@ -46,9 +46,7 @@ if ($requestId === '' ||
 
 $existingStmt = $conn->prepare(
     'SELECT order_number
-    FROM orders
-    WHERE request_id = ?
-    LIMIT 1'
+    FROM orders WHERE request_id = ? LIMIT 1'
 );
 
 if (!$existingStmt) {
@@ -175,7 +173,7 @@ $types = str_repeat('i', count($productIds));
 $conn->begin_transaction();
 
 try {
-        $productStmt = $conn->prepare("SELECT id, name, price, stock FROM products WHERE id IN ($placeholders) AND status = 'Active' FOR UPDATE");
+    $productStmt = $conn->prepare("SELECT id, name, price, stock FROM products WHERE id IN ($placeholders) AND status = 'Active' FOR UPDATE");
 
     if (!$productStmt) {
         $conn->rollback();
@@ -332,15 +330,15 @@ try {
 
     $stmt->close();
 
-        $orderId = $conn->insert_id;
+    $orderId = $conn->insert_id;
 
-        recordAudit(
-            $conn,
-            (int) $_SESSION['user_id'],
-            'order',
-            (int) $orderId,
-            'CREATE',
-            [
+    recordAudit(
+        $conn,
+        (int) $_SESSION['user_id'],
+        'order',
+        (int) $orderId,
+        'CREATE',
+        [
                 'order_number' => [null, $orderNumber],
                 'status' => [null, $status],
                 'payment_method' => [null,
@@ -349,75 +347,73 @@ try {
                 number_format((float) $total, 2, '.', ''),
                 ],
             ]
-        );
+    );
 
-        $itemStmt = $conn->prepare(
-            'INSERT INTO order_items(order_id, product_id, quantity, price) 
-        VALUES (?, ?, ?, ?)'
-        );
+    $itemStmt = $conn->prepare(
+        'INSERT INTO order_items
+        (order_id, product_id, product_name_at_sale, quantity, price) 
+        VALUES (?, ?, ?, ?, ?)'
+    );
 
-        if (!$itemStmt) {
+    if (!$itemStmt) {
+        $conn->rollback();
+        error_log('place_order.php: Failed to prepare order items insert: '.$conn->error);
+        jsonError('Failed to save order items. Please try again.');
+    }
+
+    foreach ($cart as $item) {
+        $productId = filter_var($item['id'], FILTER_VALIDATE_INT);
+        $quantity = filter_var($item['quantity'], FILTER_VALIDATE_INT);
+
+        if ($productId === false || $quantity === false || $productId <= 0 || $quantity <= 0) {
             $conn->rollback();
-            error_log('place_order.php: Failed to prepare order items insert: '.$conn->error);
+            jsonError('Invalid cart item.');
+        }
+
+        if (!isset($dbPrices[$productId])) {
+            $conn->rollback();
+            jsonError('Unable to determine product price.');
+        }
+        $price = $dbPrices[$productId];
+
+        if (!$itemStmt->bind_param('iisid', $orderId, $productId, $productName, $quantity, $price)) {
+            $conn->rollback();
+            error_log('place_order.php: Failed to bind order item parameters: '.$itemStmt->error);
             jsonError('Failed to save order items. Please try again.');
         }
 
-        foreach ($cart as $item) {
-            $productId = filter_var($item['id'], FILTER_VALIDATE_INT);
-            $quantity = filter_var($item['quantity'], FILTER_VALIDATE_INT);
-
-            if ($productId === false || $quantity === false || $productId <= 0 || $quantity <= 0) {
-                $conn->rollback();
-                jsonError('Invalid cart item.');
-            }
-
-            if (!isset($dbPrices[$productId])) {
-                $conn->rollback();
-                jsonError('Unable to determine product price.');
-            }
-            $price = $dbPrices[$productId];
-
-            if (!$itemStmt->bind_param('iiid', $orderId, $productId, $quantity, $price)) {
-                $conn->rollback();
-                error_log('place_order.php: Failed to bind order item parameters: '.$itemStmt->error);
-                jsonError('Failed to save order items. Please try again.');
-            }
-
-            if (!$itemStmt->execute()) {
-                $conn->rollback();
-                error_log('place_order.php: Failed to insert order item: '.$itemStmt->error);
-                header('Content-Type: application/json');
-                echo json_encode([
+        if (!$itemStmt->execute()) {
+            $conn->rollback();
+            error_log('place_order.php: Failed to insert order item: '.$itemStmt->error);
+            header('Content-Type: application/json');
+            echo json_encode([
                     'success' => false,
                     'message' => 'Failed to save order items. Please try again.',
                 ]);
-                exit();
-            }
+            exit();
         }
+    }
 
-        $itemStmt->close();
+    $itemStmt->close();
 
-        if (!logActivity(
-            $conn,
-            (int) $_SESSION['user_id'],
-            'Created order: '.$orderNumber
-        )) {
-            $conn->rollback();
-    
-            error_log(
-                'place_order.php: Activity log failed for order '
+    if (!logActivity(
+        $conn,
+        (int) $_SESSION['user_id'],
+        'Created order: '.$orderNumber
+    )) {
+        $conn->rollback();
+
+        error_log(
+            'place_order.php: Activity log failed for order '
                 .$orderNumber
-            );
-    
-            jsonError('Failed to record order activity.');
-        }
+        );
 
-            if (!$conn->commit()) {
-                throw new RuntimeException(
-                    'Failed to commit order transaction: '.$conn->error
-                );
-            }
+        jsonError('Failed to record order activity.');
+    }
 
+    if (!$conn->commit()) {
+        throw new RuntimeException('Failed to commit order transaction: '.$conn->error);
+    }
 } catch (Throwable $e) {
     $conn->rollback();
 

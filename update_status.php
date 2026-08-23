@@ -10,6 +10,7 @@ require_once 'includes/helpers.php';
 require_once 'includes/logger.php';
 require_once 'includes/audit.php';
 require_once 'includes/invoice.php';
+require_once __DIR__.'/includes/invoice_snapshot.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit('Invalid request.');
@@ -235,7 +236,12 @@ WHERE id = ? AND status = ?',
             throw new RuntimeException('Failed to store VAT snapshot.');
         }
 
-        $invoiceNumber = issueInvoiceNumber($conn, $id, (int) $_SESSION['user_id']);
+        $invoiceNumber = issueInvoiceNumber(
+            $conn,
+            $id,
+            (int)
+            $_SESSION['user_id']
+        );
     }
 
     if ($currentStatus !== $status) {
