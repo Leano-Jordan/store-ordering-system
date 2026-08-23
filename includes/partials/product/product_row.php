@@ -3,7 +3,7 @@
             <td>
                 <?php $image = !empty($row['image']) ? $row['image'] : 'no-image.png'; ?>
 
-                <img src="./assets/images/products/<?php echo $image; ?>"
+                <img src="./assets/images/products/<?php echo rawurlencode((string) $image); ?>"
                     alt="Product Image" class="product-thumb">
             </td>
 

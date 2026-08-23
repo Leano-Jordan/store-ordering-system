@@ -227,6 +227,7 @@ try {
         }
 
         $product = $productMap[$productId];
+        $productName = (string) $product['name'];
 
         if ($quantity > $product['stock']) {
             $conn->rollback();
@@ -370,14 +371,24 @@ try {
             jsonError('Invalid cart item.');
         }
 
-        if (!isset($dbPrices[$productId])) {
+        if (!isset($dbPrices[$productId], $productMap[$productId])) {
             $conn->rollback();
-            jsonError('Unable to determine product price.');
+            jsonError('Unable to determine product details.');
         }
-        $price = $dbPrices[$productId];
 
-        if (!$itemStmt->bind_param('iisid', $orderId, $productId, $productName, $quantity, $price)) {
+        $price = $dbPrices[$productId];
+        $productName = (string) $productMap[$productId]['name'];
+
+        if (!$itemStmt->bind_param(
+            'iisid',
+            $orderId,
+            $productId,
+            $productName,
+            $quantity,
+            $price
+        )) {
             $conn->rollback();
+
             error_log('place_order.php: Failed to bind order item parameters: '.$itemStmt->error);
             jsonError('Failed to save order items. Please try again.');
         }

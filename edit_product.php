@@ -34,10 +34,10 @@ include 'includes/header.php';
 
         <div class="form-group">
             <input type="hidden" name="id" value="<?php echo $product['id']; ?>">
-            <input type="hidden" name="current_image" value="<?php echo $product['image']; ?>">
+            <input type="hidden" name="current_image" value="<?php echo htmlspecialchars((string) $product['image'], ENT_QUOTES, 'UTF-8'); ?>">
 
             <p>
-                Current Image: <?php echo $currentImage = $product['image']; ?>
+                Current Image: <?php echo htmlspecialchars((string) $product['image'], ENT_QUOTES, 'UTF-8'); ?>
             </p>
 
             <label for="name">Product Name</label><br>
@@ -99,13 +99,13 @@ include 'includes/header.php';
 
             <?php
             if (!empty($product['image'])) { ?>
-                <img src="./assets/images/products/<?php echo $product['image']; ?>"
+                <img src="./assets/images/products/<?php echo rawurlencode((string) $product['image']); ?>"
                     alt="Product Image" width="120">
 
                 <br><br>
 
                 <small>
-                    <?php echo $product['image']; ?>
+                    <?php echo htmlspecialchars((string) $product['image'], ENT_QUOTES, 'UTF-8'); ?>
                 </small>
 
             <?php
