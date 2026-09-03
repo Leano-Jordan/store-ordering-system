@@ -9,6 +9,7 @@ require_once 'includes/db.php';
 require_once 'includes/logger.php';
 require_once 'includes/helpers.php';
 require_once 'includes/upload_helpers.php';
+require_once 'includes/audit.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: products.php');

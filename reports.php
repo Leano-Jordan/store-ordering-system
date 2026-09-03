@@ -23,7 +23,7 @@ if (!in_array($range, $allowedRanges, true)) {
 
 switch ($range) {
     case '30':
-    $where = 'created_at >= DATE_SUB(CURDATE(), INTERVAL 29 DAY)';
+    $where = 'created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)';
     break;
 
 case 'month':
@@ -35,7 +35,7 @@ case 'year':
     break;
 
 default:
-    $where = 'created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)';
+    $where = 'created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)';
     break;
 }
 

@@ -95,3 +95,5 @@ include 'includes/header.php';
 <?php require 'includes/partials/activity_logs/activity_log_toolbar.php'; ?>
 <?php require 'includes/partials/activity_logs/activity_log_table.php'; ?>
 <?php require 'includes/partials/activity_logs/activity_log_pagination.php'; ?>
+
+<?php include 'includes/footer.php'; ?>
