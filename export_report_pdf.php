@@ -37,17 +37,92 @@ if (!$revenueResult) {
 
 $totalRevenue = (float) ($revenueResult->fetch_assoc()['revenue'] ?? 0);
 
-$totalOrders = $conn->query("SELECT COUNT(*) 
-AS total FROM orders WHERE $where")->fetch_assoc()['total'] ?? 0;
+$totalOrdersResult = $conn->query(
+    "SELECT COUNT(*) 
+    AS total FROM orders 
+    WHERE $where"
+);
 
-$completedOrders = $conn->query("SELECT COUNT(*) 
-AS total FROM orders WHERE $where AND status = 'Collected'")->fetch_assoc()['total'] ?? 0;
+if (!$totalOrdersResult) {
+    error_log(
+        'export_report_pdf.php: Failed to load total orders: '
+        .$conn->error
+    );
 
-$cancelledOrders = $conn->query("SELECT COUNT(*) 
-AS total FROM orders WHERE $where AND status = 'Cancelled'")->fetch_assoc()['total'] ?? 0;
+    http_response_code(500);
 
-$averageOrder = $conn->query("SELECT AVG(total) 
-AS avg FROM orders WHERE $where AND status = 'Collected'")->fetch_assoc()['avg'] ?? 0;
+    exit('Unable to export report');
+}
+
+$totalOrdersRow = $totalOrdersResult->fetch_assoc();
+$totalOrders = (int) ($totalOrdersRow['total'] ?? 0);
+$totalOrdersResult->free();
+
+$completedOrdersResult = $conn->query(
+    "SELECT COUNT(*) AS total
+    FROM orders
+    WHERE $where AND status = 'Collected'"
+);
+
+if (!$completedOrdersResult) {
+    error_log(
+        'export_report_pdf.php: Failed to load completed orders: '
+        .$conn->error
+    );
+
+    http_response_code(500);
+
+    exit('Unable to export report');
+}
+
+$completedOrdersRow = $completedOrdersResult->fetch_assoc();
+$completedOrders = (int) ($completedOrdersRow['total'] ?? 0);
+$completedOrdersResult->free();
+
+$cancelledOrdersResult = $conn->query(
+    "SELECT COUNT(*) 
+    AS total
+    FROM orders
+    WHERE $where AND status = 'Cancelled'"
+);
+
+if (!$cancelledOrdersResult) {
+    error_log(
+        'export_report_pdf.php: Failed to load cancelled orders: '
+        .$conn->error
+    );
+
+    http_response_code(500);
+
+    exit('Unable to export report');
+}
+
+$cancelledOrdersRow = $cancelledOrdersResult->fetch_assoc();
+$cancelledOrders = (int) ($cancelledOrdersRow['total'] ?? 0);
+$cancelledOrdersResult->free();
+
+$averageOrderResult = $conn->query(
+    "SELECT AVG(total) 
+    AS avg
+    FROM orders
+    WHERE $where 
+    AND status = 'Collected'"
+);
+
+if (!$averageOrderResult) {
+    error_log(
+        'export_report_pdf.php: Failed to load average order: '
+        .$conn->error
+    );
+
+    http_response_code(500);
+
+    exit('Unable to export report');
+}
+
+$averageOrderRow = $averageOrderResult->fetch_assoc();
+$averageOrder = (float) ($averageOrderRow['avg'] ?? 0);
+$averageOrderResult->free();
 
 $html = '
 <h1>SwiftOrder POS - Sales Report</h1>

@@ -126,19 +126,25 @@ if (
         $conn,
         $sql,
         'ssdssi',
-        [$name,
-        $description,
-        $price,
-        $image,
-        $category,
-        $stock, ]
+        [
+            $name,
+            $description,
+            $price,
+            $image,
+            $category,
+            $stock,
+        ]
     )
         ) {
-    logActivity(
+    if (!logActivity(
         $conn,
         $_SESSION['user_id'],
         'Added product: '.$name
-    );
+    )) {
+        error_log(
+            'save_product.php: Activity log failed after product creation.'
+        );
+    }
 
     header('Location: products.php');
     exit();
