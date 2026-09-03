@@ -80,24 +80,63 @@ if ($user['role'] === ROLE_ADMIN && $user['status'] === 'Active') {
     }
 
     $adminRole = ROLE_ADMIN;
-    $adminCheck->bind_param('s', $adminRole);
 
-    if (!$adminCheck->execute()) {
+    $adminCheck->close();
+
+    $adminLock = $conn->prepare(
+        "SELECT id FROM users
+        WHERE role = ? AND status = 'Active'
+        ORDER BY id FOR UPDATE"
+    );
+
+    if (!$adminLock) {
         $conn->rollback();
-        error_log('deactivate_user.php active admin count execute failed. '.$adminCheck->error);
-        $adminCheck->close();
+
+        error_log(
+            'deactivate_user.php active admin lock prepare failed. '
+            .$conn->error
+        );
+
         $_SESSION['error'] = 'Unable to validate administrator access.';
+
         header('Location: users.php');
         exit();
     }
 
-    $adminResult = $adminCheck->get_result();
-    $activeAdminCount = (int) $adminResult->fetch_assoc()['total'];
-    $adminCheck->close();
+    if (!$adminLock->bind_param('s', $adminRole)) {
+        $adminLock->close();
+        $conn->rollback();
+
+        $_SESSION['error'] = 'Unable to validate administrator access.';
+
+        header('Location: users.php');
+        exit();
+    }
+
+    if (!$adminLock->execute()) {
+        error_log('deactivate_user.php active admin lock execute failed. '.$adminLock->error);
+
+        $adminLock->close();
+        $conn->rollback();
+
+        $_SESSION['error'] = 'Unable to validate administrator access.';
+
+        header('Location: users.php');
+        exit();
+    }
+
+    $adminResult = $adminLock->get_result();
+    $activeAdminCount = $adminResult
+        ? $adminResult->num_rows
+        : 0;
+
+    $adminLock->close();
 
     if ($activeAdminCount <= 1) {
         $conn->rollback();
+
         $_SESSION['error'] = 'Cannot Deactivate last admin.';
+
         header('Location: users.php?error=last_admin');
         exit();
     }

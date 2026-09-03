@@ -7,6 +7,7 @@ requireRole([ROLE_ADMIN]);
 require_once 'includes/db.php';
 require_once 'includes/helpers.php';
 require_once 'includes/upload_helpers.php';
+require_once 'includes/audit.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: users.php');
@@ -231,8 +232,7 @@ try {
         $newProfileImageUploaded = true;
     }
 
-    $sql = 'UPDATE users
-                SET full_name = ?,
+    $sql = 'UPDATE users SET full_name = ?,
                     username = ?,
                     profile_image = ?,
                     role = ?,
@@ -278,6 +278,7 @@ try {
     header('Location: edit_user.php?id='.$id);
     exit();
 }
+
 if ($newProfileImageUploaded && $currentImage !== '' && $currentImage !== 'default-profile.png') {
     $oldImagePath = __DIR__.'/assets/images/profiles/'.$currentImage;
 
