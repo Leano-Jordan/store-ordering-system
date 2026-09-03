@@ -103,16 +103,16 @@ try {
         ['status' => [$po['status'], 'Cancelled']]
     );
 
-    if (!$conn->commit()) {
-        throw new RuntimeException('Purchase order cancellation commit failed.');
-    }
-
     if (!logActivity(
         $conn,
         (int) $_SESSION['user_id'],
         'Cancelled Purchase Order ID '.$id
     )) {
-        error_log('cancel_purchase_order.php: Activity log failed for purchase order ID '.$id);
+        throw new RuntimeException('Failed to record purchase order activity.');
+    }
+
+    if (!$conn->commit()) {
+        throw new RuntimeException('Purchase order cancellation commit failed.');
     }
 
     $_SESSION['success'] = 'Purchase order cancelled successfully.';
