@@ -7,7 +7,7 @@
     <?php } ?>
 
     <span>
-        Page <?php echo $page; ?><?php echo $page; ?>
+        Page <?php echo $page; ?>
     </span>
 
     <?php if ($result->num_rows === $limit) { ?>

@@ -10,24 +10,54 @@ $id = (int) ($_GET['id'] ?? 0);
 
 $stmt = $conn->prepare('SELECT status FROM orders WHERE id = ?');
 
+if (!$stmt) {
+    error_log('order_status_refresh.php: Failed to prepare order status query: '.$conn->error);
+
+    http_response_code(500);
+    exit();
+}
+
 if (!$stmt->bind_param('i', $id)) {
-    error_log('order_status_refresh.php: Failed to bind order ID: '.$stmt->error);
+    error_log(
+        'order_status_refresh.php: Failed to bind order ID: '.$stmt->error
+    );
+
     $stmt->close();
+    http_response_code(500);
     exit();
 }
 
 if (!$stmt->execute()) {
-    error_log('order_status_refresh.php: Failed to execute order status query: '.$stmt->error);
+    error_log(
+        'order_status_refresh.php: Failed to execute order status query: '.$stmt->error
+    );
+
     $stmt->close();
+    http_response_code(500);
     exit();
 }
 
-$order = $stmt->get_result()->fetch_assoc();
+$result = $stmt->get_result();
+
+if (!$result) {
+    error_log(
+        'order_status_refresh.php: Failed to retrieve order status result: '.$stmt->error
+    );
+
+    $stmt->close();
+    http_response_code(500);
+    exit();
+}
+
+$order = $result->fetch_assoc();
 
 $stmt->close();
 
 if (!$order) {
+    http_response_code(404);
     exit();
 }
 
-echo json_encode($order);
+header('Content-Type: application/json; charset=utf-8');
+
+echo json_encode($order, JSON_THROW_ON_ERROR);

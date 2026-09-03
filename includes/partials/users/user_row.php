@@ -39,27 +39,25 @@
 
                 <?php if ($row['status'] === 'Active') { ?>
 
-                    <form method="POST" 
-                        action="deactivate_user.php" 
-                        style="display: inline"
-                        onsubmit="return confirm('Deactivate this user?')
-                        ">
+    <form method="POST" action="deactivate_user.php" style="display: inline" 
+    onsubmit="return confirm('Deactivate this user?')
+    ">
 
-                    <input 
-                        type="hidden" 
-                        name="csrf_token" 
-                        value="<?php echo htmlspecialchars(
-        csrfToken(),
-        ENT_QUOTES,
-        'UTF-8'
-    ); ?>">
+        <input type="hidden" 
+        name="id"
+        value="<?php echo (int) $row['id']; ?>">
 
-                <button type="submit" class="action-btn delete-btn">
-                        Deactivate User
-                </button>
-            </form>
+        <input type="hidden"
+        name="csrf_token"
+        value="<?php echo htmlspecialchars(csrfToken(), ENT_QUOTES, 'UTF-8');
+        ?>">
 
-                <?php } else { ?>
+        <button type="submit" class="action-btn delete-btn">
+            Deactivate User
+        </button>
+    </form>
+
+<?php } else { ?>
 
                     <form method="POST" action="reactivate_user.php" style="display:inline">
                         <input type="hidden" name="id" value="<?php echo (int) $row['id']; ?>">

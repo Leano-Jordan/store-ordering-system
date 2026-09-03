@@ -23,20 +23,20 @@ if (!in_array($range, $allowedRanges, true)) {
 
 switch ($range) {
     case '30':
-        $where = 'created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)';
-        break;
+    $where = 'created_at >= DATE_SUB(CURDATE(), INTERVAL 29 DAY)';
+    break;
 
-    case 'month':
-        $where = 'YEAR(created_at) = YEAR(CURDATE()) AND MONTH(created_at) = MONTH(CURDATE())';
-        break;
+case 'month':
+    $where = 'YEAR(created_at) = YEAR(CURDATE()) AND MONTH(created_at) = MONTH(CURDATE())';
+    break;
 
-    case 'year':
-        $where = 'YEAR(created_at) = YEAR(CURDATE())';
-        break;
+case 'year':
+    $where = 'YEAR(created_at) = YEAR(CURDATE())';
+    break;
 
-    default:
-        $where = 'created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)';
-        break;
+default:
+    $where = 'created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)';
+    break;
 }
 
 $status = 'Collected';

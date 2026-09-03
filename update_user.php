@@ -244,18 +244,27 @@ try {
         $sql,
         'sssssi',
         [
-                $fullName,
-                $username,
-                $profileImage,
-                $role,
-                $status,
-                $id,
-                ]
+        $fullName,
+        $username,
+        $profileImage,
+        $role,
+        $status,
+        $id,
+    ]
     );
 
     if (!$success) {
         throw new RuntimeException('Unable to update user. Please try again.');
     }
+
+    recordAudit(
+        $conn,
+        (int) $_SESSION['user_id'],
+        'user',
+        $id,
+        'UPDATE',
+        []
+    );
 
     if (!$conn->commit()) {
         throw new RuntimeException('Commit failed for user ID '.$id.': '.$conn->error);

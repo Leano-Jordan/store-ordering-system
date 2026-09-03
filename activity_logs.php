@@ -67,25 +67,31 @@ if ($search !== '') {
         exit('Unable to load activity logs.');
     }
 } else {
-    $result = $conn->query("SELECT activity_logs.action, 
-activity_logs.created_at,
-users.username, users.role FROM activity_logs 
-JOIN users ON activity_logs.user_id = users.id WHERE $where
-ORDER BY activity_logs.created_at DESC LIMIT $limit OFFSET $offset");
+    $result = $conn->query(
+        "SELECT activity_logs.action, 
+        activity_logs.created_at,
+        users.username,
+        users.role FROM activity_logs 
+        JOIN users 
+        ON activity_logs.user_id = users.id WHERE $where
+        ORDER BY activity_logs.created_at 
+        DESC LIMIT $limit OFFSET $offset"
+    );
 }
 
 if (!$result) {
-    error_log('SwiftOrder activity logs query failed: '.$conn->error);
-    $_SESSION['error'] = 'Unable to load activity logs. Please try again.';
+    error_log('SwiftOrder activity logs query failed. '.$conn->error);
+
+    $_SESSION['error'] =
+        'Unable to load activity logs. Please try again.';
+
+    header('Location: dashboard.php');
+    exit();
 }
+
 include 'includes/header.php';
 ?>
 <?php require 'includes/shared/flash_message.php'; ?>
-
 <?php require 'includes/partials/activity_logs/activity_log_toolbar.php'; ?>
-
 <?php require 'includes/partials/activity_logs/activity_log_table.php'; ?>
-
 <?php require 'includes/partials/activity_logs/activity_log_pagination.php'; ?>
-
-<?php include 'includes/footer.php'; ?>

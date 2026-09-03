@@ -101,21 +101,52 @@ $countStmt = $conn->prepare("SELECT COUNT(*) AS total
     $where
 ");
 
-if ($searchParam !== null) {
-    $countStmt->bind_param('sss', $searchParam, $searchParam, $searchParam);
+if (!$countStmt) {
+    error_log('stock_history.php: Failed to prepare stock-history count query: '.$conn->error);
+    $stmt->close();
+    exit('Unable to load stock history.');
+}
+
+if ($bindTypes !== '') {
+    if (!$countStmt->bind_param(
+        $bindTypes,
+        ...$bindValues
+    )) {
+        error_log(
+            'stock_history.php: Failed to bind stock-history count parameters: '
+            .$countStmt->error
+        );
+
+        $countStmt->close();
+        $stmt->close();
+
+        exit('Unable to load stock history.');
+    }
 }
 
 if (!$countStmt->execute()) {
-    error_log('stock_history.php: Failed to count stock history: '.$conn->error);
+    error_log(
+        'stock_history.php: Failed to count stock history: '
+        .$countStmt->error
+    );
+
+    $countStmt->close();
     $stmt->close();
 
     exit('Unable to load stock history.');
 }
 
 $totalResult = $countStmt->get_result();
+
 if (!$totalResult) {
-    error_log('stock_history.php: Failed to retrieve stock-history count result: '.$countStmt->error);
+    error_log(
+        'stock_history.php: Failed to retrieve stock-history count result: '
+        .$countStmt->error
+    );
+
     $countStmt->close();
+    $stmt->close();
+
     exit('Unable to load stock history.');
 }
 

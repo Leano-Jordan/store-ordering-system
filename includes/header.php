@@ -79,7 +79,6 @@ if (defined('APP_ENV') && APP_ENV === 'production' && isset($_SERVER['HTTPS']) &
                 <a href="index.php" class="<?php echo $currentPage === 'index.php' ? 'active-nav' : ''; ?>">Home</a>
                 <a href="dashboard.php" class="<?php echo $currentPage === 'dashboard.php' ? 'active-nav' : ''; ?>">Dashboard</a>
                 <a href="orders.php" class="<?php echo $currentPage === 'orders.php' ? 'active-nav' : ''; ?>">Orders</a>
-                <a href="about.php">About</a>
                 <form method="post" action="logout.php" class="logout-form">
                     <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrfToken(), ENT_QUOTES); ?>">
                     <button type="submit" class="logout-button">Logout</button>

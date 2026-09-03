@@ -11,32 +11,58 @@ if (!isset($page)) {
 $offset = ($page - 1) * $limit;
 
 $where = '';
+$order = '';
 
-if (!empty($_GET['order'])) {
-    $order = trim($_GET['order']);
+$orderRaw = $_GET['order'] ?? '';
+
+if (!is_string($orderRaw)) {
+    $orderRaw = '';
+}
+
+$order = trim($orderRaw);
+
+if ($order !== '') {
     $where = 'WHERE order_number = ? OR customer_name LIKE ?';
 }
 
 if ($where === '') {
-    $result = $conn->query("SELECT * FROM orders ORDER BY created_at DESC LIMIT $limit OFFSET $offset");
-    $totalResult = $conn->query('SELECT COUNT(*) AS total FROM orders');
+    $result = $conn->query(
+        "SELECT * FROM orders 
+        ORDER BY created_at 
+        DESC LIMIT $limit OFFSET $offset"
+    );
+
+    $totalResult = $conn->query(
+        'SELECT COUNT(*) AS total 
+        FROM orders'
+    );
 } else {
-    $stmt = $conn->prepare("SELECT * FROM orders $where ORDER BY created_at DESC LIMIT $limit OFFSET $offset");
+    $stmt = $conn->prepare(
+        "SELECT * FROM orders $where 
+        ORDER BY created_at 
+        DESC LIMIT $limit OFFSET $offset"
+    );
 
     if ($stmt === false) {
         error_log('SwiftOrder orders query prepare failed: '.$conn->error);
         $result = false;
     } else {
-        $param = trim($_GET['order']);
-        $paramLike = "%{$param}%";
-        $stmt->bind_param('ss', $param, $paramLike);
+        $param = $order;
+        $paramLike = "%{$order}%";
 
-        if (!$stmt->execute()) {
-            error_log('SwiftOrder orders query execute failed: '.$conn->error);
+        if (!$stmt->bind_param('ss', $param, $paramLike)
+            ) {
+            error_log('SwiftOrder orders query bind failed: '.$stmt->error);
+            $stmt->close();
+            $result = false;
+        } elseif (!$stmt->execute()) {
+            error_log('SwiftOrder orders query execute failed: '.$stmt->error);
 
+            $stmt->close();
             $result = false;
         } else {
             $result = $stmt->get_result();
+            $stmt->close();
         }
     }
 
@@ -44,19 +70,22 @@ if ($where === '') {
 
     if ($countStmt === false) {
         error_log('SwiftOrder orders count prepare failed: '.$conn->error);
-
         $totalResult = false;
     } else {
-        $countParam = trim($_GET['order']);
-        $countParamLike = "%{$countParam}%";
-        $countStmt->bind_param('ss', $countParam, $countParamLike);
+        $countParam = $order;
+        $countParamLike = "%{$order}%";
 
-        if (!$countStmt->execute()) {
-            error_log('SwiftOrder orders count execute failed: '.$conn->error);
-
+        if (!$countStmt->bind_param('ss', $countParam, $countParamLike)) {
+            error_log('SwiftOrder orders count bind failed: '.$countStmt->error);
+            $countStmt->close();
+            $totalResult = false;
+        } elseif (!$countStmt->execute()) {
+            error_log('SwiftOrder orders count execute failed: '.$countStmt->error);
+            $countStmt->close();
             $totalResult = false;
         } else {
             $totalResult = $countStmt->get_result();
+            $countStmt->close();
         }
     }
 }

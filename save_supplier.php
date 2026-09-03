@@ -60,15 +60,60 @@ $sql = 'INSERT INTO suppliers(
 company_name, contact_person, phone, email, address, notes, status) 
 VALUES(?, ?, ?, ?, ?, ?, ?)';
 
-if (executeStatement(
-    $conn,
-    $sql,
-    'sssssss',
-    [$companyName, $contactPerson, $phone, $email, $address, $notes, $status]
-)) {
-    logActivity($conn, $_SESSION['user_id'], 'Added supplier: '.$companyName);
+$conn->begin_transaction();
+
+try {
+    if (!executeStatement(
+        $conn,
+        $sql,
+        'sssssss',
+        [
+            $companyName,
+            $contactPerson,
+            $phone,
+            $email,
+            $address,
+            $notes,
+            $status,
+        ]
+    )) {
+        throw new RuntimeException('Unable to save supplier.');
+    }
+
+    $supplierId = (int) $conn->insert_id;
+
+    if ($supplierId < 1) {
+        throw new RuntimeException('Supplier creation returned an invalid ID.');
+    }
+
+    recordAudit(
+        $conn,
+        (int) $_SESSION['user_id'],
+        'supplier',
+        $supplierId,
+        'CREATE',
+        [
+            'company_name' => [null, $companyName],
+            'status' => [null, $status],
+        ]
+    );
+
+    if (!$conn->commit()) {
+        throw new RuntimeException('Supplier creation commit failed: '.$conn->error);
+    }
+
     header('Location: suppliers.php');
     exit();
-}
+} catch (Throwable $e) {
+    $conn->rollback();
 
-exit('Unable to Save Supplier.');
+    error_log(
+        'save_supplier.php: '.$e->getMessage()
+    );
+
+    $_SESSION['error'] =
+        'Unable to save supplier. Please try again.';
+
+    header('Location: add_supplier.php');
+    exit();
+}

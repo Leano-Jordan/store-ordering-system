@@ -30,8 +30,11 @@ if (!is_string($notesInput)) {
     exit();
 }
 
-$notes = trim($_POST['notes']);
-$status = in_array($_POST['status'] ?? '', ['Draft', 'Pending']) ? $_POST['status'] : 'Pending';
+$notes = trim($notesInput);
+
+$statusInput = $_POST['status'] ?? '';
+
+$status = (is_string($statusInput) && in_array($statusInput, ['Draft', 'Pending'], true)) ? $statusInput : 'Pending';
 
 $productIds = $_POST['product_id'] ?? [];
 $quantities = $_POST['quantity'] ?? [];
@@ -134,15 +137,16 @@ $poNumber = 'PO-'.date('YmdHis').'-'.str_pad((string) random_int(0, 9999), 4, '0
 $conn->begin_transaction();
 
 try {
-    $stmt = $conn->prepare('INSERT INTO purchase_orders 
-(
-supplier_id,
-po_number,
-total,
-status, 
-notes
-) VALUES(?, ?, ?, ?, ?)
-');
+    $stmt = $conn->prepare(
+        'INSERT INTO purchase_orders
+        (supplier_id, 
+        po_number, 
+        total,
+        status,
+        notes
+        ) VALUES(?, ?, ?, ?, ?)
+'
+    );
 
     if (!$stmt) {
         throw new Exception('Failed to prepare purchase order insert: '.$conn->error);
@@ -164,8 +168,7 @@ notes
     $purchaseOrderId = $conn->insert_id;
     $stmt->close();
 
-    for ($i = 0; $i < count($productIds);
-++$i) {
+    for ($i = 0; $i < count($productIds); ++$i) {
         $productId = filter_var($productIds[$i], FILTER_VALIDATE_INT);
         $qty = filter_var($quantities[$i], FILTER_VALIDATE_INT);
         $price = filter_var($prices[$i], FILTER_VALIDATE_FLOAT);
@@ -176,9 +179,10 @@ notes
 
         $lineTotal = $qty * $price;
 
-        $itemStmt = $conn->prepare('INSERT INTO 
-    purchase_order_items(purchase_order_id, product_id, quantity, cost_price, line_total) 
-    VALUES (?, ?, ?, ?, ?)');
+        $itemStmt = $conn->prepare(
+            'INSERT INTO purchase_order_items(purchase_order_id,product_id, quantity, cost_price, line_total) 
+            VALUES (?, ?, ?, ?, ?)'
+        );
 
         if (!$itemStmt) {
             throw new Exception('Failed to prepare purchase order item insert: '.$conn->error);
@@ -199,11 +203,11 @@ notes
         'purchase_order',
         (int) $purchaseOrderId,
         'CREATE',
-        ['supplier_id' => [null,
-    (string) $supplierId, ],
-    'status' => [null, $status],
-    'total' => [null, number_format($grandTotal, 2, '.', '')],
-    'po_number' => [null, $poNumber],
+        [
+            'supplier_id' => [null, (string) $supplierId],
+            'status' => [null, $status],
+            'total' => [null, number_format($grandTotal, 2, '.', '')],
+            'po_number' => [null, $poNumber],
 ]
     );
 

@@ -121,8 +121,10 @@ $sql = 'INSERT INTO products (name,
     stock) 
     VALUES(?, ?, ?, ?, ?, ?)';
 
-if (
-    executeStatement(
+$conn->begin_transaction();
+
+try {
+    if (!executeStatement(
         $conn,
         $sql,
         'ssdssi',
@@ -134,28 +136,54 @@ if (
             $category,
             $stock,
         ]
-    )
-        ) {
-    if (!logActivity(
-        $conn,
-        $_SESSION['user_id'],
-        'Added product: '.$name
     )) {
-        error_log(
-            'save_product.php: Activity log failed after product creation.'
-        );
+        throw new RuntimeException('Failed to save product.');
+    }
+
+    $productId = (int) $conn->insert_id;
+
+    if ($productId < 1) {
+        throw new RuntimeException('Product creation returned an invalid ID.');
+    }
+
+    recordAudit(
+        $conn,
+        (int) $_SESSION['user_id'],
+        'product',
+        $productId,
+        'CREATE',
+        [
+            'name' => [null, $name],
+            'price' => [
+                null,
+                number_format((float) $price, 2, '.', ''),
+            ],
+            'category' => [null, $category],
+            'stock' => [null, (string) $stock],
+        ]
+    );
+
+    if (!$conn->commit()) {
+        throw new RuntimeException('Product creation commit failed: '.$conn->error);
     }
 
     header('Location: products.php');
     exit();
-}
+} catch (Throwable $e) {
+    $conn->rollback();
 
-if (is_file($imagePath)) {
-    if (!unlink($imagePath)) {
-        error_log('save_product.php: Failed to clean up product image after database failure: '.$imagePath);
+    if (is_file($imagePath) && !unlink($imagePath)) {
+        error_log(
+            'save_product.php: Failed to remove product image after rollback: '.$imagePath
+        );
     }
-} error_log('save_product.php: Failed to save product to database: '.$conn->error);
 
-$_SESSION['error'] = 'Unable to save product. Please try again.';
-header('Location: add_product.php');
-exit();
+    error_log(
+        'save_product.php: '.$e->getMessage()
+    );
+
+    $_SESSION['error'] = 'Unable to save product. Please try again.';
+
+    header('Location: add_product.php');
+    exit();
+}
