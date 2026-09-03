@@ -63,20 +63,19 @@ try {
         'supplier',
         $id,
         'REACTIVATE',
-        ['status' => ['Inactive', 'Active'],
-        ]
+        ['status' => ['Inactive', 'Active']]
     );
-
-    if (!$conn->commit()) {
-        throw new RuntimeException('Supplier Reactivation commit failed.');
-    }
 
     if (!logActivity(
         $conn,
         (int) $_SESSION['user_id'],
         'Reactivate supplier ID '.$id
     )) {
-        error_log('reactivate_supplier.php: Activity log failed for supplier ID '.$id);
+        throw new RuntimeException('Failed to record supplier activity.');
+    }
+
+    if (!$conn->commit()) {
+        throw new RuntimeException('Supplier Reactivation commit failed.');
     }
 
     $_SESSION['success'] = 'Supplier Reactivated successfully.';

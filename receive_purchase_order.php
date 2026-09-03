@@ -243,8 +243,10 @@ WHERE purchase_order_id = ?
 
         $itemCopy->close();
 
-        $receiptChanges = ['status' => ['Pending', 'Received'], 'grn_number' => [null, $grnNumber],
-    ];
+        $receiptChanges = [
+            'status' => ['Pending', 'Received'],
+            'grn_number' => [null, $grnNumber],
+        ];
 
         recordAudit(
             $conn,
@@ -255,22 +257,25 @@ WHERE purchase_order_id = ?
             $receiptChanges
         );
 
+        if (!logActivity(
+            $conn,
+            (int) $_SESSION['user_id'],
+            'Received Purchase Order ID '.$id
+        )) {
+            throw new RuntimeException('Failed to record purchase order receipt activity.');
+        }
+
         if (!$conn->commit()) {
-            throw new Exception('Transaction commit failed: '.$conn->error);
+            throw new RuntimeException('Transaction commit failed: '.$conn->error);
         }
     } catch (Throwable $e) {
         $conn->rollback();
 
-        error_log('receive_purchase_order.php: '.$e->getMessage());
-        exit('Failed to receive purchase order');
-    }
+        error_log(
+            'receive_purchase_order.php: '.$e->getMessage()
+        );
 
-    if (!logActivity(
-        $conn,
-        (int) $_SESSION['user_id'],
-        'Received Purchase Order ID '.$id
-    )) {
-        error_log('receive_purchase_order.php: Activity log failed for purchase order ID '.$id);
+        exit('Failed to receive purchase order');
     }
 
     header('Location: purchase_orders.php');

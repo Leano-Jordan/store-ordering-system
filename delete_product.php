@@ -4,6 +4,7 @@ require_once 'includes/permissions.php';
 requireRole([ROLE_ADMIN]);
 require_once 'includes/db.php';
 require_once 'includes/logger.php';
+require_once 'includes/csrf.php';
 
 /************ ************** DELETE PRODUCT *********** *****************/
 

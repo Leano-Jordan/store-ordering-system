@@ -168,9 +168,9 @@ WHERE id = ? AND status = ?',
 
         $vatStmt = $conn->prepare(
             'SELECT vat_enabled, vat_rate
-             FROM business_settings
-             WHERE id = 1
-             LIMIT 1'
+            FROM business_settings
+            WHERE id = 1
+            LIMIT 1'
         );
 
         if (!$vatStmt) {
@@ -271,34 +271,40 @@ WHERE id = ? AND status = ?',
         );
     }
 
+    if (!logActivity(
+        $conn,
+        (int) $_SESSION['user_id'],
+        "Changed Order $orderNumber from $currentStatus to $status"
+    )) {
+        throw new RuntimeException('Failed to record order activity.');
+    }
+
     if (!$conn->commit()) {
-        throw new Exception('Failed to commit order status update.');
+        throw new RuntimeException('Failed to commit order status update.');
     }
 } catch (Throwable $e) {
     $conn->rollback();
 
-    error_log('update_status.php: '.$e->getMessage());
+    error_log(
+        'update_status.php: '.$e->getMessage()
+    );
 
-    $_SESSION['flash_error'] = 'Failed to update order status. Please try again.';
+    $_SESSION['flash_error'] =
+        'Failed to update order status. Please try again.';
 
-    header('Location: order_details.php?id='.(int) $id);
+    header(
+        'Location: order_details.php?id='.(int) $id
+    );
+
     exit();
 }
 
-if (!logActivity(
-    $conn,
-    (int) $_SESSION['user_id'],
-    "Changed Order $orderNumber from $currentStatus to $status"
-)) {
-    error_log(
-        'update_status.php: Activity log failed for order ID '.(int) $id
+if (($_POST['return_to'] ?? '') === 'orders') {
+    header('Location: orders.php');
+} else {
+    header(
+        'Location: order_details.php?id='.(int) $id
     );
 }
 
-    if (($_POST['return_to'] ?? '') === 'orders') {
-        header('Location: orders.php');
-    } else {
-        header('Location: order_details.php?id='.(int) $id);
-    }
-
-    exit();
+exit();
