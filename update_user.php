@@ -231,7 +231,7 @@ try {
         $newProfileImageUploaded = true;
     }
 
-        $sql = 'UPDATE users
+    $sql = 'UPDATE users
                 SET full_name = ?,
                     username = ?,
                     profile_image = ?,
@@ -239,11 +239,11 @@ try {
                     status = ?
                 WHERE id = ?';
 
-        $success = executeStatement(
-            $conn,
-            $sql,
-            'sssssi',
-            [
+    $success = executeStatement(
+        $conn,
+        $sql,
+        'sssssi',
+        [
                 $fullName,
                 $username,
                 $profileImage,
@@ -251,7 +251,7 @@ try {
                 $status,
                 $id,
                 ]
-        );
+    );
 
     if (!$success) {
         throw new RuntimeException('Unable to update user. Please try again.');
@@ -260,7 +260,6 @@ try {
     if (!$conn->commit()) {
         throw new RuntimeException('Commit failed for user ID '.$id.': '.$conn->error);
     }
-
 } catch (Throwable $e) {
     $conn->rollback();
 

@@ -220,8 +220,16 @@ include 'includes/header.php';
 </div>
 
 <script>
-window.poProducts = <?php echo json_encode($productList); ?>;
-window.poItems = <?php echo json_encode($purchaseOrderItems); ?>;
+window.poProducts = <?php echo json_encode(
+        $productList,
+        JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+    );
+        ?>;
+        
+window.poItems = <?php echo json_encode(
+            $purchaseOrderItems,
+            JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+        ); ?>;
 
 </script>
 

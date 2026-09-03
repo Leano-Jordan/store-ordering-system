@@ -49,8 +49,8 @@ if (!is_string($reasonRaw) || !is_string($notesRaw)) {
     exit();
 }
 
-$reasonInput = trim($reasonRaw);
-$notesInput = trim($notesRaw);
+$reason = trim($reasonRaw);
+$notes = trim($notesRaw);
 
 if ($reason === '') {
     $_SESSION['error'] = 'Please provide a reason for the stock adjustment.';
