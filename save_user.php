@@ -1,14 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 require_once 'includes/auth.php';
 require_once 'includes/permissions.php';
 requireRole([ROLE_ADMIN]);
+
 require_once 'includes/csrf.php';
-verifyCsrfToken();
 require_once 'includes/db.php';
 require_once 'includes/helpers.php';
-require_once 'includes/logger.php';
+require_once 'includes/audit.php';
 require_once 'includes/upload_helpers.php';
+
+verifyCsrfToken();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: users.php');
@@ -52,7 +56,12 @@ if (
     exit();
 }
 
-$allowedRoles = [ROLE_ADMIN, ROLE_MANAGER, ROLE_CASHIER, ROLE_KITCHEN];
+$allowedRoles = [
+    ROLE_ADMIN,
+    ROLE_MANAGER,
+    ROLE_CASHIER,
+    ROLE_KITCHEN,
+];
 
 if (!in_array($role, $allowedRoles, true)) {
     $_SESSION['error'] = 'Invalid role selected.';
@@ -60,16 +69,34 @@ if (!in_array($role, $allowedRoles, true)) {
     exit();
 }
 
+$allowedStatuses = [
+    'Active',
+    'Inactive',
+];
+
+if (!in_array($status, $allowedStatuses, true)) {
+    $_SESSION['error'] = 'Invalid status selected.';
+    header('Location: add_user.php');
+    exit();
+}
+
 $profileImage = null;
+$destination = null;
 
 if (
-    isset($_FILES['profile_image']) &&
-    $_FILES['profile_image']['error'] !== UPLOAD_ERR_NO_FILE
+    isset($_FILES['profile_image']) && is_array($_FILES['profile_image']) &&
+    ($_FILES['profile_image']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE
 ) {
-    if ($_FILES['profile_image']['error'] !== UPLOAD_ERR_OK) {
-        error_log('Error uploading profile image with error code: '.$_FILES['profile_image']['error']);
+    $uploadError = $_FILES['profile_image']['error'] ?? null;
+    $temporaryPath = $_FILES['profile_image']['tmp_name'] ?? null;
+    $fileSize = $_FILES['profile_image']['size'] ?? null;
 
+    if (
+        !is_int($uploadError) || $uploadError !== UPLOAD_ERR_OK ||
+        !is_string($temporaryPath) || !is_int($fileSize)
+    ) {
         $_SESSION['error'] = 'Error uploading profile image.';
+
         header('Location: add_user.php');
         exit();
     }
@@ -80,25 +107,32 @@ if (
         'image/webp',
     ];
 
-    $maxFileSize = 2 * 1024 * 1024; // 2MB
+    $maxFileSize = 2 * 1024 * 1024;
 
     $finfo = new finfo(FILEINFO_MIME_TYPE);
-    $mimeType = $finfo->file($_FILES['profile_image']['tmp_name']);
+    $mimeType = $finfo->file($temporaryPath);
 
-    if ($mimeType === false || !in_array($mimeType, $allowedMimeTypes, true)) {
+    if (
+        $mimeType === false || !in_array($mimeType, $allowedMimeTypes, true)
+    ) {
         $_SESSION['error'] = 'Invalid profile image format.';
+
         header('Location: add_user.php');
         exit();
     }
 
-    if ($_FILES['profile_image']['size'] > $maxFileSize) {
-        $_SESSION['error'] = 'Profile image exceeds 2MB.';
+    if ($fileSize > $maxFileSize) {
+        $_SESSION['error'] =
+            'Profile image exceeds 2MB.';
+
         header('Location: add_user.php');
         exit();
     }
 
-    if (!validateImageDimensions($_FILES['profile_image']['tmp_name'])) {
-        $_SESSION['error'] = 'Profile image dimensions are too large.';
+    if (!validateImageDimensions($temporaryPath)) {
+        $_SESSION['error'] =
+            'Profile image dimensions are too large.';
+
         header('Location: add_user.php');
         exit();
     }
@@ -109,79 +143,175 @@ if (
         'image/webp' => 'webp',
     ];
 
-    $profileImage = bin2hex(random_bytes(16)).'.'.$allowedExtensions[$mimeType];
+    try {
+        $profileImage =
+            bin2hex(random_bytes(16)).'.'.$allowedExtensions[$mimeType];
+    } catch (Throwable $exception) {
+        error_log(
+            'save_user.php: Failed to generate profile image name: '.$exception->getMessage()
+        );
+
+        $_SESSION['error'] = 'Unable to process profile image.';
+
+        header('Location: add_user.php');
+        exit();
+    }
 
     $destination = __DIR__.'/assets/images/profiles/'.$profileImage;
 
-    if (!move_uploaded_file($_FILES['profile_image']['tmp_name'], $destination)) {
+    if (
+        !move_uploaded_file($temporaryPath, $destination)
+    ) {
         $_SESSION['error'] = 'Failed to upload profile image.';
+
         header('Location: add_user.php');
         exit();
     }
 }
 
-$check = $conn->prepare('SELECT id FROM users WHERE username = ?');
-$check->bind_param('s', $username);
-$check->execute();
-$existingUser = $check->get_result();
+$conn->begin_transaction();
 
-if ($existingUser->num_rows > 0) {
-    $check->close();
-
-    if (
-        $profileImage !== null
-        && isset($destination)
-        && is_file($destination)
-        && !unlink($destination)
-        ) {
-        error_log('save_user.php: Failed to remove orphan profile image: '.$destination);
-    }
-
-    $_SESSION['error'] = 'Username already exists.';
-    header('Location: add_user.php');
-    exit();
-}
-
-$check->close();
-
-$hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-
-$sql = 'INSERT INTO users (full_name, username, password, profile_image, role, status) VALUES(?, ?, ?, ?, ?, ?)';
-
-if (executeStatement(
-    $conn,
-    $sql,
-    'ssssss',
-    [
-        $fullName,
-        $username,
-        $hashedPassword,
-        $profileImage,
-        $role,
-        $status,
-    ]
-)) {
-    logActivity(
-        $conn,
-        $_SESSION['user_id'],
-        'Added user: '.$username
+try {
+    $check = $conn->prepare(
+        'SELECT id
+        FROM users
+        WHERE username = ?
+        LIMIT 1
+        FOR UPDATE'
     );
 
-    $_SESSION['success'] = 'User Added Successfully.';
-    header('Location: users.php');
-    exit();
-}
-    if ($profileImage !== null &&
-    isset($destination) &&
-    is_file($destination)
-    ) {
-        if (!unlink($destination)) {
-            error_log('save_user.php: Failed to remove profile image after database failure: '.$destination);
-        }
+    if (!$check) {
+        throw new RuntimeException('Unable to check username.');
     }
 
-    error_log('save_user.php: Failed to save user.');
+    if (!$check->bind_param('s', $username)) {
+        $check->close();
 
-    $_SESSION['error'] = 'Unable to save user. Please try again.';
+        throw new RuntimeException('Unable to bind username check.');
+    }
+
+    if (!$check->execute()) {
+        $error = $check->error;
+        $check->close();
+
+        throw new RuntimeException('Unable to check username: '.$error);
+    }
+
+    $existingUser = $check->get_result();
+
+    if ($existingUser !== false && $existingUser->num_rows > 0
+    ) {
+        $check->close();
+
+        throw new InvalidArgumentException('Username already exists.');
+    }
+
+    $check->close();
+
+    $hashedPassword = password_hash(
+        $password,
+        PASSWORD_DEFAULT
+    );
+
+    if ($hashedPassword === false) {
+        throw new RuntimeException('Unable to secure user password.');
+    }
+
+    $sql = 'INSERT INTO users (
+                full_name,
+                username,
+                password,
+                profile_image,
+                role,
+                status
+            ) VALUES (?, ?, ?, ?, ?, ?)';
+
+    if (!executeStatement(
+        $conn,
+        $sql,
+        'ssssss',
+        [
+            $fullName,
+            $username,
+            $hashedPassword,
+            $profileImage,
+            $role,
+            $status,
+        ]
+    )) {
+        throw new RuntimeException('Unable to save user.');
+    }
+
+    $userId = (int) $conn->insert_id;
+
+    if ($userId < 1) {
+        throw new RuntimeException('User ID was not generated.');
+    }
+
+    recordAudit(
+        $conn,
+        (int) $_SESSION['user_id'],
+        'user',
+        $userId,
+        'CREATE',
+        [
+            'full_name' => [
+                null, '[created]',
+            ],
+            'username' => [
+                null, '[created]',
+            ],
+            'role' => [
+                null, $role,
+            ],
+            'status' => [
+                null, $status,
+            ],
+            'profile_image' => [
+                null, $profileImage !== null
+                    ? '[uploaded]' : null,
+            ],
+        ]
+    );
+
+    if (!$conn->commit()) {
+        $error = $conn->error;
+
+        throw new RuntimeException('User creation commit failed: '.$error);
+    }
+
+    $_SESSION['success'] =
+        'User added successfully.';
+
+    header('Location: users.php');
+    exit();
+} catch (InvalidArgumentException $exception) {
+    $conn->rollback();
+
+    if (
+        $destination !== null && is_file($destination) && !unlink($destination)
+    ) {
+        error_log(
+            'save_user.php: Failed to remove profile image after validation failure: '.$destination
+        );
+    }
+
+    $_SESSION['error'] = $exception->getMessage();
+
     header('Location: add_user.php');
     exit();
+} catch (Throwable $exception) {
+    $conn->rollback();
+
+    if ($destination !== null && is_file($destination) && !unlink($destination)
+    ) {
+        error_log('save_user.php: Failed to remove profile image after rollback: '.$destination);
+    }
+
+    error_log('save_user.php: '.$exception->getMessage());
+
+    $_SESSION['error'] = 'Unable to save user. Please try again.';
+
+    header('Location: add_user.php');
+    exit();
+}
