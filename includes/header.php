@@ -30,6 +30,7 @@ if (defined('APP_ENV') && APP_ENV === 'production' && isset($_SERVER['HTTPS']) &
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="stylesheet" href="assets/css/components/controls.css">
     <link rel="stylesheet" href="assets/css/components/tables.css">
+    <link rel="stylesheet" href="assets/css/components/status.css">
     <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
 </head>
 
