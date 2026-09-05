@@ -10,6 +10,7 @@
     overflow-y: visible;
 }
 
+.data-table,
 .orders-table,
 .grn-table {
     width: 100%;
@@ -22,6 +23,7 @@
     line-height: 1.4;
 }
 
+.data-table th,
 .orders-table th,
 .grn-table th {
     padding: var(--space-3) var(--space-4);
@@ -36,6 +38,7 @@
     white-space: nowrap;
 }
 
+.data-table td,
 .orders-table td,
 .grn-table td {
     padding: var(--space-3) var(--space-4);
@@ -44,22 +47,27 @@
     text-align: left;
 }
 
+.data-table tbody tr,
 .orders-table tbody tr,
 .grn-table tbody tr {
     background: var(--color-surface);
     transition: background-color var(--control-transition);
 }
 
+.data-table tbody tr:hover,
 .orders-table tbody tr:hover,
 .grn-table tbody tr:hover {
     background: var(--color-background);
 }
 
+.data-table tbody tr:last-child td,
 .orders-table tbody tr:last-child td,
 .grn-table tbody tr:last-child td {
     border-bottom: 0;
 }
 
+.data-table th:first-child,
+.data-table td:first-child,
 .orders-table th:first-child,
 .orders-table td:first-child,
 .grn-table th:first-child,
@@ -67,6 +75,8 @@
     padding-left: var(--space-4);
 }
 
+.data-table th:last-child,
+.data-table td:last-child,
 .orders-table th:last-child,
 .orders-table td:last-child,
 .grn-table th:last-child,
@@ -74,14 +84,17 @@
     padding-right: var(--space-4);
 }
 
+.data-table td .action-btn,
 .orders-table td .action-btn,
 .grn-table td .action-btn {
     white-space: nowrap;
 }
 
+.data-table a:focus-visible,
+.data-table button:focus-visible,
 .orders-table a:focus-visible,
-.grn-table a:focus-visible,
 .orders-table button:focus-visible,
+.grn-table a:focus-visible,
 .grn-table button:focus-visible {
     outline: var(--control-focus-width) solid var(--control-focus);
     outline-offset: var(--control-focus-offset);
@@ -92,11 +105,14 @@
         margin-inline: 0;
     }
 
+    .data-table,
     .orders-table,
     .grn-table {
         min-width: 640px;
     }
 
+    .data-table th,
+    .data-table td,
     .orders-table th,
     .orders-table td,
     .grn-table th,
