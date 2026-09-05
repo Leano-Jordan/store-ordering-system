@@ -27,33 +27,33 @@
     <div class="activity-legend">
 
     <div class="product-status">
-        <span class="status ready">
+        <span class="status success">
             🟢 Added Product
         </span>
 
-        <span class="status preparing">
+        <span class="status info">
             🔵 Updated Product
         </span>
 
-        <span class="status pending">
+        <span class="status warning">
             🟠 Order Changes
         </span>
 
-        <span class="status cancelled">
+        <span class="status danger">
             🔴 Deactivated Product
         </span>
     </div>
 
     <div class="PO-status">   
-        <span class="status ready">
+        <span class="status success">
             🟢 PO Received
         </span>
 
-        <span class="status preparing">
+        <span class="status info">
             🔵 PO Created
         </span>
 
-        <span class="status cancelled">
+        <span class="status danger">
             🔴 PO Cancelled
         </span>
     </div>
