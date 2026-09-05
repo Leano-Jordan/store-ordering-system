@@ -6,18 +6,18 @@
 
 :root {
     --control-primary: var(--color-primary);
---control-primary-hover: #0b5ed7;
---control-secondary: var(--color-secondary);
---control-secondary-hover: #343a40;
---control-danger: var(--color-danger);
---control-danger-hover: #bb2d3b;
---control-success: var(--color-success);
---control-warning: var(--color-warning);
---control-focus: var(--color-focus);
---control-disabled-opacity: 0.6;
---control-radius: var(--radius-md);
---control-height: 36px;
---control-padding-inline: 14px;
+    --control-primary-hover: #0b5ed7;
+    --control-secondary: var(--color-secondary);
+    --control-secondary-hover: #343a40;
+    --control-danger: var(--color-danger);
+    --control-danger-hover: #bb2d3b;
+    --control-success: var(--color-success);
+    --control-warning: var(--color-warning);
+    --control-focus: var(--color-focus);
+    --control-disabled-opacity: 0.6;
+    --control-radius: var(--radius-md);
+    --control-height: 36px;
+    --control-padding-inline: 14px;
 }
 
 /* Base action control */
