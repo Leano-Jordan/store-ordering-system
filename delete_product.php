@@ -8,15 +8,53 @@ require_once 'includes/csrf.php';
 
 /************ ************** DELETE PRODUCT *********** *****************/
 
-$id = (int) $_GET['id'];
+$id = (int) ($_GET['id'] ?? 0);
+
+if ($id <= 0) {
+    header('Location: products.php');
+    exit();
+}
+
 $sql = 'SELECT * FROM products WHERE id=?';
 
 $stmt = $conn->prepare($sql);
-$stmt->bind_param('i', $id);
-$stmt->execute();
+
+if (!$stmt) {
+    error_log('delete_product.php: Failed to prepare product lookup: '.$conn->error);
+    $_SESSION['error'] = 'Unable to load the product. Please try again.';
+    header('Location: products.php');
+    exit();
+}
+
+if (!$stmt->bind_param('i', $id)) {
+    error_log('delete_product.php: Failed to bind product ID: '.$stmt->error);
+    $stmt->close();
+    $_SESSION['error'] = 'Unable to load the product. Please try again.';
+    header('Location: products.php');
+    exit();
+}
+
+if (!$stmt->execute()) {
+    error_log('delete_product.php: Failed to execute product lookup: '.$stmt->error);
+    $stmt->close();
+    $_SESSION['error'] = 'Unable to load the product. Please try again.';
+    header('Location: products.php');
+    exit();
+}
 
 $result = $stmt->get_result();
+
+if (!$result) {
+    error_log('delete_product.php: Failed to retrieve product result: '.$stmt->error);
+    $stmt->close();
+    $_SESSION['error'] = 'Unable to load the product. Please try again.';
+    header('Location: products.php');
+    exit();
+}
+
 $product = $result->fetch_assoc();
+
+$stmt->close();
 
 if (!$product) {
     header('Location: products.php');

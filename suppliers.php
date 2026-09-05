@@ -65,13 +65,16 @@ if ($search !== '') {
     if (!$result) {
         error_log('activity_logs.php: Failed to retrieve search parameters: '.$stmt->error);
         $stmt->close();
+        $_SESSION['error'] = 'Unable to load suppliers. Please try again.';
+        header('Location: suppliers.php');
         exit('Unable to load suppliers.');
     }
 
-    $countStmt = $conn->prepare('SELECT COUNT(*) AS total FROM suppliers WHERE company_name LIKE ? 
-    OR contact_person LIKE ? 
-    OR phone LIKE ? 
-    OR email LIKE ? ');
+    $countStmt = $conn->prepare(
+        'SELECT COUNT(*) AS total FROM suppliers 
+        WHERE company_name LIKE ? OR contact_person LIKE ? 
+        OR phone LIKE ? OR email LIKE ? '
+    );
 
     if (!$countStmt) {
         error_log('Unable to load suppliers count: '.$conn->error);
@@ -103,11 +106,27 @@ LIMIT $limit OFFSET $offset");
     }
 
     $totalResult = $conn->query('SELECT COUNT(*) AS total FROM suppliers');
+
+    if (!$totalResult) {
+        error_log('suppliers.php: Failed to count suppliers: '.$conn->error);
+        $_SESSION['error'] = 'Unable to load supplier totals. Please try again.';
+        header('Location: suppliers.php');
+        exit();
+    }
 }
 
-$totalRows = $totalResult->fetch_assoc()['total'];
+$totalRow = $totalResult->fetch_assoc();
 
-$totalPages = ceil($totalRows / $limit);
+    if (!is_array($totalRow) || !isset($totalRow['total'])) {
+        error_log('suppliers.php: Supplier count query returned an invalid result.');
+        $_SESSION['error'] = 'Unable to load supplier totals. Please try again.';
+        header('Location: suppliers.php');
+        exit();
+    }
+
+$totalRows = (int) $totalRow['total'];
+
+$totalPages = (int) ceil($totalRows / $limit);
 
 include 'includes/header.php';
 ?>
