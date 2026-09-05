@@ -213,9 +213,9 @@
     line-height: 1.3;
 }
 
-/* Search/filter controls use the same field foundation with tighter geometry. */
-.search-area,
-.search-form .search-area {
+/* Search and filter foundation. Existing IDs/classes remain unchanged. */
+.search-form,
+.search-area {
     display: flex;
     align-items: center;
     gap: var(--space-2);
@@ -224,17 +224,35 @@
 .search-area input[type="search"],
 .search-area input[type="text"],
 .search-form input[type="search"],
-.search-form input[type="text"] {
+.search-form input[type="text"],
+.search-form select {
     min-height: var(--control-height);
     padding: var(--space-2) var(--field-padding-inline);
+    border: 1px solid var(--color-border);
     border-radius: var(--control-radius);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+    font-size: var(--font-size-body);
+    line-height: 1.4;
+    box-sizing: border-box;
+}
+
+.search-area input[type="search"],
+.search-area input[type="text"] {
+    flex: 1 1 280px;
+    width: 100%;
+    max-width: 500px;
+}
+
+.search-form select {
+    flex: 0 1 220px;
 }
 
 .search-area input[type="search"]:focus,
 .search-area input[type="text"]:focus,
 .search-form input[type="search"]:focus,
 .search-form input[type="text"]:focus,
-.search-area select:focus,
 .search-form select:focus {
     border-color: var(--control-focus);
     outline: var(--control-focus-width) solid color-mix(in srgb, var(--control-focus) 20%, transparent);
@@ -272,16 +290,18 @@
         min-height: 40px;
     }
 
-    .search-area,
-    .search-form .search-area {
+    .search-form,
+    .search-area {
         flex-wrap: wrap;
     }
 
     .search-area input[type="search"],
     .search-area input[type="text"],
     .search-form input[type="search"],
-    .search-form input[type="text"] {
+    .search-form input[type="text"],
+    .search-form select {
         min-height: 40px;
         flex: 1 1 220px;
+        max-width: none;
     }
 }
