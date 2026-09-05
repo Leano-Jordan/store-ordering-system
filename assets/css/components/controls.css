@@ -200,7 +200,7 @@
 .form-group input[type="checkbox"],
 .form-group input[type="radio"] {
     width: auto;
-    min-height: auto;
+    min-height: 0;
     padding: 0;
     border: 0;
     border-radius: 0;
