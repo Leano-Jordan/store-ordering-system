@@ -150,7 +150,8 @@ $stmt->close();
 
 </div>
 
-<table class="orders-table">
+<div class="table-container">
+    <table class="orders-table data-table">
 
     <thead>
         <tr>
@@ -184,6 +185,8 @@ $stmt->close();
     </tbody>
 
 </table>
+
+</div>
 
 <div class="page-header">
 

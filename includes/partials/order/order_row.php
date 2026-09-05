@@ -15,7 +15,23 @@
         </td>
 
         <td>
-            <span class="status <?php echo strtolower($row['status']); ?>">
+            <span class="status <?php
+                switch ($row['status']) {
+                    case 'Pending': echo 'pending';
+                        break;
+
+                    case 'Preparing': echo 'info';
+                        break;
+
+                    case 'Ready': case 'Collected': echo 'success';
+                        break;
+
+                    case 'Cancelled': echo 'danger';
+                        break;
+
+                    default: echo 'info';
+                }
+            ?>">
                 <?php echo htmlspecialchars($row['status'], ENT_QUOTES, 'UTF-8'); ?>
             </span>
         </td>
