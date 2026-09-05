@@ -758,119 +758,7 @@ ORDERS TABLE
 }
 
 /* ==========================================================
-    ACTION BUTTONS
-   ========================================================== */
-
-.action-btn {
-    background: #ee9a1c;
-    color: #ffffff;
-    border: none;
-    transition: background-color 0.15s ease, color 0.15s ease;
-    padding: 8px 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: bold;
-    text-decoration: none;
-    margin: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.action-btn:hover {
-    background: #ffb74c;
-    color: #ffffff;
-}
-
-.action-btn:focus-visible {
-    outline: 2px solid #0d6efd;
-    outline-offset: 2px;
-}
-
-.action-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.reactivate-btn {
-    min-width: 120px;
-}
-
-.edit-btn {
-    background: #257afa;
-}
-
-.edit-btn:hover {
-    background: #0b5ed7;
-}
-
-.clear-btn {
-    background: #0d6efd;
-    color: #ffffff;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 7px 16px;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: bold;
-    min-width: 40px;
-}
-
-.clear-btn:hover {
-    background: #0b5ed7;
-}
-
-.delete-btn {
-    padding: 8px 14px;
-    min-width: auto;
-    width: auto;
-    background: #d84554;
-    margin-left: 6px;
-}
-
-.delete-btn:hover {
-    background: #bb2d3b;
-    color: #ffffff;
-}
-
-.pending-btn {
-    background: #ffc107;
-    color: #000;
-}
-
-.preparing-btn {
-    background: #0d6efd;
-}
-
-.ready-btn {
-    background: #198754;
-    color: #fff;
-}
-
-.cancelled-btn {
-    background: #d84554;
-    color: #fff;
-}
-
-.out-of-stock-btn {
-    background: #e8e8e8;
-    color: #888;
-    border: 1px solid #d0d0d0;
-    cursor: not-allowed;
-    font-size: 12px;
-    padding: 6px 10px;
-    margin: 0;
-}
-
-.out-of-stock-btn:hover {
-    background: #e8e8e8;
-    color: #888;
-}
-
-
-/* ==========================================================
-   ACTIVITY LOGS
+    ACTIVITY LOGS
    ========================================================== */
 
 .activity-toolbar {
@@ -895,7 +783,7 @@ ORDERS TABLE
 
 
 /* ==========================================================
-   PAGE HEADER
+    PAGE HEADER
    ========================================================== */
 
 .page-header {
