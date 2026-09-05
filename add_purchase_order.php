@@ -152,21 +152,23 @@ include 'includes/header.php';
     </button>
 </div>
 
-<table id="purchase-order-items" class="orders-table">
-    <thead>
-        <tr>
-            <th>Product</th>
-            <th>Quantity</th>
-            <th>Unit Cost</th>
-            <th>Total</th>
-            <th>Action</th>
-        </tr>
+<div class="table-container">
+    <table id="purchase-order-items" class="orders-table data-table">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Unit Cost</th>
+                <th>Total</th>
+                <th>Action</th>
+            </tr>
 
-    </thead>
-    <tbody>
+        </thead>
+        <tbody>
 
-</tbody>
-</table>
+        </tbody>
+    </table>
+</div>
 
 </div>
 
