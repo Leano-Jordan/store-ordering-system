@@ -167,7 +167,19 @@
 }
 
 /* Shared form field foundation. Existing .form-group markup is retained. */
-.form-group input:not([type="hidden"]),
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="password"],
+.form-group input[type="number"],
+.form-group input[type="tel"],
+.form-group input[type="url"],
+.form-group input[type="search"],
+.form-group input[type="date"],
+.form-group input[type="datetime-local"],
+.form-group input[type="month"],
+.form-group input[type="time"],
+.form-group input[type="week"],
+.form-group input:not([type]) ,
 .form-group textarea,
 .form-group select {
     width: 100%;
@@ -185,12 +197,45 @@
                 background-color var(--control-transition);
 }
 
+.form-group input[type="checkbox"],
+.form-group input[type="radio"] {
+    width: auto;
+    min-height: auto;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    accent-color: var(--control-primary);
+}
+
+.form-group input[type="file"] {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: var(--field-height);
+    padding: var(--space-2) 0;
+    font: inherit;
+    font-size: var(--font-size-body);
+    color: var(--color-text);
+}
+
 .form-group textarea {
     min-height: 96px;
     resize: vertical;
 }
 
-.form-group input:not([type="hidden"]):focus,
+.form-group input[type="text"]:focus,
+.form-group input[type="email"]:focus,
+.form-group input[type="password"]:focus,
+.form-group input[type="number"]:focus,
+.form-group input[type="tel"]:focus,
+.form-group input[type="url"]:focus,
+.form-group input[type="search"]:focus,
+.form-group input[type="date"]:focus,
+.form-group input[type="datetime-local"]:focus,
+.form-group input[type="month"]:focus,
+.form-group input[type="time"]:focus,
+.form-group input[type="week"]:focus,
+.form-group input:not([type]):focus,
 .form-group textarea:focus,
 .form-group select:focus {
     border-color: var(--control-focus);
@@ -198,12 +243,50 @@
     outline-offset: 0;
 }
 
-.form-group input:not([type="hidden"]):disabled,
+.form-group input[type="text"]:focus-visible,
+.form-group input[type="email"]:focus-visible,
+.form-group input[type="password"]:focus-visible,
+.form-group input[type="number"]:focus-visible,
+.form-group input[type="tel"]:focus-visible,
+.form-group input[type="url"]:focus-visible,
+.form-group input[type="search"]:focus-visible,
+.form-group input[type="date"]:focus-visible,
+.form-group input[type="datetime-local"]:focus-visible,
+.form-group input[type="month"]:focus-visible,
+.form-group input[type="time"]:focus-visible,
+.form-group input[type="week"]:focus-visible,
+.form-group input:not([type]):focus-visible,
+.form-group textarea:focus-visible,
+.form-group select:focus-visible {
+    outline-offset: var(--control-focus-offset);
+}
+
+.form-group input[type="text"]:disabled,
+.form-group input[type="email"]:disabled,
+.form-group input[type="password"]:disabled,
+.form-group input[type="number"]:disabled,
+.form-group input[type="tel"]:disabled,
+.form-group input[type="url"]:disabled,
+.form-group input[type="search"]:disabled,
+.form-group input[type="date"]:disabled,
+.form-group input[type="datetime-local"]:disabled,
+.form-group input[type="month"]:disabled,
+.form-group input[type="time"]:disabled,
+.form-group input[type="week"]:disabled,
+.form-group input:not([type]):disabled,
 .form-group textarea:disabled,
 .form-group select:disabled {
     background: var(--color-background);
     color: var(--color-text-muted);
     cursor: not-allowed;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder,
+.search-area input::placeholder,
+.search-form input::placeholder {
+    color: var(--color-text-muted);
+    opacity: 1;
 }
 
 .form-group label {
@@ -259,6 +342,20 @@
     outline-offset: 0;
 }
 
+.search-area input[type="search"]:focus-visible,
+.search-area input[type="text"]:focus-visible,
+.search-form input[type="search"]:focus-visible,
+.search-form input[type="text"]:focus-visible,
+.search-form select:focus-visible {
+    outline-offset: var(--control-focus-offset);
+}
+
+.search-area input[type="search"]::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
+}
+
 .search-area .action-btn,
 .search-form .action-btn {
     flex-shrink: 0;
@@ -269,6 +366,7 @@
     align-items: center;
     gap: var(--space-2);
     flex-wrap: wrap;
+    margin-bottom: var(--space-4);
 }
 
 .category-filter .category-btn {
@@ -284,7 +382,19 @@
 }
 
 @media (max-width: 640px) {
-    .form-group input:not([type="hidden"]),
+    .form-group input[type="text"],
+    .form-group input[type="email"],
+    .form-group input[type="password"],
+    .form-group input[type="number"],
+    .form-group input[type="tel"],
+    .form-group input[type="url"],
+    .form-group input[type="search"],
+    .form-group input[type="date"],
+    .form-group input[type="datetime-local"],
+    .form-group input[type="month"],
+    .form-group input[type="time"],
+    .form-group input[type="week"],
+    .form-group input:not([type]),
     .form-group textarea,
     .form-group select {
         min-height: 40px;
