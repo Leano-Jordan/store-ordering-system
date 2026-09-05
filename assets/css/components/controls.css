@@ -1,7 +1,6 @@
 /* ==========================================================
     SwiftOrder UI Controls — shared control layer
-    Temporary migration layer for UI-04 Global Control Cleanup.
-    Behaviour-linked selectors remain unchanged.
+    Form controls and behaviour-linked selectors remain stable.
    ========================================================== */
 
 :root {
@@ -167,13 +166,10 @@
     box-sizing: border-box;
 }
 
-/* Shared form field foundation. Scoped to existing form containers. */
-.form-container .form-group input:not([type="hidden"]),
-.form-container .form-group textarea,
-.form-container .form-group select,
-.form-card .form-group input:not([type="hidden"]),
-.form-card .form-group textarea,
-.form-card .form-group select {
+/* Shared form field foundation. Existing .form-group markup is retained. */
+.form-group input:not([type="hidden"]),
+.form-group textarea,
+.form-group select {
     width: 100%;
     box-sizing: border-box;
     min-height: var(--field-height);
@@ -189,49 +185,103 @@
                 background-color var(--control-transition);
 }
 
-.form-container .form-group textarea,
-.form-card .form-group textarea {
+.form-group textarea {
     min-height: 96px;
     resize: vertical;
 }
 
-.form-container .form-group input:not([type="hidden"]):focus,
-.form-container .form-group textarea:focus,
-.form-container .form-group select:focus,
-.form-card .form-group input:not([type="hidden"]):focus,
-.form-card .form-group textarea:focus,
-.form-card .form-group select:focus {
+.form-group input:not([type="hidden"]):focus,
+.form-group textarea:focus,
+.form-group select:focus {
     border-color: var(--control-focus);
     outline: var(--control-focus-width) solid color-mix(in srgb, var(--control-focus) 20%, transparent);
     outline-offset: 0;
 }
 
-.form-container .form-group input:not([type="hidden"]):disabled,
-.form-container .form-group textarea:disabled,
-.form-container .form-group select:disabled,
-.form-card .form-group input:not([type="hidden"]):disabled,
-.form-card .form-group textarea:disabled,
-.form-card .form-group select:disabled {
+.form-group input:not([type="hidden"]):disabled,
+.form-group textarea:disabled,
+.form-group select:disabled {
     background: var(--color-background);
     color: var(--color-text-muted);
     cursor: not-allowed;
 }
 
-.form-container .form-group label,
-.form-card .form-group label {
+.form-group label {
     color: var(--color-text);
     font-size: var(--font-size-body);
     font-weight: 600;
     line-height: 1.3;
 }
 
+/* Search/filter controls use the same field foundation with tighter geometry. */
+.search-area,
+.search-form .search-area {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.search-area input[type="search"],
+.search-area input[type="text"],
+.search-form input[type="search"],
+.search-form input[type="text"] {
+    min-height: var(--control-height);
+    padding: var(--space-2) var(--field-padding-inline);
+    border-radius: var(--control-radius);
+}
+
+.search-area input[type="search"]:focus,
+.search-area input[type="text"]:focus,
+.search-form input[type="search"]:focus,
+.search-form input[type="text"]:focus,
+.search-area select:focus,
+.search-form select:focus {
+    border-color: var(--control-focus);
+    outline: var(--control-focus-width) solid color-mix(in srgb, var(--control-focus) 20%, transparent);
+    outline-offset: 0;
+}
+
+.search-area .action-btn,
+.search-form .action-btn {
+    flex-shrink: 0;
+}
+
+.category-filter {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+}
+
+.category-filter .category-btn {
+    min-height: var(--control-height);
+    padding: var(--space-2) var(--control-padding-inline);
+    border: 1px solid var(--color-border);
+    border-radius: var(--control-radius);
+}
+
+.category-filter .category-btn:focus-visible {
+    outline: var(--control-focus-width) solid var(--control-focus);
+    outline-offset: var(--control-focus-offset);
+}
+
 @media (max-width: 640px) {
-    .form-container .form-group input:not([type="hidden"]),
-    .form-container .form-group textarea,
-    .form-container .form-group select,
-    .form-card .form-group input:not([type="hidden"]),
-    .form-card .form-group textarea,
-    .form-card .form-group select {
+    .form-group input:not([type="hidden"]),
+    .form-group textarea,
+    .form-group select {
         min-height: 40px;
+    }
+
+    .search-area,
+    .search-form .search-area {
+        flex-wrap: wrap;
+    }
+
+    .search-area input[type="search"],
+    .search-area input[type="text"],
+    .search-form input[type="search"],
+    .search-form input[type="text"] {
+        min-height: 40px;
+        flex: 1 1 220px;
     }
 }
