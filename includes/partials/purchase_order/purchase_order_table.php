@@ -1,5 +1,5 @@
 <div class="table-container">
-    <table class="orders-table">
+    <table class="orders-table data-table">
         <thead>
             <tr>
                 <th>PO Number</th>
