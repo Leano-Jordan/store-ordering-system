@@ -32,17 +32,32 @@ function sortOrders() {
     const table = document.querySelector(".orders-table tbody");
 
     if (!table) {
-        console.error("Table element not found.");
+        console.error("Orders table body not found.");
+        return;
+    }
+
+    const sortSelect = document.getElementById("orderSort");
+
+    if (!sortSelect) {
+        console.error("Order sort control not found.");
         return;
     }
 
     const rows = Array.from(table.querySelectorAll("tr"));
 
-    const activeRows = rows.filter(row => row.cells[3].innerText.trim() !== "Cancelled");
+    const validRows = rows.filter(row => row.cells.length >= 5);
 
-    const cancelledRows = rows.filter(row => row.cells[3].innerText.trim() === "Cancelled");
+    const invalidRows = rows.filter(row => row.cells.length < 5);
 
-    const sort = document.getElementById("orderSort").value;
+    const activeRows = validRows.filter(
+        row => row.cells[3].innerText.trim() !== "Cancelled"
+    );
+
+    const cancelledRows = validRows.filter(
+        row => row.cells[3].innerText.trim() === "Cancelled"
+    );
+
+    const sort = sortSelect.value;
 
     if (sort === "status") {
 
@@ -59,7 +74,10 @@ function sortOrders() {
             const statusA = a.cells[3].innerText.trim();
             const statusB = b.cells[3].innerText.trim();
 
-            return order[statusA] - order[statusB];
+            const rankA = order[statusA] ?? Number.MAX_SAFE_INTEGER;
+            const rankB = order[statusB] ?? Number.MAX_SAFE_INTEGER;
+
+            return rankA - rankB;
 
         });
 
@@ -67,20 +85,34 @@ function sortOrders() {
 
         activeRows.sort((a, b) => {
 
-            const totalA = parseFloat(a.cells[2].innerText.replace(/[^\d.]/g, ""));
-            const totalB = parseFloat(b.cells[2].innerText.replace(/[^\d.]/g, ""));
+            const totalA = parseFloat(
+                a.cells[2].innerText.replace(/[^\d.]/g, "")
+            );
 
-            return totalB - totalA;
+            const totalB = parseFloat(
+                b.cells[2].innerText.replace(/[^\d.]/g, "")
+            );
+
+            return (Number.isFinite(totalB) ? totalB : 0)
+                - (Number.isFinite(totalA) ? totalA : 0);
 
         });
 
     } else if (sort === "lowest") {
 
         activeRows.sort((a, b) => {
-            const totalA = parseFloat(a.cells[2].innerText.replace(/[^\d.]/g, ""));
-            const totalB = parseFloat(b.cells[2].innerText.replace(/[^\d.]/g, ""));
 
-            return totalA - totalB;
+            const totalA = parseFloat(
+                a.cells[2].innerText.replace(/[^\d.]/g, "")
+            );
+
+            const totalB = parseFloat(
+                b.cells[2].innerText.replace(/[^\d.]/g, "")
+            );
+
+            return (Number.isFinite(totalA) ? totalA : 0)
+                - (Number.isFinite(totalB) ? totalB : 0);
+
         });
 
     } else if (sort === "newest") {
@@ -90,7 +122,11 @@ function sortOrders() {
             const dateA = new Date(a.cells[4].innerText.trim());
             const dateB = new Date(b.cells[4].innerText.trim());
 
-            return dateB - dateA;
+            const timeA = dateA.getTime();
+            const timeB = dateB.getTime();
+
+            return (Number.isFinite(timeB) ? timeB : 0)
+                - (Number.isFinite(timeA) ? timeA : 0);
 
         });
 
@@ -101,7 +137,11 @@ function sortOrders() {
             const dateA = new Date(a.cells[4].innerText.trim());
             const dateB = new Date(b.cells[4].innerText.trim());
 
-            return dateA - dateB;
+            const timeA = dateA.getTime();
+            const timeB = dateB.getTime();
+
+            return (Number.isFinite(timeA) ? timeA : 0)
+                - (Number.isFinite(timeB) ? timeB : 0);
 
         });
 
@@ -109,11 +149,13 @@ function sortOrders() {
 
     activeRows.forEach(row => table.appendChild(row));
     cancelledRows.forEach(row => table.appendChild(row));
+    invalidRows.forEach(row => table.appendChild(row));
 
 }
 
 let userInterfacing = false;
 let interactionTimeout = null;
+let ordersRefreshInProgress = false;
 
 document.addEventListener("DOMContentLoaded",
     function() {
@@ -130,8 +172,7 @@ document.addEventListener("DOMContentLoaded",
                     clearTimeout(interactionTimeout);
                     interactionTimeout = setTimeout(
                         function() {
-                            userInterfacing =
-                                false;
+                            userInterfacing = false;
                         }, 3000);
                 });
         }
@@ -145,51 +186,66 @@ document.addEventListener("DOMContentLoaded",
                     clearTimeout(interactionTimeout);
                     interactionTimeout = setTimeout(
                         function() {
-                            userInterfacing =
-                                false;
+                            userInterfacing = false;
                         }, 3000);
                 });
         }
 
-        setInterval(function() {
+                setInterval(function() {
 
-            if (userInterfacing) {
+            if (userInterfacing || ordersRefreshInProgress) {
                 return;
             }
 
             const params = new URLSearchParams(window.location.search);
             const currentPage = params.get('page') || '1';
-            const currentOrder = document.getElementById('orderSearch') ? document.getElementById('orderSearch').value : '';
+            const currentOrder = search ? search.value : '';
 
-            fetch(`ajax/orders_refresh.php?page=${encodeURIComponent(currentPage)}&order=${encodeURIComponent(currentOrder)}`)
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(
-                `Orders refresh failed with HTTP ${response.status}.`
-            );
-        }
+            ordersRefreshInProgress = true;
 
-        return response.text();
-    })
-    .then(html => {
+            fetch(
+                `ajax/orders_refresh.php?page=${encodeURIComponent(currentPage)}&order=${encodeURIComponent(currentOrder)}`
+            )
+                .then(response => {
 
-        if (!html) return;
+                    if (!response.ok) {
+                        throw new Error(
+                            `Orders refresh failed with HTTP ${response.status}.`
+                        );
+                    }
 
-        const tbody = document.querySelector(".orders-table tbody");
+                    return response.text();
+                })
+                .then(html => {
 
-        if (tbody) {
-            tbody.innerHTML = html;
+                    if (!html) {
+                        return;
+                    }
 
-            if (sort && sort.value !== "") {
-                sortOrders();
-            }
-            if (search && search.value !== "") {
-                searchOrders();
-            }
-        }
-    })
-    .catch(error => {
-        console.error("Orders refresh failed:", error);
-    });
+                    const tbody = document.querySelector(".orders-table tbody");
+
+                    if (!tbody) {
+                        console.error("Orders table body not found.");
+                        return;
+                    }
+
+                    tbody.innerHTML = html;
+
+                    if (sort && sort.value !== "") {
+                        sortOrders();
+                    }
+
+                    if (search && search.value !== "") {
+                        searchOrders();
+                    }
+
+                })
+                .catch(error => {
+                    console.error("Orders refresh failed:", error);
+                })
+                .finally(() => {
+                    ordersRefreshInProgress = false;
+                });
+
         }, 5000);
     });
