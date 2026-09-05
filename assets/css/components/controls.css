@@ -1,0 +1,133 @@
+/* ==========================================================
+   SwiftOrder UI Controls — shared control layer
+   Temporary migration layer for UI-04 Global Control Cleanup.
+   Behaviour-linked selectors remain unchanged.
+   ========================================================== */
+
+:root {
+    --control-primary: #ee9a1c;
+    --control-primary-hover: #d88408;
+    --control-secondary: #0d6efd;
+    --control-secondary-hover: #0b5ed7;
+    --control-danger: #d84554;
+    --control-danger-hover: #bb2d3b;
+    --control-success: #198754;
+    --control-warning: #ffc107;
+    --control-focus: #0d6efd;
+    --control-disabled-opacity: 0.6;
+    --control-radius: 6px;
+    --control-height: 36px;
+    --control-padding-inline: 14px;
+}
+
+/* Base action control */
+.action-btn {
+    min-height: var(--control-height);
+    box-sizing: border-box;
+    padding: 8px var(--control-padding-inline);
+    border: 1px solid transparent;
+    border-radius: var(--control-radius);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin: 0;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.2;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.action-btn:hover {
+    background: var(--control-primary-hover);
+    color: #fff;
+}
+
+.action-btn:focus-visible {
+    outline: 2px solid var(--control-focus);
+    outline-offset: 2px;
+}
+
+.action-btn:disabled,
+.action-btn[aria-disabled="true"] {
+    opacity: var(--control-disabled-opacity);
+    cursor: not-allowed;
+}
+
+/* Shared variants */
+.edit-btn {
+    background: var(--control-secondary);
+    color: #fff;
+}
+
+.edit-btn:hover {
+    background: var(--control-secondary-hover);
+    color: #fff;
+}
+
+.clear-btn {
+    background: var(--control-secondary);
+    color: #fff;
+    min-width: 40px;
+}
+
+.clear-btn:hover {
+    background: var(--control-secondary-hover);
+    color: #fff;
+}
+
+.delete-btn {
+    background: var(--control-danger);
+    color: #fff;
+}
+
+.delete-btn:hover {
+    background: var(--control-danger-hover);
+    color: #fff;
+}
+
+.pending-btn {
+    background: var(--control-warning);
+    color: #000;
+}
+
+.preparing-btn {
+    background: var(--control-secondary);
+    color: #fff;
+}
+
+.ready-btn {
+    background: var(--control-success);
+    color: #fff;
+}
+
+.cancelled-btn {
+    background: var(--control-danger);
+    color: #fff;
+}
+
+.out-of-stock-btn,
+.out-of-stock-btn:hover {
+    min-height: 32px;
+    padding: 6px 10px;
+    background: #e8e8e8;
+    color: #666;
+    border-color: #d0d0d0;
+    cursor: not-allowed;
+    font-size: 12px;
+    opacity: 1;
+}
+
+.reactivate-btn {
+    min-width: 120px;
+}
+
+/* Keep compact POS-specific controls visually subordinate. */
+.add-to-cart-btn,
+.place-order-btn,
+.clear-cart-btn {
+    box-sizing: border-box;
+}
