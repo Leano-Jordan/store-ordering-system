@@ -820,10 +820,14 @@ ORDERS TABLE
     font-weight: bold;
     text-decoration: none;
     margin: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .action-btn:hover {
     background: #ffb74c;
+    color: #ffffff;
 }
 
 .reactivate-btn {
