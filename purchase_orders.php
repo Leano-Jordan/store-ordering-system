@@ -36,7 +36,7 @@ if (!empty($search)) {
         exit('Unable to load purchase orders.');
     }
 
-    if (!$stmt->bind_param('ss', $term, $term)) {
+    if (!$stmt->bind_param('ss', $searchTerm, $searchTerm)) {
         error_log('purchase_orders.php: Failed to bind search parameters: '.$stmt->error);
         $stmt->close();
         exit('Unable to load Purchase Order.');
