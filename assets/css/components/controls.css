@@ -18,29 +18,34 @@
     --control-radius: var(--radius-md);
     --control-height: 36px;
     --control-padding-inline: 14px;
+    --control-gap: var(--space-2);
+    --control-transition: 0.15s ease;
+    --control-focus-width: 2px;
+    --control-focus-offset: 2px;
 }
 
 /* Base action control */
 .action-btn {
     min-height: var(--control-height);
     box-sizing: border-box;
-    padding: 8px var(--control-padding-inline);
+    padding: var(--space-2) var(--control-padding-inline);
     border: 1px solid transparent;
     border-radius: var(--control-radius);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: var(--control-gap);
     margin: 0;
     background: var(--control-primary);
     color: #fff;
     font: inherit;
-    font-size: 14px;
+    font-size: var(--font-size-body);
     font-weight: 600;
     line-height: 1.2;
     text-decoration: none;
     cursor: pointer;
-    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+    transition: background-color var(--control-transition), border-color var(--control-transition),
+                color var(--control-transition), box-shadow var(--control-transition);
 }
 
 .action-btn:hover {
@@ -49,8 +54,8 @@
 }
 
 .action-btn:focus-visible {
-    outline: 2px solid var(--control-focus);
-    outline-offset: 2px;
+    outline: var(--control-focus-width) solid var(--control-focus);
+    outline-offset: var(--control-focus-offset);
 }
 
 .action-btn:active {
@@ -139,7 +144,7 @@
 .out-of-stock-btn,
 .out-of-stock-btn:hover {
     min-height: 32px;
-    padding: 6px 10px;
+    padding: var(--space-2) 10px;
     background: #e8e8e8;
     color: #666;
     border-color: #d0d0d0;
