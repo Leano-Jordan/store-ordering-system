@@ -239,8 +239,6 @@
 .form-group textarea:focus,
 .form-group select:focus {
     border-color: var(--control-focus);
-    outline: var(--control-focus-width) solid var(--control-focus);
-    outline-offset: 0;
 }
 
 .form-group input[type="text"]:focus-visible,
@@ -258,6 +256,7 @@
 .form-group input:not([type]):focus-visible,
 .form-group textarea:focus-visible,
 .form-group select:focus-visible {
+    outline: var(--control-focus-width) solid var(--control-focus);
     outline-offset: var(--control-focus-offset);
 }
 
