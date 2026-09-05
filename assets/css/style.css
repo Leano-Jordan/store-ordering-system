@@ -814,6 +814,7 @@ ORDERS TABLE
     background: #ee9a1c;
     color: #ffffff;
     border: none;
+    transition: background-color 0.15s ease, color 0.15s ease;
     padding: 8px 14px;
     border-radius: 6px;
     cursor: pointer;
@@ -828,6 +829,16 @@ ORDERS TABLE
 .action-btn:hover {
     background: #ffb74c;
     color: #ffffff;
+}
+
+.action-btn:focus-visible {
+    outline: 2px solid #0d6efd;
+    outline-offset: 2px;
+}
+
+.action-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 .reactivate-btn {
