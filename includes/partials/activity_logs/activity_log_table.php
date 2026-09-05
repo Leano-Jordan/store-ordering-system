@@ -1,20 +1,22 @@
-<table class="orders-table">
+<div class="table-container">
+    <table class="orders-table">
 
-    <thead>
-        <tr>
-            <th>Date & Time</th>
-            <th>User</th>
-            <th>Role</th>
-            <th>Activity</th>
-        </tr>
-    </thead>
+        <thead>
+            <tr>
+                <th>Date & Time</th>
+                <th>User</th>
+                <th>Role</th>
+                <th>Activity</th>
+            </tr>
+        </thead>
 
-    <tbody>
+        <tbody>
 
-        <?php while ($row = $result->fetch_assoc()) {
-    require 'activity_log_row.php';
-} ?>
+            <?php while ($row = $result->fetch_assoc()) {
+        require 'activity_log_row.php';
+    } ?>
 
-    </tbody>
+        </tbody>
 
-</table>
+    </table>
+</div>
