@@ -112,7 +112,10 @@ try {
 } catch (\Throwable $exception) {
     $conn->rollback();
 
-    error_log('receive_purchase_order.php transaction failed.'.$exception->getMessage());
+    error_log(
+        'reactivate_user.php transaction failed: '
+        .$exception->getMessage()
+    );
 
     $_SESSION['error'] = 'Unable to reactivate user.';
     header('Location: users.php');

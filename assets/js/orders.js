@@ -2,9 +2,15 @@
 
 function searchOrders() {
 
-    let input = document.getElementById("orderSearch").value.toLowerCase();
+    const searchInput = document.getElementById("orderSearch");
 
-    let rows = document.querySelectorAll(".orders-table tbody tr");
+    if (!searchInput) {
+        console.error("Order search input not found.");
+        return;
+    }
+
+    const input = searchInput.value.toLowerCase();
+    const rows = document.querySelectorAll(".orders-table tbody tr");
 
     rows.forEach(function(row) {
 
@@ -156,23 +162,34 @@ document.addEventListener("DOMContentLoaded",
             const currentOrder = document.getElementById('orderSearch') ? document.getElementById('orderSearch').value : '';
 
             fetch(`ajax/orders_refresh.php?page=${encodeURIComponent(currentPage)}&order=${encodeURIComponent(currentOrder)}`)
-                .then(response => response.text())
-                .then(html => {
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(
+                `Orders refresh failed with HTTP ${response.status}.`
+            );
+        }
 
-                    if (!html) return;
+        return response.text();
+    })
+    .then(html => {
 
-                    const tbody = document.querySelector(".orders-table tbody");
+        if (!html) return;
 
-                    if (tbody) {
-                        tbody.innerHTML = html;
+        const tbody = document.querySelector(".orders-table tbody");
 
-                        if (sort && sort.value !== "") {
-                            sortOrders();
-                        }
-                        if (search && search.value !== "") {
-                            searchOrders();
-                        }
-                    }
-                }).catch(() => {});
+        if (tbody) {
+            tbody.innerHTML = html;
+
+            if (sort && sort.value !== "") {
+                sortOrders();
+            }
+            if (search && search.value !== "") {
+                searchOrders();
+            }
+        }
+    })
+    .catch(error => {
+        console.error("Orders refresh failed:", error);
+    });
         }, 5000);
     });
