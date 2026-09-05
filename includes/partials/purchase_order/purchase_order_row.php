@@ -14,13 +14,13 @@ switch ($row['status']) {
         echo '<span class="status pending">Pending</span>';
         break;
     case 'Received':
-        echo '<span class="status ready">Received</span>';
+        echo '<span class="status success">Received</span>';
         break;
     case 'Cancelled':
-        echo '<span class="status cancelled">Cancelled</span>';
+        echo '<span class="status danger">Cancelled</span>';
         break;
     default:
-        echo '<span class="status unknown">Unknown</span>';
+        echo '<span class="status info">Unknown</span>';
         break;
 } ?>
 </td>
