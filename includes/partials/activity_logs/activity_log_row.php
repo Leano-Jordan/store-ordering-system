@@ -15,28 +15,26 @@
 
                     <?php
 
-                    $badgeClass = 'status-pending';
+                    $badgeClass = 'pending';
 
     if (strpos($row['action'], 'Added') === 0) {
-        $badgeClass = 'ready';
+        $badgeClass = 'success';
     } elseif (strpos($row['action'], 'Updated') === 0) {
-        $badgeClass = 'preparing';
+        $badgeClass = 'info';
     } elseif (strpos($row['action'], 'Changed') === 0) {
-        $badgeClass = 'pending';
+        $badgeClass = 'warning';
     } elseif (strpos($row['action'], 'Deactivated') === 0) {
-        $badgeClass = 'cancelled';
+        $badgeClass = 'danger';
     } elseif (strpos($row['action'], 'Deleted') === 0) {
-        $badgeClass = 'cancelled';
+        $badgeClass = 'danger';
     } elseif (strpos($row['action'], 'Draft') === 0) {
         $badgeClass = 'draft';
     } elseif (strpos($row['action'], 'Received') === 0) {
-        $badgeClass = 'ready';
+        $badgeClass = 'success';
     } elseif (strpos($row['action'], 'Created') === 0) {
-        $badgeClass = 'preparing';
+        $badgeClass = 'info';
     } elseif (strpos($row['action'], 'Cancelled') === 0) {
-        $badgeClass = 'cancelled';
-    } else {
-        $badgeClass = 'pending';
+        $badgeClass = 'danger';
     } ?>
 
                     <span class="status <?php echo $badgeClass; ?>">
