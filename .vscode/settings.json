@@ -28,6 +28,8 @@
         "pgsql",
         "phpstan",
         "phpunit",
+        "prioritised",
+        "Prioritised",
         "pspell",
         "querypath",
         "rawr",
