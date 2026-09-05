@@ -150,40 +150,42 @@ $stmt->close();
 
 </div>
 
-<table class="orders-table">
+<div class="table-container">
+    <table class="orders-table data-table">
 
-    <thead>
-        <tr>
-            <th>Product</th>
-            <th>Quantity</th>
-            <th>Price</th>
-            <th>Line Total</th>
-        </tr>
-    </thead>
-
-    <tbody>
-
-        <?php while ($item = $items->fetch_assoc()) { ?>
-
+        <thead>
             <tr>
-                <td>
-                    <?php echo htmlspecialchars($item['name']); ?>
-                </td>
-
-                <td>
-                    <?php echo (int) $item['quantity']; ?>
-                </td>
-
-                <td>R <?php echo number_format($item['price'], 2); ?>
-                </td>
-
-                <td>R <?php echo number_format($item['price'] * $item['quantity'], 2); ?>
-                </td>
+                <th>Product</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Line Total</th>
             </tr>
-        <?php }  ?>
-    </tbody>
+        </thead>
 
-</table>
+        <tbody>
+
+            <?php while ($item = $items->fetch_assoc()) { ?>
+
+                <tr>
+                    <td>
+                        <?php echo htmlspecialchars($item['name']); ?>
+                    </td>
+
+                    <td>
+                        <?php echo (int) $item['quantity']; ?>
+                    </td>
+
+                    <td>R <?php echo number_format($item['price'], 2); ?>
+                    </td>
+
+                    <td>R <?php echo number_format($item['price'] * $item['quantity'], 2); ?>
+                    </td>
+                </tr>
+            <?php }  ?>
+        </tbody>
+
+    </table>
+</div>
 
 <div class="page-header">
 
