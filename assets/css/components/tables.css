@@ -1,0 +1,107 @@
+/* ==========================================================
+   SwiftOrder UI Tables — shared data table foundation
+   Behaviour-linked table selectors remain unchanged.
+   ========================================================== */
+
+.table-container {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+}
+
+.orders-table,
+.grn-table {
+    width: 100%;
+    min-width: 680px;
+    border-collapse: collapse;
+    border-spacing: 0;
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-size: var(--font-size-table);
+    line-height: 1.4;
+}
+
+.orders-table th,
+.grn-table th {
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-background);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-metadata);
+    font-weight: 700;
+    line-height: 1.3;
+    text-align: left;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.orders-table td,
+.grn-table td {
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+    vertical-align: middle;
+    text-align: left;
+}
+
+.orders-table tbody tr,
+.grn-table tbody tr {
+    background: var(--color-surface);
+    transition: background-color var(--control-transition);
+}
+
+.orders-table tbody tr:hover,
+.grn-table tbody tr:hover {
+    background: var(--color-background);
+}
+
+.orders-table tbody tr:last-child td,
+.grn-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.orders-table th:first-child,
+.orders-table td:first-child,
+.grn-table th:first-child,
+.grn-table td:first-child {
+    padding-left: var(--space-4);
+}
+
+.orders-table th:last-child,
+.orders-table td:last-child,
+.grn-table th:last-child,
+.grn-table td:last-child {
+    padding-right: var(--space-4);
+}
+
+.orders-table td .action-btn,
+.grn-table td .action-btn {
+    white-space: nowrap;
+}
+
+.orders-table a:focus-visible,
+.grn-table a:focus-visible,
+.orders-table button:focus-visible,
+.grn-table button:focus-visible {
+    outline: var(--control-focus-width) solid var(--control-focus);
+    outline-offset: var(--control-focus-offset);
+}
+
+@media (max-width: 640px) {
+    .table-container {
+        margin-inline: 0;
+    }
+
+    .orders-table,
+    .grn-table {
+        min-width: 640px;
+    }
+
+    .orders-table th,
+    .orders-table td,
+    .grn-table th,
+    .grn-table td {
+        padding: var(--space-3);
+    }
+}
