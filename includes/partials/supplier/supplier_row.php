@@ -13,9 +13,9 @@
                 <?php
 
                 if ($row['status'] === 'Active') {
-                    echo '<span class="status ready">Active</span>';
+                    echo '<span class="status success">Active</span>';
                 } else {
-                    echo '<span class="status cancelled">Inactive</span>';
+                    echo '<span class="status danger">Inactive</span>';
                 }
                 ?>
             </td>
