@@ -1,6 +1,6 @@
 /* ==========================================================
-   SwiftOrder UI Controls — shared control layer
-   Temporary migration layer for UI-04 Global Control Cleanup.
+   SwiftOrder UI Controls
+   Shared control foundation for global UI standardization.
    Behaviour-linked selectors remain unchanged.
    ========================================================== */
 
@@ -32,13 +32,15 @@
     justify-content: center;
     gap: 6px;
     margin: 0;
+    background: var(--control-primary);
+    color: #fff;
     font: inherit;
     font-size: 14px;
     font-weight: 600;
     line-height: 1.2;
     text-decoration: none;
     cursor: pointer;
-    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .action-btn:hover {
@@ -51,10 +53,15 @@
     outline-offset: 2px;
 }
 
+.action-btn:active {
+    transform: translateY(1px);
+}
+
 .action-btn:disabled,
 .action-btn[aria-disabled="true"] {
     opacity: var(--control-disabled-opacity);
     cursor: not-allowed;
+    pointer-events: none;
 }
 
 /* Shared variants */
@@ -94,8 +101,18 @@
     color: #000;
 }
 
+.pending-btn:hover {
+    background: #e0a800;
+    color: #000;
+}
+
 .preparing-btn {
     background: var(--control-secondary);
+    color: #fff;
+}
+
+.preparing-btn:hover {
+    background: var(--control-secondary-hover);
     color: #fff;
 }
 
@@ -104,8 +121,18 @@
     color: #fff;
 }
 
+.ready-btn:hover {
+    background: #146c43;
+    color: #fff;
+}
+
 .cancelled-btn {
     background: var(--control-danger);
+    color: #fff;
+}
+
+.cancelled-btn:hover {
+    background: var(--control-danger-hover);
     color: #fff;
 }
 
@@ -119,6 +146,7 @@
     cursor: not-allowed;
     font-size: 12px;
     opacity: 1;
+    pointer-events: none;
 }
 
 .reactivate-btn {
