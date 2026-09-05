@@ -855,7 +855,7 @@ ORDERS TABLE
 
 .clear-btn {
     background: #0d6efd;
-    color: #d9e3fc;
+    color: #ffffff;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -880,6 +880,7 @@ ORDERS TABLE
 
 .delete-btn:hover {
     background: #bb2d3b;
+    color: #ffffff;
 }
 
 .pending-btn {
