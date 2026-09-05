@@ -194,7 +194,7 @@
 .form-group textarea:focus,
 .form-group select:focus {
     border-color: var(--control-focus);
-    outline: var(--control-focus-width) solid color-mix(in srgb, var(--control-focus) 20%, transparent);
+    outline: var(--control-focus-width) solid var(--control-focus);
     outline-offset: 0;
 }
 
@@ -255,7 +255,7 @@
 .search-form input[type="text"]:focus,
 .search-form select:focus {
     border-color: var(--control-focus);
-    outline: var(--control-focus-width) solid color-mix(in srgb, var(--control-focus) 20%, transparent);
+    outline: var(--control-focus-width) solid var(--control-focus);
     outline-offset: 0;
 }
 
