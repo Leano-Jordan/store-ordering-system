@@ -337,9 +337,7 @@
 .search-form input[type="text"]:focus,
 .search-form select:focus {
     border-color: var(--control-focus);
-    outline: var(--control-focus-width) solid var(--control-focus);
-    outline-offset: 0;
-}
+    }
 
 .search-area input[type="search"]:focus-visible,
 .search-area input[type="text"]:focus-visible,
