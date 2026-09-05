@@ -27,6 +27,7 @@ if (defined('APP_ENV') && APP_ENV === 'production' && isset($_SERVER['HTTPS']) &
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SwiftOrder POS</title>
     <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/components/controls.css">
     <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
 </head>
 
