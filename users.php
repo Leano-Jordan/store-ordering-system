@@ -14,13 +14,62 @@ $stmt = $conn->prepare(
     ORDER BY created_at 
     DESC LIMIT ?, ?'
 );
-$stmt->bind_param('ii', $offset, $limit);
-$stmt->execute();
+
+if (!$stmt) {
+    error_log('users.php: Failed to prepare user list query: '.$conn->error);
+    $_SESSION['error'] = 'Unable to load users. Please try again.';
+    header('Location: users.php');
+    exit();
+}
+
+if (!$stmt->bind_param('ii', $offset, $limit)) {
+    error_log('users.php: Failed to bind user list parameters: '.$stmt->error);
+    $stmt->close();
+    $_SESSION['error'] = 'Unable to load users. Please try again.';
+    header('Location: users.php');
+    exit();
+}
+
+if (!$stmt->execute()) {
+    error_log('users.php: Failed to execute user list query: '.$stmt->error);
+    $stmt->close();
+    $_SESSION['error'] = 'Unable to load users. Please try again.';
+    header('Location: users.php');
+    exit();
+}
+
 $result = $stmt->get_result();
 
+if (!$result) {
+    error_log('users.php: Failed to retrieve user list result: '.$stmt->error);
+    $stmt->close();
+    $_SESSION['error'] = 'Unable to load users. Please try again.';
+    header('Location: users.php');
+    exit();
+}
+
 $totalResult = $conn->query('SELECT COUNT(*) AS total FROM users');
-$totalRows = $totalResult->fetch_assoc()['total'];
-$totalPages = ceil($totalRows / $limit);
+
+if (!$totalResult) {
+    error_log('users.php: Failed to count users: '.$conn->error);
+    $stmt->close();
+    $_SESSION['error'] = 'Unable to load users. Please try again.';
+    header('Location: users.php');
+    exit();
+}
+
+$totalRow = $totalResult->fetch_assoc();
+
+if (!is_array($totalRow) || !isset($totalRow['total'])) {
+    error_log('users.php: User count query returned an invalid result.');
+    $stmt->close();
+    $_SESSION['error'] = 'Unable to load users. Please try again.';
+    header('Location: users.php');
+    exit();
+}
+
+$totalRows = (int) $totalRow['total'];
+$totalPages = (int) ceil($totalRows / $limit);
 
 include 'includes/header.php';
 ?>
