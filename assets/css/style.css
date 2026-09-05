@@ -757,55 +757,6 @@ ORDERS TABLE
     color: #0d6efd;
 }
 
-
-/* ==========================================================
-    STATUS BADGES
-   ========================================================== */
-
-.status {
-    display: inline-block;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.status.cancelled {
-    background: #f38f9a;
-    color: #5c151c;
-}
-
-.status.warning {
-    background-color: #f1b862;
-    color: #704412;
-}
-
-.pending {
-    background: #e5ce80;
-    color: #473707;
-}
-
-.status.draft {
-    background: #91a9f7;
-    color: #271d92;
-}
-
-.preparing {
-    background: #90b7f1;
-    color: #0b3675;
-}
-
-.ready {
-    background: #90f5c6;
-    color: #0c4229;
-}
-
-.collected {
-    background: #babcbe;
-    color: #41464b;
-}
-
-
 /* ==========================================================
     ACTION BUTTONS
    ========================================================== */
