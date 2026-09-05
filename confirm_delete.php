@@ -19,12 +19,44 @@ if ($id <= 0) {
 
 $productSql = 'SELECT name, image FROM products WHERE id=?';
 $imageStmt = $conn->prepare($productSql);
-$imageStmt->bind_param('i', $id);
-$imageStmt->execute();
+
+if (!$imageStmt) {
+    error_log('confirm_delete.php: Failed to prepare product lookup: '.$conn->error);
+    $_SESSION['error'] = 'Unable to load the product. Please try again.';
+    header('Location: products.php');
+    exit();
+}
+
+if (!$imageStmt->bind_param('i', $id)) {
+    error_log('confirm_delete.php: Failed to bind product ID: '.$imageStmt->error);
+    $imageStmt->close();
+    $_SESSION['error'] = 'Unable to load the product. Please try again.';
+    header('Location: products.php');
+    exit();
+}
+
+if (!$imageStmt->execute()) {
+    error_log('confirm_delete.php: Failed to execute product lookup: '.$imageStmt->error);
+    $imageStmt->close();
+    $_SESSION['error'] = 'Unable to load the product. Please try again.';
+    header('Location: products.php');
+    exit();
+}
 
 $result = $imageStmt->get_result();
+
+if (!$result) {
+    error_log('confirm_delete.php: Failed to retrieve product result: '.$imageStmt->error);
+    $imageStmt->close();
+    $_SESSION['error'] = 'Unable to load the product. Please try again.';
+    header('Location: products.php');
+    exit();
+}
+
 $product = $result->fetch_assoc();
+
 if (!$product) {
+    $imageStmt->close();
     header('Location: products.php');
     exit();
 }

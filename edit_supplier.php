@@ -6,20 +6,58 @@ require_once 'includes/db.php';
 
 $id = (int) ($_GET['id'] ?? 0);
 
+if ($id <= 0) {
+    header('Location: suppliers.php');
+    exit();
+}
+
 $stmt = $conn->prepare('
 SELECT *
 FROM suppliers
 WHERE id = ?
 ');
 
-$stmt->bind_param('i', $id);
-$stmt->execute();
+if (!$stmt) {
+    error_log('edit_supplier.php: Failed to prepare supplier query: '.$conn->error);
+    $_SESSION['error'] = 'Unable to load the supplier. Please try again.';
+    header('Location: suppliers.php');
+    exit();
+}
+
+if (!$stmt->bind_param('i', $id)) {
+    error_log('edit_supplier.php: Failed to bind supplier ID: '.$stmt->error);
+    $stmt->close();
+    $_SESSION['error'] = 'Unable to load the supplier. Please try again.';
+    header('Location: suppliers.php');
+    exit();
+}
+
+if (!$stmt->execute()) {
+    error_log('edit_supplier.php: Failed to execute supplier query: '.$stmt->error);
+    $stmt->close();
+    $_SESSION['error'] = 'Unable to load the supplier. Please try again.';
+    header('Location: suppliers.php');
+    exit();
+}
 
 $result = $stmt->get_result();
+
+if (!$result) {
+    error_log('edit_supplier.php: Failed to retrieve supplier result: '.$stmt->error);
+    $stmt->close();
+    $_SESSION['error'] = 'Unable to load the supplier. Please try again.';
+    header('Location: suppliers.php');
+    exit();
+}
+
 $supplier = $result->fetch_assoc();
 
+$stmt->close();
+
 if (!$supplier) {
-    exit('Supplier not found.');
+    $_SESSION['error'] = 'Supplier not found.';
+    header('Location: suppliers.php');
+    exit();
 }
 
 include 'includes/header.php';
