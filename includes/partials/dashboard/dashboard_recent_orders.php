@@ -4,7 +4,7 @@
 
 <h2>Recent Orders</h2>
 
-<table class="dashboard-table">
+    <table class="dashboard-table data-table data-table--compact">
     <thead>
         <tr>
             <th>Order #</th>

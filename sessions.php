@@ -292,7 +292,7 @@ function swiftOrderSessionDuration(
 
         <div class="sessions-table-wrapper">
 
-            <table class="sessions-table">
+            <table class="sessions-table data-table data-table--wide">
 
                 <thead>
                     <tr>

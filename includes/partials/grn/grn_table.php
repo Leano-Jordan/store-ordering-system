@@ -11,7 +11,7 @@ require_once __DIR__.'/../../db.php';
 
 <div class="table-container">
     
-    <table class="grn-table">
+    <table class="grn-table data-table data-table--wide">
     
         <thead>
             <tr>

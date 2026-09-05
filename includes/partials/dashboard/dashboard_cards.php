@@ -6,7 +6,7 @@
 <?php if ($lowStock > 0) { ?>
     <div class="dashboard-card dashboard-card--warning">
         <h3>⚠ Low Stock Alert</h3>
-        <table class="dashboard-table">
+        <table class="dashboard-table data-table data-table--compact">
             <tr>
                 <th>Product</th>
                 <th>Stock</th>

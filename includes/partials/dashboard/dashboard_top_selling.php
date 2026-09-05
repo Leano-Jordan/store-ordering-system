@@ -4,7 +4,7 @@
         Top Selling Products
     </h2>
 
-    <table class="dashboard-table">
+        <table class="dashboard-table data-table data-table--compact">
 
         <tr>
             <th>Product</th>
