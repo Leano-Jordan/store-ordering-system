@@ -5,19 +5,19 @@
    ========================================================== */
 
 :root {
-    --control-primary: #ee9a1c;
-    --control-primary-hover: #d88408;
-    --control-secondary: #0d6efd;
-    --control-secondary-hover: #0b5ed7;
-    --control-danger: #d84554;
-    --control-danger-hover: #bb2d3b;
-    --control-success: #198754;
-    --control-warning: #ffc107;
-    --control-focus: #0d6efd;
-    --control-disabled-opacity: 0.6;
-    --control-radius: 6px;
-    --control-height: 36px;
-    --control-padding-inline: 14px;
+    --control-primary: var(--color-primary);
+--control-primary-hover: #0b5ed7;
+--control-secondary: var(--color-secondary);
+--control-secondary-hover: #343a40;
+--control-danger: var(--color-danger);
+--control-danger-hover: #bb2d3b;
+--control-success: var(--color-success);
+--control-warning: var(--color-warning);
+--control-focus: var(--color-focus);
+--control-disabled-opacity: 0.6;
+--control-radius: var(--radius-md);
+--control-height: 36px;
+--control-padding-inline: 14px;
 }
 
 /* Base action control */
