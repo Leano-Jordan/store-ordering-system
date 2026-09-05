@@ -1,0 +1,73 @@
+/* ==========================================================
+   STATUS BADGES
+   ========================================================== */
+
+.status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 24px;
+    box-sizing: border-box;
+    padding: 4px 10px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-lg);
+    font-size: var(--font-size-metadata);
+    font-weight: 700;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.status.pending {
+    background: #fff3cd;
+    color: #664d03;
+    border-color: #ffecb5;
+}
+
+.status.draft {
+    background: #e2e3e5;
+    color: #41464b;
+    border-color: #d3d6d8;
+}
+
+.status.preparing {
+    background: #cfe2ff;
+    color: #084298;
+    border-color: #b6d4fe;
+}
+
+.status.ready,
+.status.success {
+    background: #d1e7dd;
+    color: #0f5132;
+    border-color: #badbcc;
+}
+
+.status.collected {
+    background: #e2e3e5;
+    color: #41464b;
+    border-color: #d3d6d8;
+}
+
+.status.cancelled,
+.status.danger {
+    background: #f8d7da;
+    color: #842029;
+    border-color: #f1aeb5;
+}
+
+.status.warning {
+    background: #fff3cd;
+    color: #664d03;
+    border-color: #ffecb5;
+}
+
+.status.info {
+    background: #cff4fc;
+    color: #055160;
+    border-color: #b6effb;
+}
+
+.status:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+}
