@@ -15,4 +15,15 @@ if ($conn->connect_error) {
     exit('Database connection failed. Please contact the administrator.');
 }
 
-$conn->set_charset('utf8mb4');
+if (!$conn->set_charset('utf8mb4')) {
+    error_log(
+        'SwiftOrder database charset configuration failed: '
+        .$conn->error
+    );
+
+    $conn->close();
+
+    exit(
+        'Database configuration failed. Please contact the administrator.'
+    );
+}
