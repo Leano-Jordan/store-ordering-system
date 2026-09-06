@@ -51,7 +51,27 @@ if ($stockFilter === 'low') {
         $totalResult = countSearchProducts($conn, $search);
         $result = searchProducts($conn, $search, $limit, $offset);
 
-        $totalRows = $totalResult->fetch_assoc()['total'];
+        if (!$totalResult) {
+            error_log('products.php: Failed to receive filtered product count.');
+
+            exit('Unable to load product pagination.');
+        }
+
+        if (!$result) {
+            error_log('products.php: Failed to load filtered products.');
+
+            exit('Unable to load products.');
+        }
+
+        $countRow = $totalResult->fetch_assoc();
+
+        if (!$countRow) {
+            error_log('products.php: Failed to read filtered product count.');
+
+            exit('Unable to load product pagination.');
+        }
+
+        $totalRows = (int) ($countRow['total'] ?? 0);
         $totalProducts = ceil($totalRows / $limit);
         $sql = null;
     } else {
