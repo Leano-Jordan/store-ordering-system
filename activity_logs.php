@@ -35,17 +35,29 @@ if ($search !== '') {
     $term = '%'.$search.'%';
 
     $stmt = $conn->prepare(
-        "SELECT 
-            activity_logs.action, 
+        "SELECT activity_logs.action, 
             activity_logs.created_at,
             users.username, users.role 
-        FROM activity_logs 
-        JOIN users 
+        FROM activity_logs JOIN users 
             ON activity_logs.user_id = users.id 
         WHERE ($where) AND (users.username LIKE ?
             OR activity_logs.action LIKE ?)
-        ORDER BY activity_logs.created_at DESC LIMIT $limit OFFSET $offset"
+        ORDER BY activity_logs.created_at 
+            DESC LIMIT $limit OFFSET $offset"
     );
+
+    if (!$stmt) {
+        error_log(
+            'activity_logs.php: Failed to prepare search query: '
+            .$conn->error
+        );
+
+        $_SESSION['error'] =
+            'Unable to load activity logs. Please try again.';
+
+        header('Location: dashboard.php');
+        exit();
+    }
 
     if (!$stmt->bind_param('ss', $term, $term)) {
         error_log('activity_logs.php: Failed to bind search parameters: '.$stmt->error);

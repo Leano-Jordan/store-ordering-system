@@ -124,10 +124,6 @@ include 'includes/header.php';
 
 <?php include 'includes/partials/users/user_table.php'; ?>
 
-<?php while ($row = $result->fetch_assoc()) {
-    include 'includes/partials/users/user_row.php';
-} ?>
-
 <?php include 'includes/partials/users/user_pagination.php'; ?>
 
 <?php include 'includes/footer.php'; ?>

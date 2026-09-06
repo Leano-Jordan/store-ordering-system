@@ -70,7 +70,15 @@ if ($where === '') {
             $result = false;
         } else {
             $result = $stmt->get_result();
-            $stmt->close();
+
+            if (!$result) {
+                error_log('SwiftOrder orders query result retrieval failed: '.$stmt->error);
+
+                $stmt->close();
+                $result = false;
+            } else {
+                $stmt->close();
+            }
         }
     }
 

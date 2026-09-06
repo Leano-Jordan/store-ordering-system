@@ -11,7 +11,8 @@ if ($id === false || $id === null || $id <= 0) {
     exit();
 }
 
-$sql = 'SELECT * FROM users WHERE id = ?';
+$sql = 'SELECT id, full_name, username, role, status, 
+        profile_image, created_at FROM users WHERE id = ?';
 
 $stmt = $conn->prepare($sql);
 
@@ -50,6 +51,9 @@ if (!$result) {
     exit();
 }
 $user = $result->fetch_assoc();
+
+$result->free();
+$stmt->close();
 
 if (!$user) {
     header('Location: users.php');

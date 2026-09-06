@@ -96,8 +96,20 @@ if (!empty($search)) {
     }
 
     $totalRow = $countResult->fetch_assoc();
-    $totalRows = (int) ($totalRow['total'] ?? 0);
 
+    if (!is_array($totalRow) || !isset($totalRow['total'])) {
+        error_log('purchase_orders.php: Purchase Order count query '.'returned an invalid result.');
+
+        $countResult->free();
+        $countStmt->close();
+        $stmt->close();
+
+        exit('Unable to load Purchase Order count.');
+    }
+
+    $totalRows = (int) $totalRow['total'];
+
+    $countResult->free();
     $countStmt->close();
     $stmt->close();
 } else {
