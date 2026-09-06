@@ -22,9 +22,9 @@ if ($id <= 0) {
     exit();
 }
 
-$conn->begin_transaction();
-
 try {
+    $conn->begin_transaction();
+
     $stmt = $conn->prepare(
         'SELECT status 
         FROM purchase_orders 

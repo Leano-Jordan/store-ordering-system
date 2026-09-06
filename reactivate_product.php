@@ -21,9 +21,9 @@ if ($id <= 0) {
     exit();
 }
 
-$conn->begin_transaction();
-
 try {
+    $conn->begin_transaction();
+
     $stmt = $conn->prepare(
         "UPDATE products
         SET status = 'Active'

@@ -60,9 +60,10 @@ if ($reason === '') {
 }
 
 $userId = $_SESSION['user_id'];
-$conn->begin_transaction();
 
 try {
+    $conn->begin_transaction();
+
     /*                    GET CURRENT STOCK                      */
 
     $stmt = $conn->prepare('SELECT stock 

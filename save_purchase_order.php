@@ -173,9 +173,9 @@ for ($i = 0; $i < count($productIds); ++$i) {
 
 $poNumber = 'PO-'.date('YmdHis').'-'.str_pad((string) random_int(0, 9999), 4, '0', STR_PAD_LEFT);
 
-$conn->begin_transaction();
-
 try {
+    $conn->begin_transaction();
+
     $stmt = $conn->prepare(
         'INSERT INTO purchase_orders
         (supplier_id, 

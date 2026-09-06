@@ -61,9 +61,9 @@ $sql = 'INSERT INTO suppliers(
 company_name, contact_person, phone, email, address, notes, status) 
 VALUES(?, ?, ?, ?, ?, ?, ?)';
 
-$conn->begin_transaction();
-
 try {
+    $conn->begin_transaction();
+
     if (!executeStatement(
         $conn,
         $sql,

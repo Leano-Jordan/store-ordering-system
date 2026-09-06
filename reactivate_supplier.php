@@ -32,9 +32,9 @@ if ($id === false || $id <= 0) {
     exit();
 }
 
-$conn->begin_transaction();
-
 try {
+    $conn->begin_transaction();
+
     $stmt = $conn->prepare(
         "UPDATE suppliers
         SET status = 'Active' 

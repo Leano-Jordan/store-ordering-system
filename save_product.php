@@ -122,9 +122,9 @@ $sql = 'INSERT INTO products (name,
     stock) 
     VALUES(?, ?, ?, ?, ?, ?)';
 
-$conn->begin_transaction();
-
 try {
+    $conn->begin_transaction();
+
     if (!executeStatement(
         $conn,
         $sql,
