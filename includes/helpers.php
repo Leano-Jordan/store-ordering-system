@@ -15,7 +15,7 @@ function executeQuery(
     string $sql,
     string $types = '',
     array $params = []
-): mysqli_result | false {
+) {
     $stmt = $conn->prepare($sql);
 
     if (!$stmt) {
@@ -25,7 +25,13 @@ function executeQuery(
     }
 
     try {
-        if ($types !== '' && !empty($params) && !$stmt->bind_param($types, ...$params)) {
+        if (($types === '') !== empty($params)) {
+            error_log('SwiftOrder executeQuery parameter contract mismatch.');
+
+            return false;
+        }
+
+        if ($types !== '' && !$stmt->bind_param($types, ...$params)) {
             error_log('SwiftOrder executeQuery bind failed: '.$stmt->error);
 
             return false;
@@ -52,8 +58,11 @@ function executeQuery(
 }
 
 function executeStatement(
-    mysqli $conn, string $sql, 
-    string $types = '', array $params = []): bool {
+    mysqli $conn,
+    string $sql,
+    string $types = '',
+    array $params = []
+): bool {
     $stmt = $conn->prepare($sql);
 
     if (!$stmt) {
@@ -82,8 +91,11 @@ function executeStatement(
 }
 
 function executeStatementAffectedRows(
-    mysqli $conn, string $sql, 
-    string $types = '', array $params = []): int {
+    mysqli $conn,
+    string $sql,
+    string $types = '',
+    array $params = []
+): int {
     $stmt = $conn->prepare($sql);
 
     if (!$stmt) {
