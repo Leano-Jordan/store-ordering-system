@@ -72,10 +72,16 @@ function executeStatement(
     }
 
     try {
-        if ($types !== '' && !empty($params) && !$stmt->bind_param($types, ...$params)) {
-            error_log('SwiftOrder executeStatement bind failed: '.$stmt->error);
+        if (($types === '') !== empty($params)) {
+            error_log('SwiftOrder executeStatementAffectedRows parameter contract mismatch.');
 
-            return false;
+            return -1;
+        }
+
+        if ($types !== '' && !$stmt->bind_param($types, ...$params)) {
+            error_log('SwiftOrder executeStatementAffectedRows bind failed: '.$stmt->error);
+
+            return -1;
         }
 
         if (!$stmt->execute()) {
@@ -105,10 +111,16 @@ function executeStatementAffectedRows(
     }
 
     try {
-        if ($types !== '' && !empty($params) && !$stmt->bind_param($types, ...$params)) {
-            error_log('SwiftOrder executeStatementAffectedRows bind failed: '.$stmt->error);
+        if (($types === '') !== empty($params)) {
+            error_log('SwiftOrder executeStatement parameter contract mismatch.');
 
-            return -1;
+            return false;
+        }
+
+        if ($types !== '' && !$stmt->bind_param($types, ...$params)) {
+            error_log('SwiftOrder executeStatement bind failed: '.$stmt->error);
+
+            return false;
         }
 
         if (!$stmt->execute()) {
