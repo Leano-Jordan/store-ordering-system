@@ -6,6 +6,7 @@ requireRole([ROLE_ADMIN, ROLE_MANAGER]);
 require_once 'includes/db.php';
 require_once 'includes/csrf.php';
 require_once 'includes/audit.php';
+require_once 'includes/logger.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: purchase_orders.php');
@@ -74,6 +75,14 @@ if (!$supplierStmt->execute()) {
 
 $supplierResult = $supplierStmt->get_result();
 
+if (!$supplierResult) {
+    error_log('save_purchase_order.php: Failed to retrieve supplier lookup result: '.$supplierStmt->error);
+
+    $supplierStmt->close();
+
+    exit('Unable to validate supplier.');
+}
+
 if ($supplierResult->num_rows !== 1) {
     $supplierStmt->close();
     exit('Selected supplier is not available.');
@@ -103,10 +112,31 @@ for ($i = 0; $i < count($productIds); ++$i) {
         exit('Invalid product selected.');
     }
 
-    $productStmt->bind_param('i', $productId);
-    $productStmt->execute();
+    if (!$productStmt->bind_param('i', $productId)) {
+        error_log('save_purchase_order.php: Failed to bind product lookup: '.$productStmt->error);
+
+        $productStmt->close();
+
+        exit('Unable to validate purchase order products.');
+    }
+
+    if (!$productStmt->execute()) {
+        error_log('save_purchase_order.php: Failed to execute product lookup: '.$productStmt->error);
+
+        $productStmt->close();
+
+        exit('Unable to validate purchase order products.');
+    }
 
     $productResult = $productStmt->get_result();
+
+    if (!$productResult) {
+        error_log('save_purchase_order.php: Failed to retrieve product lookup result: '.$productStmt->error);
+
+        $productStmt->close();
+
+        exit('Unable to validate purchase order products.');
+    }
 
     if ($productResult->num_rows !== 1) {
         $productStmt->close();
@@ -237,6 +267,15 @@ try {
 ]
     );
 
+    if (!logActivity(
+        $conn,
+        (int) $_SESSION['user_id'],
+        'Created Purchase Order. '.$poNumber
+    )
+    ) {
+        throw new RuntimeException('Failed to record purchase order activity.');
+    }
+
     if (!$conn->commit()) {
         throw new Exception('Failed to commit purchase order transaction: '.$conn->error);
     }
@@ -246,13 +285,9 @@ try {
     error_log('save_purchase_order.php: Transaction failed: '.$e->getMessage());
 
     $_SESSION['error'] = 'Unable to save purchase order. Please try again.';
+
     header('Location: add_purchase_order.php');
     exit();
-}
-
-require_once 'includes/logger.php';
-if (!logActivity($conn, (int) $_SESSION['user_id'], 'Created Purchase Order. '.$poNumber)) {
-    error_log('save_purchase_order.php: Activity log failed for purchase order '.$poNumber);
 }
 
 header('Location: purchase_orders.php');

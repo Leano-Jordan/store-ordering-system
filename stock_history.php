@@ -62,27 +62,32 @@ if ($filter === 'increase') {
 
 $where = !empty($whereConditions) ? 'WHERE '.implode(' AND ', $whereConditions) : '';
 
-$stmt = $conn->prepare("SELECT sa.created_at,
-        p.name AS product_name,
-        sa.adjustment_type,
-        sa.quantity,
-        sa.available_stock,
-        sa.reason,
-        sa.notes,
-        u.username
+$stmt = $conn->prepare(
+    "SELECT sa.created_at, p.name AS product_name,
+    sa.adjustment_type, sa.quantity,
+    sa.available_stock, sa.reason,
+    sa.notes, u.username
     FROM stock_adjustments sa
     INNER JOIN products p ON sa.product_id = p.id
-    INNER JOIN users u ON sa.user_id = u.id
-    $where
-    ORDER BY sa.created_at DESC
-    LIMIT $limit OFFSET $offset
-");
+    INNER JOIN users u ON sa.user_id = u.id $where
+    ORDER BY sa.created_at DESC LIMIT $limit OFFSET $offset"
+);
+
+if (!$stmt) {
+    error_log('stock_history.php: Failed to prepare stock-history query: '.$conn->error);
+
+    exit('Unable to load stock history.');
+}
 
 if ($bindTypes !== '') {
-    $stmt->bind_param(
-        $bindTypes,
-        ...$bindValues
-    );
+    if (!$stmt->bind_param($bindTypes, ...$bindValues)
+        ) {
+        error_log('stock_history.php: Failed to bind stock-history parameters: '.$stmt->error);
+
+        $stmt->close();
+
+        exit('Unable to load stock history.');
+    }
 }
 
 if (!$stmt->execute()) {

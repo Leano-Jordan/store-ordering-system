@@ -99,19 +99,39 @@ if ($id <= 0) {
             $stockStmt->close();
 
             // Get new stock level for history
-            $newStockStmt = $conn->prepare('SELECT stock FROM products WHERE id = ? FOR UPDATE');
+            $newStockStmt = $conn->prepare(
+                'SELECT stock FROM products 
+                WHERE id = ? FOR UPDATE'
+            );
 
             if (!$newStockStmt) {
                 throw new Exception($conn->error);
             }
 
-            $newStockStmt->bind_param('i', $item['product_id']);
+            if (!$newStockStmt->bind_param('i', $item['product_id'])) {
+                $error = $newStockStmt->error;
+                $newStockStmt->close();
 
-            if (!$newStockStmt->execute()) {
-                throw new Exception($newStockStmt->error);
+                throw new RuntimeException('Failed to bind updated stock lookup: '.$error);
             }
 
-            $newStockRow = $newStockStmt->get_result()->fetch_assoc();
+            if (!$newStockStmt->execute()) {
+                $error = $newStockStmt->error;
+                $newStockStmt->close();
+
+                throw new RuntimeException('Failed to retrieve updated stock: '.$error);
+            }
+
+            $newStockResult = $newStockStmt->get_result();
+
+            if (!$newStockResult) {
+                $error = $newStockStmt->error;
+                $newStockStmt->close();
+
+                throw new RuntimeException('Failed to retrieve updated stock result: '.$error);
+            }
+
+            $newStockRow = $newStockResult->fetch_assoc();
 
             if (!$newStockRow) {
                 throw new Exception('Unable to read updated stock for product ID '.$item['product_id']);
