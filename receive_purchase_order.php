@@ -277,11 +277,8 @@ WHERE purchase_order_id = ?
             $receiptChanges
         );
 
-        if (!logActivity(
-            $conn,
-            (int) $_SESSION['user_id'],
-            'Received Purchase Order ID '.$id
-        )) {
+        if (!logActivity($conn, (int) $_SESSION['user_id'], 'Received Purchase Order ID '.$id)
+        ) {
             throw new RuntimeException('Failed to record purchase order receipt activity.');
         }
 
@@ -291,9 +288,7 @@ WHERE purchase_order_id = ?
     } catch (Throwable $e) {
         $conn->rollback();
 
-        error_log(
-            'receive_purchase_order.php: '.$e->getMessage()
-        );
+        error_log('receive_purchase_order.php: '.$e->getMessage());
 
         exit('Failed to receive purchase order');
     }
