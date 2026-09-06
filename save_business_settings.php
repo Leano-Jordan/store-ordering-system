@@ -102,16 +102,19 @@ if ($userId === false || $userId < 1) {
     exit('Forbidden.');
 }
 
-$conn->begin_transaction();
+$transactionStarted = false;
 
 try {
+    if (!$conn->begin_transaction()) {
+        throw new RuntimeException('Failed to begin business settings transaction: '.$conn->error);
+    }
+
+    $transactionStarted = true;
+
     $settingsStmt = $conn->prepare(
-        'SELECT business_name,
-            business_address,
-            vat_enabled,
-            vat_number,
-            vat_rate,
-            next_invoice_number FROM business_settings
+        'SELECT business_name, business_address,
+        vat_enabled, vat_number, vat_rate,
+        next_invoice_number FROM business_settings
         WHERE id = 1 LIMIT 1 FOR UPDATE'
     );
 
@@ -284,32 +287,24 @@ try {
 
         $conn->rollback();
 
-        error_log(
-            'save_business_settings.php: commit failed: '
-            .$error
-        );
+        error_log('save_business_settings.php: commit failed: '.$error);
 
         throw new RuntimeException('Unable to commit business settings.');
     }
 
-    $_SESSION['success'] =
-        'Business and tax settings saved successfully.';
+    $_SESSION['success'] = 'Business and tax settings saved successfully.';
 
     header('Location: business_settings.php');
 
     exit();
 } catch (Throwable $exception) {
-    $conn->rollback();
+    if ($transactionStarted) {
+        $conn->rollback();
+    }
 
-    error_log(
-        'save_business_settings.php: transaction failed: '
-        .$exception->getMessage()
-    );
+    error_log('save_business_settings.php: transaction failed: '.$exception->getMessage());
 
-    $_SESSION['error'] =
-        $exception instanceof InvalidArgumentException
-        ? $exception->getMessage()
-        : 'Business and tax settings could not be saved.';
+    $_SESSION['error'] = $exception instanceof InvalidArgumentException ? $exception->getMessage() : 'Business and tax settings could not be saved.';
 
     header('Location: business_settings.php');
 

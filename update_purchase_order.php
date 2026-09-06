@@ -50,7 +50,11 @@ if (count($productIds) !== count(array_unique($productIds, SORT_REGULAR))) {
     exit('Duplicate products are not allowed on purchase order.');
 }
 
-$conn->begin_transaction();
+if (!$conn->begin_transaction()) {
+    error_log('update_purchase_order.php: Failed to begin transaction: '.$conn->error);
+
+    exit('Unable to start Purchase Order update. Please try again.');
+}
 
 if ($purchaseOrderId <= 0) {
     $conn->rollback();

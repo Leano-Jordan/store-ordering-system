@@ -135,13 +135,27 @@ if (isset($_FILES['image']) && $_FILES['image']['error'] !== UPLOAD_ERR_NO_FILE)
     $newImageUploaded = true;
 }
 
-$conn->begin_transaction();
+$transactionStarted = false;
+
+if (!$conn->begin_transaction()) {
+    error_log('update_product.php: Failed to begin product update transaction: '.$conn->error);
+
+    if ($newImageUploaded && $newImagePath !== null && is_file($newImagePath)) {
+        if (!unlink($newImagePath)) {
+            error_log('update_product.php: Failed to clean up new product image after transaction start failure: '.$newImagePath);
+        }
+    }
+
+    $_SESSION['error'] = 'Unable to update product. Please try again.';
+    header('Location: edit_product.php?id='.$id);
+    exit();
+}
+
+$transactionStarted = true;
 
 $sql = 'UPDATE products SET 
-name=?, 
-description=?, 
-price=?, 
-image=?, 
+name=?, description=?, 
+price=?, image=?, 
 category=? WHERE id=?';
 
 $updatedSucceeded = executeStatement(
@@ -155,9 +169,13 @@ $updatedSucceeded = executeStatement(
         $image,
         $category,
         $id,
-        ]
-); if (!$updatedSucceeded) {
-    $conn->rollback();
+    ]
+);
+
+if (!$updatedSucceeded) {
+    if ($transactionStarted) {
+        $conn->rollback();
+    }
 
     if ($newImageUploaded && $newImagePath !== null && is_file($newImagePath)) {
         if (!unlink($newImagePath)) {
@@ -229,7 +247,9 @@ try {
         throw new RuntimeException('Product update transaction commit failed.');
     }
 } catch (\Throwable $exception) {
-    $conn->rollback();
+    if ($transactionStarted) {
+        $conn->rollback();
+    }
 
     error_log('update_product.php: Audit transaction failed for product ID '.$id.': '.$exception->getMessage());
 

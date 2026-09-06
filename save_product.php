@@ -122,8 +122,14 @@ $sql = 'INSERT INTO products (name,
     stock) 
     VALUES(?, ?, ?, ?, ?, ?)';
 
+$transactionStarted = false;
+
 try {
-    $conn->begin_transaction();
+    if (!$conn->begin_transaction()) {
+        throw new RuntimeException('Failed to begin product creation transaction: '.$conn->error);
+    }
+
+    $transactionStarted = true;
 
     if (!executeStatement(
         $conn,
@@ -165,13 +171,24 @@ try {
     );
 
     if (!$conn->commit()) {
-        throw new RuntimeException('Product creation commit failed: '.$conn->error);
+        $commitError = $conn->error;
+
+        if ($transactionStarted) {
+            $conn->rollback();
+        }
+
+        throw new RuntimeException('Product creation commit failed: '.$commitError);
     }
 
+    $transactionStarted = false;
+
     header('Location: products.php');
+
     exit();
 } catch (Throwable $e) {
-    $conn->rollback();
+    if ($transactionStarted) {
+        $conn->rollback();
+    }
 
     if (is_file($imagePath) && !unlink($imagePath)) {
         error_log(

@@ -15,8 +15,6 @@ verifyCsrfToken();
 require_once 'includes/db.php';
 require_once 'includes/audit.php';
 
-$conn->begin_transaction();
-
 /************ ************** DEACTIVATE USERS *********** *****************/
 
 $idRaw = $_POST['id'] ?? null;
@@ -32,12 +30,12 @@ if (!is_string($idRaw)) {
 $id = filter_var($idRaw, FILTER_VALIDATE_INT);
 
 if ($id === false || $id <= 0) {
-    $conn->rollback();
-
     $_SESSION['error'] = 'Invalid user ID.';
     header('Location: users.php');
     exit();
 }
+
+$conn->begin_transaction();
 
 /*********                *******  PREVENT DEACTIVATION MYSELF *******       ****************/
 
