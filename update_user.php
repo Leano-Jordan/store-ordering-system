@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 require_once 'includes/auth.php';
 require_once 'includes/permissions.php';
 requireRole([ROLE_ADMIN]);
@@ -232,24 +234,19 @@ try {
 
     $conn->begin_transaction();
 
-    $sql = 'UPDATE users SET full_name = ?,
-                    username = ?,
-                    profile_image = ?,
-                    role = ?,
-                    status = ?
-                WHERE id = ?';
+    $sql = 'UPDATE users SET full_name = ?, 
+    username = ?, profile_image = ?,
+    role = ?, status = ?
+    WHERE id = ?';
 
     $success = executeStatement(
         $conn,
         $sql,
         'sssssi',
         [
-        $fullName,
-        $username,
-        $profileImage,
-        $role,
-        $status,
-        $id,
+        $fullName, $username,
+        $profileImage, $role,
+        $status, $id,
     ]
     );
 
@@ -257,14 +254,38 @@ try {
         throw new RuntimeException('Unable to update user. Please try again.');
     }
 
-    recordAudit(
-        $conn,
-        (int) $_SESSION['user_id'],
-        'user',
-        $id,
-        'UPDATE',
-        []
-    );
+    $changes = [];
+
+    if ((string) ($currentUser['role'] ?? '') !== $role) {
+        $changes['role'] = [
+        (string) ($currentUser['role'] ?? ''), $role,
+    ];
+    }
+
+    if ((string) ($currentUser['status'] ?? '') !== $status) {
+        $changes['status'] = [
+        (string) ($currentUser['status'] ?? ''),
+        $status,
+    ];
+    }
+
+    if ($currentUser['profile_image'] !== $profileImage) {
+        $changes['profile_image'] = [
+        '[changed]',
+        '[changed]',
+    ];
+    }
+
+    if ($changes !== []) {
+        recordAudit(
+            $conn,
+            (int) $_SESSION['user_id'],
+            'user',
+            $id,
+            'UPDATE',
+            $changes
+        );
+    }
 
     if (!$conn->commit()) {
         throw new RuntimeException('Commit failed for user ID '.$id.': '.$conn->error);

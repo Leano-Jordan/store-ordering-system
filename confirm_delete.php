@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 require_once 'includes/auth.php';
 require_once 'includes/permissions.php';
 requireRole([ROLE_ADMIN]);
@@ -11,8 +13,17 @@ verifyCsrfToken();
 
 /************          **************  CONFIRM DELETE PRODUCT  ***********            **************/
 
-$id = (int) ($_POST['id'] ?? 0);
-if ($id <= 0) {
+$idRaw = $_POST['id'] ?? null;
+
+if (!is_string($idRaw)) {
+    $_SESSION['error'] = 'Invalid product ID.';
+    header('Location: products.php');
+    exit();
+}
+
+$id = filter_var($idRaw, FILTER_VALIDATE_INT);
+
+if ($id === false || $id <= 0) {
     header('Location: products.php');
     exit();
 }

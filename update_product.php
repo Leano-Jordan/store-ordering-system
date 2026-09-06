@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 require_once 'includes/auth.php';
 require_once 'includes/permissions.php';
 requireRole([ROLE_ADMIN, ROLE_MANAGER]);

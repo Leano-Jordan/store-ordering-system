@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 require_once 'includes/auth.php';
 require_once 'includes/permissions.php';
 requireRole([ROLE_ADMIN]);
@@ -17,9 +19,17 @@ require_once 'includes/audit.php';
 
 /************ *       ************* REACTIVATE USERS ***********              *****************/
 
-$id = (int) ($_POST['id'] ?? 0);
+$idRaw = $_POST['id'] ?? null;
 
-if ($id <= 0) {
+if (!is_string($idRaw)) {
+    $_SESSION['error'] = 'Invalid user ID.';
+    header('Location: users.php');
+    exit();
+}
+
+$id = filter_var($idRaw, FILTER_VALIDATE_INT);
+
+if ($id === false || $id <= 0) {
     header('Location: users.php');
     exit();
 }
