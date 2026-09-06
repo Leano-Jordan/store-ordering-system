@@ -77,6 +77,12 @@ if ($stockFilter === 'low') {
     } else {
         $result = getProducts($conn, $limit, $offset);
 
+        if (!$result) {
+            error_log('products.php: Failed to load products.');
+
+            exit('Unable to load products.');
+        }
+
         $totalResult = $conn->query('SELECT COUNT(*) AS total FROM products');
         $sql = null;
     }
@@ -99,6 +105,12 @@ if (!isset($totalRows)) {
     }
 
     $countRow = $totalResult->fetch_assoc();
+
+    if (!$countRow) {
+        error_log('products.php: Failed to read product count.');
+
+        exit('Unable to load product pagination.');
+    }
 
     $totalRows = (int) ($countRow['total'] ?? 0);
 }

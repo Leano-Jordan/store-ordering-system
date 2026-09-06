@@ -30,7 +30,21 @@ function getProductCount(mysqli $conn): int
 
     $result = executeQuery($conn, $sql);
 
-    return (int) $result->fetch_assoc()['total'];
+    if (!$result) {
+        error_log('SwiftOrder getProductCount query failed.');
+
+        return -1;
+    }
+
+    $row = $result->fetch_assoc();
+
+    if (!$row) {
+        error_log('SwiftOrder getProductCount result retrieval failed.');
+
+        return -1;
+    }
+
+    return (int) ($row['total'] ?? 0);
 }
 
 //======================SEARCH PRODUCTS
