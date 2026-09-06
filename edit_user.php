@@ -53,6 +53,8 @@ if (!$user) {
 include 'includes/header.php';
 ?>
 
+<?php require 'includes/shared/flash_message.php'; ?>
+
 <h2>Edit User</h2>
 
 <div class="form-container">
