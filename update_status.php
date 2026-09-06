@@ -16,12 +16,25 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit('Invalid request.');
 }
 
-$id = intval($_POST['id'] ?? 0);
-if ($id <= 0) {
+$idRaw = $_POST['id'] ?? null;
+
+if (!is_string($idRaw)) {
     exit('Invalid order.');
 }
 
-$status = $_POST['status'] ?? '';
+$id = filter_var($idRaw, FILTER_VALIDATE_INT);
+
+if ($id === false || $id <= 0) {
+    exit('Invalid order.');
+}
+
+$statusRaw = $_POST['status'] ?? null;
+
+if (!is_string($statusRaw)) {
+    exit('Invalid status.');
+}
+
+$status = trim($statusRaw);
 
 $conn->begin_transaction();
 
@@ -102,16 +115,27 @@ WHERE id = ? AND status = ?',
     }
 
     if ($status === 'Collected') {
-        $orderItemResult = executeQuery($conn, 'SELECT oi.product_id, oi.quantity FROM order_items oi 
-        INNER JOIN products p ON oi.product_id = p.id 
-        WHERE oi.order_id = ? FOR UPDATE', 'i', [$id]);
+        $orderItemResult = executeQuery(
+            $conn,
+            'SELECT oi.product_id, oi.quantity 
+            FROM order_items oi INNER JOIN products p 
+            ON oi.product_id = p.id WHERE oi.order_id = ? 
+            FOR UPDATE',
+            'i',
+            [$id]
+        );
 
         if (!$orderItemResult) {
             throw new Exception('Failed to retrieve order items.');
         }
         while ($item = $orderItemResult->fetch_assoc()) {
-            $qty = (int) $item['quantity'];
-            $productId = (int) $item['product_id'];
+            $qty = filter_var($item['quantity'] ?? null, FILTER_VALIDATE_INT);
+
+            $productId = filter_var($item['product_id'] ?? null, FILTER_VALIDATE_INT);
+
+            if ($qty === false || $qty <= 0 || $productId === false || $productId <= 0) {
+                throw new RuntimeException('Invalid order item data.');
+            }
 
             $affected = executeStatementAffectedRows(
                 $conn,
@@ -120,13 +144,13 @@ WHERE id = ? AND status = ?',
                 [$qty, $productId, $qty]
             );
 
-            if ($affected <= 0) {
-                throw new Exception("Unable to deduct stock for product ID $productId");
+            if ($affected !== 1) {
+                throw new RuntimeException("Unable to deduct stock for product ID $productId");
             }
 
             $newStockResult = executeQuery(
                 $conn,
-                'SELECT stock FROM products WHERE id = ?',
+                'SELECT stock FROM products WHERE id = ? FOR UPDATE',
                 'i',
                 [$productId]
             );

@@ -221,7 +221,21 @@ try {
 
         $newProfileImage = bin2hex(random_bytes(16)).'.'.$allowedMimeTypes[$mimeType];
 
-        $newProfileImagePath = __DIR__.'/assets/images/profiles/'.$newProfileImage;
+        $profileImageDirectory = __DIR__.'/assets/images/profiles';
+
+        if (!is_dir($profileImageDirectory)) {
+            if (!mkdir($profileImageDirectory, 0755, true) && !is_dir($profileImageDirectory)) {
+                error_log('update_user.php: Failed to create profile image directory.');
+                throw new RuntimeException('Failed to prepare profile image storage.');
+            }
+        }
+
+        if (!is_writable($profileImageDirectory)) {
+            error_log('update_user.php: Profile image directory is not writable.');
+            throw new RuntimeException('Profile image storage is unavailable.');
+        }
+
+        $newProfileImagePath = $profileImageDirectory.'/'.$newProfileImage;
 
         if (!move_uploaded_file($_FILES['profile_image']['tmp_name'], $newProfileImagePath)) {
             error_log('update_user.php: Failed to store new profile image.');

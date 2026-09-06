@@ -19,7 +19,25 @@ $conn->begin_transaction();
 
 /************ ************** DEACTIVATE USERS *********** *****************/
 
-$id = (int) ($_POST['id'] ?? 0);
+$idRaw = $_POST['id'] ?? null;
+
+if (!is_string($idRaw)) {
+    $conn->rollback();
+
+    $_SESSION['error'] = 'Invalid user ID.';
+    header('Location: users.php');
+    exit();
+}
+
+$id = filter_var($idRaw, FILTER_VALIDATE_INT);
+
+if ($id === false || $id <= 0) {
+    $conn->rollback();
+
+    $_SESSION['error'] = 'Invalid user ID.';
+    header('Location: users.php');
+    exit();
+}
 
 /*********                *******  PREVENT DEACTIVATION MYSELF *******       ****************/
 
@@ -66,6 +84,18 @@ if (!$targetStmt->execute()) {
 }
 
 $userResult = $targetStmt->get_result();
+
+if (!$userResult) {
+    error_log('deactivate_user.php target lookup result retrieval failed. '.$targetStmt->error);
+
+    $targetStmt->close();
+    $conn->rollback();
+
+    $_SESSION['error'] = 'Unable to deactivate user.';
+    header('Location: users.php');
+    exit();
+}
+
 $user = $userResult->fetch_assoc();
 $targetStmt->close();
 
