@@ -58,13 +58,17 @@ if ($companyName === '' || $contactPerson === '' || $phone === '') {
 }
 
 $sql = 'INSERT INTO suppliers(
-company_name, contact_person, phone, email, address, notes, status) 
-VALUES(?, ?, ?, ?, ?, ?, ?)';
+    company_name, contact_person, p
+    hone, email, address, notes, status) 
+    VALUES(?, ?, ?, ?, ?, ?, ?)';
 
 $transactionStarted = false;
 
 try {
-    $conn->begin_transaction();
+    if (!$conn->begin_transaction()) {
+        throw new RuntimeException('Failed to begin supplier creation transaction: '.$conn->error);
+    }
+
     $transactionStarted = true;
 
     if (!executeStatement(

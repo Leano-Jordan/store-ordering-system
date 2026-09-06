@@ -79,7 +79,10 @@ $imageStmt->close();
 $transactionStarted = false;
 
 try {
-    $conn->begin_transaction();
+    if (!$conn->begin_transaction()) {
+        throw new RuntimeException('Failed to begin product deactivation transaction: '.$conn->error);
+    }
+
     $transactionStarted = true;
 
     $sql = "UPDATE products SET status = 'Inactive' 

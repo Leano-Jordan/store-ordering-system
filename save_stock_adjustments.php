@@ -64,7 +64,10 @@ $userId = $_SESSION['user_id'];
 $transactionStarted = false;
 
 try {
-    $conn->begin_transaction();
+    if (!$conn->begin_transaction()) {
+        throw new RuntimeException('Failed to begin stock adjustment transaction: '.$conn->error);
+    }
+
     $transactionStarted = true;
 
     /*                    GET CURRENT STOCK                      */

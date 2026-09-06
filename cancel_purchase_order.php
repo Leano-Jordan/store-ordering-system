@@ -32,7 +32,10 @@ if ($id === false || $id <= 0) {
 $transactionStarted = false;
 
 try {
-    $conn->begin_transaction();
+    if (!$conn->begin_transaction()) {
+        throw new RuntimeException('Failed to begin purchase order cancellation transaction: '.$conn->error);
+    }
+
     $transactionStarted = true;
 
     $stmt = $conn->prepare(

@@ -216,6 +216,7 @@ try {
         $productMap[$p['id']] = $p;
     }
 
+    $result->free();
     $productStmt->close();
 
     $items = '';

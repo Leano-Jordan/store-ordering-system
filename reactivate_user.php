@@ -93,7 +93,10 @@ if (!$userRecord) {
 $transactionStarted = false;
 
 try {
-    $conn->begin_transaction();
+    if (!$conn->begin_transaction()) {
+        throw new RuntimeException('Failed to begin user reactivation transaction: '.$conn->error);
+    }
+
     $transactionStarted = true;
 
     $updateStmt = $conn->prepare(
