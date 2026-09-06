@@ -72,8 +72,6 @@ if (!in_array($status, $allowedStatuses, true)) {
 $newProfileImageUploaded = false;
 $newProfileImagePath = null;
 
-$conn->begin_transaction();
-
 try {
     $currentUserStmt = $conn->prepare('SELECT profile_image, role, status FROM users WHERE id = ? FOR UPDATE');
 
@@ -231,6 +229,8 @@ try {
         $profileImage = $newProfileImage;
         $newProfileImageUploaded = true;
     }
+
+    $conn->begin_transaction();
 
     $sql = 'UPDATE users SET full_name = ?,
                     username = ?,
