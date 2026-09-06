@@ -158,9 +158,27 @@ try {
         }
 
         $adminResult = $adminCheck->get_result();
-        $adminRow = $adminResult ? $adminResult->fetch_assoc() : null;
-        $activeAdminCount = (int) ($adminRow['total'] ?? 0);
 
+        if (!$adminResult) {
+            error_log('update_user.php: Failed to retrieve active admin check result: '.$adminCheck->error);
+
+            $adminCheck->close();
+
+            throw new RuntimeException('Unable to validate administrator access.');
+        }
+
+        $adminRow = $adminResult->fetch_assoc();
+
+        if (!is_array($adminRow) || !isset($adminRow['total'])) {
+            $adminResult->free();
+            $adminCheck->close();
+
+            throw new RuntimeException('Unable to validate administrator access.');
+        }
+
+        $activeAdminCount = (int) $adminRow['total'];
+
+        $adminResult->free();
         $adminCheck->close();
 
         if ($activeAdminCount === 0) {
