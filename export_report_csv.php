@@ -7,6 +7,16 @@ require_once 'includes/db.php';
 
 $range = $_GET['range'] ?? '7';
 
+if (!is_string($range)) {
+    $range = '7';
+}
+
+$allowedRanges = ['7', '30', 'month', 'year'];
+
+if (!in_array($range, $allowedRanges, true)) {
+    $range = '7';
+}
+
 if ($range === '30') {
     $where = 'created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)';
 } elseif ($range === 'month') {
@@ -34,15 +44,49 @@ header('Content-Disposition: attachment; filename=sales_report.csv');
 
 $output = fopen('php://output', 'w');
 
-fputcsv($output, ['Date', 'Orders', 'Revenue']);
+if ($output === false) {
+    error_log('export_report_csv.php: Failed to open CSV output stream.');
 
-while ($row = $result->fetch_assoc()) {
-    fputcsv($output, [
-        date('d F Y', strtotime($row['sale_date'])),
-        $row['orders'],
-        number_format($row['revenue'], 2),
-    ]);
+    $result->free();
+
+    http_response_code(500);
+
+    exit('Unable to export report.');
 }
 
-fclose($output);
+if (fputcsv($output, ['Date', 'Orders', 'Revenue']) === false) {
+    error_log('export_report_csv.php: Failed to write CSV header.');
+
+    fclose($output);
+    $result->free();
+
+    http_response_code(500);
+
+    exit('Unable to export report.');
+}
+
+while ($row = $result->fetch_assoc()) {
+    if (fputcsv($output, [
+        date('d F Y', strtotime($row['sale_date'])), $row['orders'], number_format($row['revenue'], 2), ]) === false) {
+        error_log('export_report_csv.php: Failed to write CSV data row.');
+
+        fclose($output);
+        $result->free();
+
+        http_response_code(500);
+
+        exit('Unable to export report.');
+    }
+}
+
+$result->free();
+
+if (!fclose($output)) {
+    error_log('export_report_csv.php: Failed to close CSV output stream.');
+
+    http_response_code(500);
+
+    exit('Unable to export report.');
+}
+
 exit();

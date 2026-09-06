@@ -55,6 +55,7 @@ function reportScalar(
     }
 
     $row = $result->fetch_assoc();
+    $result->free();
 
     if (!$row) {
         return 0.00;
@@ -85,7 +86,7 @@ if (!$revenueStmt->bind_param('s', $status)) {
 if (!$revenueStmt->execute()) {
     error_log('reports.php: Revenue query execution failed: '.$revenueStmt->error);
     $revenueStmt->close();
-    exit('Unable to to generate report. Please try again later.');
+    exit('Unable to generate report. Please try again later.');
 }
 
 $revenueResult = $revenueStmt->get_result();
@@ -93,7 +94,7 @@ $revenueResult = $revenueStmt->get_result();
 if (!$revenueResult) {
     error_log('reports.php: Revenue query result failed: '.$revenueStmt->error);
     $revenueStmt->close();
-    exit('Unable to to generate report. Please try again later.');
+    exit('Unable to generate report. Please try again later.');
 }
 
 $revenueRow = $revenueResult->fetch_assoc();
@@ -120,7 +121,7 @@ AND status = 'Collected' GROUP BY DATE(created_at) ORDER BY sale_date DESC");
 
 if (!$dailySales) {
     error_log('reports.php: Daily sales query failed: '.$conn->error);
-    exit('Unable to to generate report. Please try again later.');
+    exit('Unable to generate report. Please try again later.');
 }
 
 $chartResult = $conn->query("SELECT DATE(created_At) 
@@ -171,6 +172,8 @@ while ($chart = $chartResult->fetch_assoc()) {
     $chartLabels[] = date('d M', strtotime($chart['sale_date']));
     $chartData[] = $chart['daily_total'];
 }
+
+$chartResult->free();
 
 require_once 'includes/header.php';
 
