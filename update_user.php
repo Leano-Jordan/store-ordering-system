@@ -211,11 +211,22 @@ try {
 
     $usernameResult = $check->get_result();
 
-    if ($usernameResult->num_rows > 0) {
+    if (!$usernameResult) {
+        error_log('update_user.php: Failed to retrieve username check result: '.$check->error);
+
         $check->close();
+
+        throw new RuntimeException('Unable to validate username.');
+    }
+
+    if ($usernameResult->num_rows > 0) {
+        $usernameResult->free();
+        $check->close();
+
         throw new RuntimeException('Username already exists.');
     }
 
+    $usernameResult->free();
     $check->close();
 
     if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] !== UPLOAD_ERR_NO_FILE) {

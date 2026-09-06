@@ -233,12 +233,23 @@ $result = $conn->query($sql);
 
 if (!$result) {
     error_log('dashboard.php: Low-stock query failed: '.$conn->error);
-    $lowStock = 0;
-} else {
-    $row = $result->fetch_assoc();
-    $lowStock = (int) ($row['lowStock'] ?? 0);
-    $result->free();
+
+    exit('Unable to load dashboard inventory data.');
 }
+
+$row = $result->fetch_assoc();
+
+if (!is_array($row) || !isset($row['lowStock'])) {
+    error_log('dashboard.php: Low-stock query returned an invalid result.');
+
+    $result->free();
+
+    exit('Unable to load dashboard inventory data.');
+}
+
+$lowStock = (int) $row['lowStock'];
+
+$result->free();
 
 //                                                     OUT OF STOCK PRODUCTS          //
 
