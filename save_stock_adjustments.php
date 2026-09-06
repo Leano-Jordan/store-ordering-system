@@ -6,6 +6,7 @@ requireRole([ROLE_ADMIN, ROLE_MANAGER]);
 require_once 'includes/db.php';
 require_once 'includes/csrf.php';
 require_once 'includes/audit.php';
+require_once 'includes/logger.php';
 verifyCsrfToken();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -157,23 +158,27 @@ INTO stock_adjustments
         $changes
     );
 
+    if (!logActivity(
+        $conn,
+        (int) $userId,
+        'Stock adjustment: '.$type.' '.$quantity
+        .' x '.$reason.' (Product ID: '.$productId.')
+        '
+    )
+    ) {
+        throw new RuntimeException('Failed to record stock adjustment activity.');
+    }
+
     if (!$conn->commit()) {
         throw new Exception('Commit failed: '.$conn->error);
     }
 } catch (Throwable $e) {
     $conn->rollback();
+
     error_log('save_stock_adjustments.php: '.$e->getMessage());
+
     exit('Stock adjustment failed.');
 }
 
-require_once 'includes/logger.php';
-
-if (!logActivity(
-    $conn,
-    $_SESSION['user_id'],
-    'Stock adjustment: '.$type.' '.$quantity.' x '.$reason.' (Product ID: '.$productId.')'
-)) {
-    error_log('save_stock_adjustment.php: Activity log failed for product ID '.$productId);
-}
 header('Location: stock_history.php');
 exit();
