@@ -92,9 +92,15 @@ if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
     exit();
 }
 
-$conn->begin_transaction();
+$transactionStarted = false;
 
 try {
+    if (!$conn->begin_transaction()) {
+        throw new RuntimeException('Failed to begin supplier update transaction: '.$conn->error);
+    }
+
+    $transactionStarted = true;
+
     /*
      * Lock the supplier row so authorization and audit
      * decisions are based on the same database state that
@@ -280,23 +286,18 @@ try {
         throw new RuntimeException('Supplier update commit failed: '.$error);
     }
 
-    $_SESSION['success'] =
-        'Supplier updated successfully.';
+    $_SESSION['success'] = 'Supplier updated successfully.';
 
     header('Location: suppliers.php');
     exit();
 } catch (Throwable $exception) {
-    $conn->rollback();
+    if ($transactionStarted) {
+        $conn->rollback();
+    }
 
-    error_log(
-        'update_supplier.php: '
-        .$exception->getMessage()
-    );
+    error_log('update_supplier.php: '.$exception->getMessage());
 
-    $_SESSION['error'] =
-        $exception instanceof InvalidArgumentException
-        ? $exception->getMessage()
-        : 'Unable to update supplier. Please try again.';
+    $_SESSION['error'] = $exception instanceof InvalidArgumentException ? $exception->getMessage() : 'Unable to update supplier. Please try again.';
 
     header('Location: edit_supplier.php?id='.$id);
     exit();

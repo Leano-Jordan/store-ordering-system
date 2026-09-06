@@ -36,10 +36,24 @@ if (!is_string($statusRaw)) {
 
 $status = trim($statusRaw);
 
-$conn->begin_transaction();
+$transactionStarted = false;
 
 try {
-    $orderResult = executeQuery($conn, 'SELECT status, order_number, total FROM orders WHERE id = ? FOR UPDATE', 'i', [$id]);
+    if (!$conn->begin_transaction()) {
+        throw new RuntimeException('Failed to begin order status transaction: '.$conn->error);
+    }
+
+    $transactionStarted = true;
+
+    $orderResult = executeQuery(
+        $conn,
+        'SELECT status, 
+        order_number, total 
+        FROM orders WHERE id = ? FOR 
+        UPDATE',
+        'i',
+        [$id]
+    );
 
     if (!$orderResult) {
         throw new Exception('Failed to retrieve order.');
@@ -307,18 +321,15 @@ WHERE id = ? AND status = ?',
         throw new RuntimeException('Failed to commit order status update.');
     }
 } catch (Throwable $e) {
-    $conn->rollback();
+    if ($transactionStarted) {
+        $conn->rollback();
+    }
 
-    error_log(
-        'update_status.php: '.$e->getMessage()
-    );
+    error_log('update_status.php: '.$e->getMessage());
 
-    $_SESSION['flash_error'] =
-        'Failed to update order status. Please try again.';
+    $_SESSION['flash_error'] = 'Failed to update order status. Please try again.';
 
-    header(
-        'Location: order_details.php?id='.(int) $id
-    );
+    header('Location: order_details.php?id='.(int) $id);
 
     exit();
 }

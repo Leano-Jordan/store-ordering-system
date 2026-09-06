@@ -169,9 +169,15 @@ if (
     }
 }
 
-$conn->begin_transaction();
+$transactionStarted = false;
 
 try {
+    if (!$conn->begin_transaction()) {
+        throw new RuntimeException('Failed to begin user creation transaction: '.$conn->error);
+    }
+
+    $transactionStarted = true;
+
     $check = $conn->prepare(
         'SELECT id
         FROM users
@@ -280,13 +286,14 @@ try {
         throw new RuntimeException('User creation commit failed: '.$error);
     }
 
-    $_SESSION['success'] =
-        'User added successfully.';
+    $_SESSION['success'] = 'User added successfully.';
 
     header('Location: users.php');
     exit();
 } catch (InvalidArgumentException $exception) {
-    $conn->rollback();
+    if ($transactionStarted) {
+        $conn->rollback();
+    }
 
     if (
         $destination !== null && is_file($destination) && !unlink($destination)
@@ -301,7 +308,9 @@ try {
     header('Location: add_user.php');
     exit();
 } catch (Throwable $exception) {
-    $conn->rollback();
+    if ($transactionStarted) {
+        $conn->rollback();
+    }
 
     if ($destination !== null && is_file($destination) && !unlink($destination)
     ) {

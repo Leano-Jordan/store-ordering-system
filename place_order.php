@@ -170,10 +170,20 @@ $placeholders = implode(',', array_fill(0, count($productIds), '?'));
 
 $types = str_repeat('i', count($productIds));
 
-$conn->begin_transaction();
+$transactionStarted = false;
 
 try {
-    $productStmt = $conn->prepare("SELECT id, name, price, stock FROM products WHERE id IN ($placeholders) AND status = 'Active' FOR UPDATE");
+    if (!$conn->begin_transaction()) {
+        throw new RuntimeException('Failed to begin order creation transaction: '.$conn->error);
+    }
+
+    $transactionStarted = true;
+
+    $productStmt = $conn->prepare(
+        "SELECT id, name, price, stock 
+        FROM products WHERE id IN ($placeholders) 
+        AND status = 'Active' FOR UPDATE"
+    );
 
     if (!$productStmt) {
         $conn->rollback();
@@ -426,12 +436,11 @@ try {
         throw new RuntimeException('Failed to commit order transaction: '.$conn->error);
     }
 } catch (Throwable $e) {
-    $conn->rollback();
+    if ($transactionStarted) {
+        $conn->rollback();
+    }
 
-    error_log(
-        'place_order.php: Transaction failed for request '
-        .$requestId.': '.$e->getMessage()
-    );
+    error_log('place_order.php: Transaction failed for request '.$requestId.': '.$e->getMessage());
 
     jsonError('Failed to place the order. Please try again.');
 }
