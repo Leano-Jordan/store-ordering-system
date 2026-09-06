@@ -237,9 +237,10 @@ if (!$result) {
 } else {
     $row = $result->fetch_assoc();
     $lowStock = (int) ($row['lowStock'] ?? 0);
+    $result->free();
 }
 
-//                                                     OUT OF STOCK PRODUCTS               //
+//                                                     OUT OF STOCK PRODUCTS          //
 
 $sql = "SELECT COUNT(*) AS outOfStock 
 FROM products 

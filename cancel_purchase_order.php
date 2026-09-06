@@ -15,9 +15,16 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 require_once 'includes/csrf.php';
 verifyCsrfToken();
 
-$id = (int) ($_POST['id'] ?? 0);
+$idRaw = $_POST['id'] ?? null;
 
-if ($id <= 0) {
+if (!is_string($idRaw)) {
+    header('Location: purchase_orders.php');
+    exit();
+}
+
+$id = filter_var($idRaw, FILTER_VALIDATE_INT);
+
+if ($id === false || $id <= 0) {
     header('Location: purchase_orders.php');
     exit();
 }
@@ -131,7 +138,9 @@ try {
     header('Location: purchase_orders.php');
     exit();
 } catch (Throwable $e) {
-    $conn->rollback();
+    if ($transactionStarted) {
+        $conn->rollback();
+    }
 
     error_log('cancel_purchase_order.php: '.$e->getMessage());
 

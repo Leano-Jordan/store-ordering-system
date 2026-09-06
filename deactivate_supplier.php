@@ -15,9 +15,16 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 verifyCsrfToken();
 
-$id = (int) ($_POST['id'] ?? 0);
+$idRaw = $_POST['id'] ?? null;
 
-if ($id <= 0) {
+if (!is_string($idRaw)) {
+    header('Location: suppliers.php');
+    exit();
+}
+
+$id = filter_var($idRaw, FILTER_VALIDATE_INT);
+
+if ($id === false || $id <= 0) {
     header('Location: suppliers.php');
     exit();
 }

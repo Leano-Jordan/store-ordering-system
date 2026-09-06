@@ -13,9 +13,16 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 require_once 'includes/csrf.php';
 verifyCsrfToken();
 
-$id = (int) ($_POST['id'] ?? 0);
+$idRaw = $_POST['id'] ?? null;
 
-if ($id <= 0) {
+if (!is_string($idRaw)) {
+    header('Location: purchase_orders.php');
+    exit();
+}
+
+$id = filter_var($idRaw, FILTER_VALIDATE_INT);
+
+if ($id === false || $id <= 0) {
     header('Location: purchase_orders.php');
     exit();
 }
@@ -181,9 +188,15 @@ try {
         $historyStmt->close();
     }
 
+    $items->free();
     $itemsStmt->close();
 
-    $updateStmt = $conn->prepare("UPDATE purchase_orders SET status = 'Received' WHERE id = ? AND status = 'Pending'");
+    $updateStmt = $conn->prepare(
+        "UPDATE purchase_orders 
+        SET status = 'Received' 
+        WHERE id = ? AND status = 'Pending'
+        "
+    );
 
     if (!$updateStmt) {
         throw new Exception($conn->error);
