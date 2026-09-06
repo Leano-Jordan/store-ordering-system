@@ -218,32 +218,27 @@ try {
         );
     }
 
+    if (!logActivity($conn, (int) $_SESSION['user_id'], 'Updated Product: '.$name)
+            ) {
+        throw new RuntimeException('Product activity logging failed.');
+    }
+
     if (!$conn->commit()) {
         throw new RuntimeException('Product update transaction commit failed.');
     }
 } catch (\Throwable $exception) {
     $conn->rollback();
 
-    error_log(
-        'update_product.php: Audit transaction failed for product ID '
-        .$id.': '.$exception->getMessage()
-    );
+    error_log('update_product.php: Audit transaction failed for product ID '.$id.': '.$exception->getMessage());
 
-    if (
-        $newImageUploaded
-        && $newImagePath !== null
-        && is_file($newImagePath)
+    if ($newImageUploaded && $newImagePath !== null && is_file($newImagePath)
     ) {
         if (!unlink($newImagePath)) {
-            error_log(
-                'update_product.php: Failed to clean up new product image after audit failure: '
-                .$newImagePath
-            );
+            error_log('update_product.php: Failed to clean up new product image after audit failure: '.$newImagePath);
         }
     }
 
-    $_SESSION['error'] =
-        'Unable to complete product update. Please try again.';
+    $_SESSION['error'] = 'Unable to complete product update. Please try again.';
 
     header('Location: edit_product.php?id='.$id);
     exit();
@@ -258,12 +253,6 @@ if ($newImageUploaded && $currentImage !== '' && $currentImage !== 'no-image.png
         }
     }
 }
-
-logActivity(
-    $conn,
-    $_SESSION['user_id'],
-    'Updated Product: '.$name
-);
 
 header('Location: products.php');
 exit();

@@ -93,7 +93,15 @@ if ($where === '') {
 if ($totalResult === false) {
     $totalRows = 0;
 } else {
-    $totalRows = $totalResult->fetch_assoc()['total'];
+    $totalRow = $totalResult->fetch_assoc();
+
+    if (!is_array($totalRow) || !isset($totalRow['total'])) {
+        error_log('SwiftOrder orders query count result was invalid.');
+
+        $totalRows = 0;
+    } else {
+        $totalRows = max(0, (int) $totalRow['total']);
+    }
 }
 
-$totalPages = ceil($totalRows / $limit);
+$totalPages = (int) ceil($totalRows / $limit);

@@ -10,8 +10,12 @@ function formatDate($date): string
     return date('d M Y H:i', strtotime($date));
 }
 
-function executeQuery(mysqli $conn, string $sql, string $types = '', array $params = [])
-{
+function executeQuery(
+    mysqli $conn,
+    string $sql,
+    string $types = '',
+    array $params = []
+): mysqli_result | false {
     $stmt = $conn->prepare($sql);
 
     if (!$stmt) {
@@ -20,24 +24,36 @@ function executeQuery(mysqli $conn, string $sql, string $types = '', array $para
         return false;
     }
 
-    if ($types !== '' && !empty($params)) {
-        $stmt->bind_param($types, ...$params);
-    }
+    try {
+        if ($types !== '' && !empty($params) && !$stmt->bind_param($types, ...$params)) {
+            error_log('SwiftOrder executeQuery bind failed: '.$stmt->error);
 
-    if (!$stmt->execute()) {
+            return false;
+        }
+
+        if (!$stmt->execute()) {
+            error_log('SwiftOrder executeQuery execute failed: '.$stmt->error);
+
+            return false;
+        }
+
+        $result = $stmt->get_result();
+
+        if (!$result) {
+            error_log('SwiftOrder executeQuery result retrieval failed: '.$stmt->error);
+
+            return false;
+        }
+
+        return $result;
+    } finally {
         $stmt->close();
-
-        return false;
     }
-
-    $result = $stmt->get_result();
-    $stmt->close();
-
-    return $result;
 }
 
-function executeStatement(mysqli $conn, string $sql, string $types = '', array $params = [])
-{
+function executeStatement(
+    mysqli $conn, string $sql, 
+    string $types = '', array $params = []): bool {
     $stmt = $conn->prepare($sql);
 
     if (!$stmt) {
@@ -47,22 +63,27 @@ function executeStatement(mysqli $conn, string $sql, string $types = '', array $
     }
 
     try {
-        if ($types !== '' && !empty($params)) {
-            $stmt->bind_param($types, ...$params);
+        if ($types !== '' && !empty($params) && !$stmt->bind_param($types, ...$params)) {
+            error_log('SwiftOrder executeStatement bind failed: '.$stmt->error);
+
+            return false;
         }
 
         if (!$stmt->execute()) {
+            error_log('SwiftOrder executeStatement execute failed: '.$stmt->error);
+
             return false;
         }
+
+        return true;
     } finally {
         $stmt->close();
     }
-
-    return true;
 }
 
-function executeStatementAffectedRows(mysqli $conn, string $sql, string $types = '', array $params = []): int
-{
+function executeStatementAffectedRows(
+    mysqli $conn, string $sql, 
+    string $types = '', array $params = []): int {
     $stmt = $conn->prepare($sql);
 
     if (!$stmt) {
@@ -72,11 +93,15 @@ function executeStatementAffectedRows(mysqli $conn, string $sql, string $types =
     }
 
     try {
-        if ($types !== '' && !empty($params)) {
-            $stmt->bind_param($types, ...$params);
+        if ($types !== '' && !empty($params) && !$stmt->bind_param($types, ...$params)) {
+            error_log('SwiftOrder executeStatementAffectedRows bind failed: '.$stmt->error);
+
+            return -1;
         }
 
         if (!$stmt->execute()) {
+            error_log('SwiftOrder executeStatementAffectedRows execute failed: '.$stmt->error);
+
             return -1;
         }
 

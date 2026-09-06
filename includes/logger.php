@@ -9,7 +9,14 @@ function logActivity(mysqli $conn, int $userId, string $action): bool
 
         return false;
     }
-    $stmt->bind_param('is', $userId, $action);
+
+    if (!$stmt->bind_param('is', $userId, $action)) {
+        error_log('SwiftOrder logActivity bind failed: '.$stmt->error);
+
+        $stmt->close();
+
+        return false;
+    }
 
     if (!$stmt->execute()) {
         error_log('SwiftOrder logActivity insert failed: '.$stmt->error);
