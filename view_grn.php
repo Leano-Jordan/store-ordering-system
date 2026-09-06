@@ -56,6 +56,9 @@ if (!$grnResult) {
 
 $grn = $grnResult->fetch_assoc();
 
+$grnResult->free();
+$stmt->close();
+
 if (!$grn) {
     $_SESSION['error'] = 'Goods Received Note not found.';
     header('Location: goods_received_notes.php');
@@ -91,14 +94,15 @@ if (!$itemStmt) {
 
     $items = $itemStmt->get_result();
 
-    if (!$items) {
-        error_log('view_grn.php: Failed to get GRN items result: '.$itemStmt->error);
-        exit('Unable to load Goods Received Note items.');
-    }
-
+if (!$items) {
+    error_log('view_grn.php: Failed to get GRN items result: '.$itemStmt->error);
     $itemStmt->close();
+    exit('Unable to load Goods Received Note items.');
+}
 
-    include 'includes/header.php';
+$itemStmt->close();
+
+include 'includes/header.php';
 ?>
 
 <div class="document-header">
@@ -218,6 +222,8 @@ if (!$itemStmt) {
             </tr>
 
             <?php } ?>
+
+            <?php $items->free(); ?>
 
             <tr class="grand-total-row">
                 <td colspan="3" style="text-align: right;">

@@ -74,8 +74,18 @@ if (!$orderStmt->execute()) {
 
 $orderResult = $orderStmt->get_result();
 
-$order = $orderResult ? $orderResult->fetch_assoc() : null;
+if (!$orderResult) {
+    $orderStmt->close();
 
+    error_log('print_invoice.php: order result unavailable.');
+
+    http_response_code(500);
+    exit('Unable to load invoice.');
+}
+
+$order = $orderResult->fetch_assoc();
+
+$orderResult->free();
 $orderStmt->close();
 
 if (!$order) {
@@ -186,6 +196,7 @@ while ($row = $itemResult->fetch_assoc()) {
     ];
 }
 
+$itemResult->free();
 $itemStmt->close();
 
 if ($items === []) {

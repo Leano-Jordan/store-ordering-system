@@ -48,6 +48,8 @@ if (!$result) {
     exit();
 }
 
+$stmt->close();
+
 $totalResult = $conn->query('SELECT COUNT(*) AS total FROM users');
 
 if (!$totalResult) {
@@ -69,6 +71,9 @@ if (!is_array($totalRow) || !isset($totalRow['total'])) {
 }
 
 $totalRows = (int) $totalRow['total'];
+
+$totalResult->free();
+
 $totalPages = (int) ceil($totalRows / $limit);
 
 include 'includes/header.php';

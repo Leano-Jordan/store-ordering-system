@@ -72,6 +72,8 @@ if ($search !== '') {
         exit();
     }
 
+    $stmt->close();
+
     $countStmt = $conn->prepare(
         'SELECT COUNT(*) AS total FROM suppliers 
         WHERE company_name LIKE ? OR contact_person LIKE ? 
@@ -169,6 +171,8 @@ $totalRow = $totalResult->fetch_assoc();
     }
 
 $totalRows = (int) $totalRow['total'];
+
+$totalResult->free();
 
 $totalPages = (int) ceil($totalRows / $limit);
 
