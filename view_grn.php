@@ -31,7 +31,11 @@ if (!$stmt) {
     exit('Unable to load Goods Received Note.');
 }
 
-$stmt->bind_param('i', $id);
+if (!$stmt->bind_param('i', $id)) {
+    error_log('view_grn.php: Failed to bind GRN ID: '.$stmt->error);
+    $stmt->close();
+    exit('Unable to load Goods Received Note.');
+}
 
 if (!$stmt->execute()) {
     error_log('view_grn.php: Failed to execute GRN query: '.$stmt->error);
@@ -69,7 +73,11 @@ if (!$itemStmt) {
     exit('Unable to load Goods Received Note items.');
 }
 
-    $itemStmt->bind_param('i', $id);
+        if (!$itemStmt->bind_param('i', $id)) {
+            error_log('view_grn.php: Failed to bind GRN items ID: '.$itemStmt->error);
+            $itemStmt->close();
+            exit('Unable to load Goods Received Note items.');
+        }
 
     if (!$itemStmt->execute()) {
         error_log('view_grn.php: Failed to execute GRN items query: '.$itemStmt->error);

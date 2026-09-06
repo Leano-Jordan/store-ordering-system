@@ -9,10 +9,41 @@ $id = (int) $_GET['id'];
 $sql = 'SELECT * FROM users WHERE id = ?';
 
 $stmt = $conn->prepare($sql);
-$stmt->bind_param('i', $id);
 
-$stmt->execute();
+if (!$stmt) {
+    error_log('edit_user.php: Failed to prepare user query: '.$conn->error);
+    header('Location: users.php');
+    exit();
+}
+
+if (!$stmt->bind_param('i', $id)) {
+    error_log('edit_user.php: Failed to bind user ID: '.$stmt->error);
+
+    $stmt->close();
+
+    header('Location: users.php');
+    exit();
+}
+
+if (!$stmt->execute()) {
+    error_log('edit_user.php: Failed to execute user query: '.$stmt->error);
+
+    $stmt->close();
+
+    header('Location: users.php');
+    exit();
+}
+
 $result = $stmt->get_result();
+
+if (!$result) {
+    error_log('edit_user.php: Failed to retrieve user result: '.$stmt->error);
+
+    $stmt->close();
+
+    header('Location: users.php');
+    exit();
+}
 $user = $result->fetch_assoc();
 
 if (!$user) {

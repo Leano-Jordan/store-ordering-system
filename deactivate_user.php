@@ -44,7 +44,17 @@ if (!$targetStmt) {
     exit();
 }
 
-$targetStmt->bind_param('i', $id);
+if (!$targetStmt->bind_param('i', $id)) {
+    $conn->rollback();
+
+    error_log('deactivate_user.php target lookup bind failed. '.$targetStmt->error);
+
+    $targetStmt->close();
+
+    $_SESSION['error'] = 'Unable to deactivate user.';
+    header('Location: users.php');
+    exit();
+}
 
 if (!$targetStmt->execute()) {
     $conn->rollback();
@@ -69,19 +79,7 @@ if (!$user) {
 /************************************    CHECK IF THIS USER IS ACTIVE ADMIN    ***************************************/
 
 if ($user['role'] === ROLE_ADMIN && $user['status'] === 'Active') {
-    $adminCheck = $conn->prepare("SELECT COUNT(*) AS total FROM users WHERE role = ? AND status ='Active'");
-
-    if (!$adminCheck) {
-        $conn->rollback();
-        error_log('deactivate_user.php active admin count prepare failed. '.$conn->error);
-        $_SESSION['error'] = 'Unable to validate administrator access.';
-        header('Location: users.php');
-        exit();
-    }
-
     $adminRole = ROLE_ADMIN;
-
-    $adminCheck->close();
 
     $adminLock = $conn->prepare(
         "SELECT id FROM users
@@ -158,7 +156,17 @@ if (!$updateStmt) {
     exit();
 }
 
-$updateStmt->bind_param('i', $id);
+if (!$updateStmt->bind_param('i', $id)) {
+    $conn->rollback();
+
+    error_log('deactivate_user.php update bind failed. '.$updateStmt->error);
+
+    $updateStmt->close();
+
+    $_SESSION['error'] = 'Unable to Deactivate user.';
+    header('Location: users.php');
+    exit();
+}
 
 if (!$updateStmt->execute()) {
     $conn->rollback();
