@@ -60,8 +60,17 @@ if (!$supplierStmt) {
     exit('Unable to validate supplier.');
 }
 
-$supplierStmt->bind_param('i', $supplierId);
-$supplierStmt->execute();
+if (!$supplierStmt->bind_param('i', $supplierId)) {
+    error_log('save_purchase_order.php: Failed to bind supplier lookup: '.$supplierStmt->error);
+    $supplierStmt->close();
+    exit('Unable to validate supplier.');
+}
+
+if (!$supplierStmt->execute()) {
+    error_log('save_purchase_order.php: Failed to execute supplier lookup: '.$supplierStmt->error);
+    $supplierStmt->close();
+    exit('Unable to validate supplier.');
+}
 
 $supplierResult = $supplierStmt->get_result();
 
@@ -152,14 +161,19 @@ try {
         throw new Exception('Failed to prepare purchase order insert: '.$conn->error);
     }
 
-    $stmt->bind_param(
+    if (!$stmt->bind_param(
         'isdss',
         $supplierId,
         $poNumber,
         $grandTotal,
         $status,
         $notes
-    );
+    )) {
+        $error = $stmt->error;
+        $stmt->close();
+
+        throw new RuntimeException('Failed to bind purchase order insert: '.$error);
+    }
 
     if (!$stmt->execute()) {
         throw new Exception('Failed to execute purchase order insert: '.$stmt->error);
@@ -188,7 +202,19 @@ try {
             throw new Exception('Failed to prepare purchase order item insert: '.$conn->error);
         }
 
-        $itemStmt->bind_param('iiddd', $purchaseOrderId, $productId, $qty, $price, $lineTotal);
+        if (!$itemStmt->bind_param(
+            'iiddd',
+            $purchaseOrderId,
+            $productId,
+            $qty,
+            $price,
+            $lineTotal
+        )) {
+            $error = $itemStmt->error;
+            $itemStmt->close();
+
+            throw new RuntimeException('Failed to bind purchase order item insert: '.$error);
+        }
 
         if (!$itemStmt->execute()) {
             throw new Exception('Failed to execute purchase order item insert: '.$itemStmt->error);

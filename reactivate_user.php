@@ -40,7 +40,14 @@ if (!$userCheck) {
     exit();
 }
 
-$userCheck->bind_param('i', $id);
+if (!$userCheck->bind_param('i', $id)) {
+    error_log('reactivate_user.php bind user check failed: '.$userCheck->error);
+    $userCheck->close();
+
+    $_SESSION['error'] = 'Unable to reactivate user.';
+    header('Location: users.php');
+    exit();
+}
 
 if (!$userCheck->execute()) {
     error_log('reactivate_user.php execute user check failed: '.$userCheck->error);
@@ -52,6 +59,17 @@ if (!$userCheck->execute()) {
 }
 
 $userResult = $userCheck->get_result();
+
+if (!$userResult) {
+    error_log('reactivate_user.php get user check result failed: '.$userCheck->error);
+
+    $userCheck->close();
+
+    $_SESSION['error'] = 'Unable to reactivate user.';
+    header('Location: users.php');
+    exit();
+}
+
 $userRecord = $userResult->fetch_assoc();
 
 $userCheck->close();

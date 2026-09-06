@@ -63,18 +63,24 @@ function reportScalar(
     return (float) ($row[$column] ?? 0);
 }
 
-$revenueStmt = $conn->prepare("SELECT SUM(total) AS revenue
-    FROM orders
-    WHERE $where
-    AND status = ?
-");
+$revenueStmt = $conn->prepare(
+    "SELECT SUM(total) AS revenue
+    FROM orders WHERE $where
+    AND status = ?"
+);
 
 if (!$revenueStmt) {
     error_log('reports.php: Failed to prepare revenue query. MySQL error: '.$conn->error);
     exit('Unable to generate report. Please try again later.');
 }
 
-$revenueStmt->bind_param('s', $status);
+if (!$revenueStmt->bind_param('s', $status)) {
+    error_log('reports.php: Revenue query parameter binding failed: '.$revenueStmt->error);
+
+    $revenueStmt->close();
+
+    exit('Unable to generate report. Please try again later.');
+}
 
 if (!$revenueStmt->execute()) {
     error_log('reports.php: Revenue query execution failed: '.$revenueStmt->error);
