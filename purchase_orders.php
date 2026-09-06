@@ -68,8 +68,10 @@ if (!empty($search)) {
     }
 
     if (!$countStmt->bind_param('ss', $searchTerm, $searchTerm)) {
-        error_log('purchase_orders.php: Failed to bind count parameters: '.$stmt->error);
+        error_log('purchase_orders.php: Failed to bind count parameters: '.$countStmt->error);
+
         $countStmt->close();
+
         exit('Unable to load Purchase Order count.');
     }
 
@@ -113,7 +115,15 @@ if (!empty($search)) {
         exit('Unable to load purchase orders count.');
     }
 
-    $totalRows = $countResult->fetch_assoc()['total'] ?? 0;
+    $totalRow = $countResult->fetch_assoc();
+
+    if (!is_array($totalRow) || !isset($totalRow['total'])) {
+        error_log('purchase_orders.php: Purchase order count query '.'returned an invalid result.');
+
+        exit('Unable to load purchase orders count.');
+    }
+
+    $totalRows = (int) $totalRow['total'];
 }
 
 $totalPages = ceil($totalRows / $limit);

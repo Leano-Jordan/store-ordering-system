@@ -83,20 +83,62 @@ if ($search !== '') {
         exit();
     }
 
-    $countStmt->bind_param('ssss', $searchTerm, $searchTerm, $searchTerm, $searchTerm);
-    $countStmt->execute();
+    if (!$countStmt->bind_param(
+        'ssss',
+        $searchTerm,
+        $searchTerm,
+        $searchTerm,
+        $searchTerm
+    )) {
+        error_log('suppliers.php: Failed to bind supplier count parameters: '.$countStmt->error);
+
+        $countStmt->close();
+
+        $_SESSION['error'] = 'Unable to load supplier totals. Please try again.';
+
+        header('Location: suppliers.php');
+        exit();
+    }
+
+    if (!$countStmt->execute()) {
+        error_log(
+            'suppliers.php: Failed to execute supplier count query: '
+            .$countStmt->error
+        );
+
+        $countStmt->close();
+
+        $_SESSION['error'] =
+            'Unable to load supplier totals. Please try again.';
+
+        header('Location: suppliers.php');
+        exit();
+    }
+
     $totalResult = $countStmt->get_result();
 
     if (!$totalResult) {
-        error_log('Failed to retrieve supplier count result: '.$countStmt->error);
+        error_log(
+            'suppliers.php: Failed to retrieve supplier count result: '
+            .$countStmt->error
+        );
+
         $countStmt->close();
-        exit('Unable to load supplier count.');
+
+        $_SESSION['error'] = 'Unable to load supplier totals. Please try again.';
+
+        header('Location: suppliers.php');
+        exit();
     }
 } else {
-    $result = $conn->query("SELECT id, company_name, contact_person, phone, email, status 
-FROM suppliers 
-ORDER BY company_name ASC 
-LIMIT $limit OFFSET $offset");
+    $result = $conn->query(
+        "SELECT id, company_name, 
+        contact_person, phone, 
+        email, status 
+        FROM suppliers 
+        ORDER BY company_name ASC 
+        LIMIT $limit OFFSET $offset"
+    );
 
     if (!$result) {
         error_log('Failed to load suppliers query: '.$conn->error);

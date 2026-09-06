@@ -20,10 +20,35 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
         exit('Unable to load purchase order details.');
     }
 
-    $stmt->bind_param('i', $id);
-    $stmt->execute();
+    if (!$stmt->bind_param('i', $id)) {
+        error_log('add_purchase_order.php: Failed to bind purchase order lookup: '.$stmt->error);
 
-    $purchaseOrder = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
+        exit('Unable to load purchase order details.');
+    }
+
+    if (!$stmt->execute()) {
+        error_log('add_purchase_order.php: Failed to execute purchase order lookup: '.$stmt->error);
+
+        $stmt->close();
+
+        exit('Unable to load purchase order details.');
+    }
+
+    $purchaseOrderResult = $stmt->get_result();
+
+    if (!$purchaseOrderResult) {
+        error_log('add_purchase_order.php: Failed to retrieve purchase order lookup result: '.$stmt->error);
+
+        $stmt->close();
+
+        exit('Unable to load purchase order details.');
+    }
+
+    $purchaseOrder = $purchaseOrderResult->fetch_assoc();
+
+    $stmt->close();
 
     if (!$purchaseOrder) {
         exit('Purchase order not found.');
