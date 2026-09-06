@@ -48,7 +48,15 @@ try {
         throw new RuntimeException('Failed to execute purchase order lookup.');
     }
     $result = $stmt->get_result();
-    $po = $result ? $result->fetch_assoc() : null;
+
+    if (!$result) {
+        $error = $stmt->error;
+        $stmt->close();
+
+        throw new RuntimeException('Failed to retrieve purchase order lookup result: '.$error);
+    }
+
+    $po = $result->fetch_assoc();
 
     $stmt->close();
 

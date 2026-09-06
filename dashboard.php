@@ -48,10 +48,19 @@ if (!$stmt) {
     exit('Unable to load dashboard data.');
 }
 
-$stmt->bind_param('ss', $todayStart, $tomorrowStart);
+if (!$stmt->bind_param('ss', $todayStart, $tomorrowStart)) {
+    error_log('dashboard.php: Failed to bind today orders query: '.$stmt->error);
+
+    $stmt->close();
+
+    exit('Unable to load dashboard data.');
+}
 
 if (!$stmt->execute()) {
-    error_log('dashboard.php: Failed to execute today orders query: '.$conn->error);
+    error_log('dashboard.php: Failed to execute today orders query: '.$stmt->error);
+
+    $stmt->close();
+
     exit('Unable to load dashboard data.');
 }
 
@@ -60,9 +69,7 @@ $result = $stmt->get_result();
 if (!$result) {
     $stmt->close();
 
-    error_log(
-        'dashboard.php: Failed to retrieve today orders result: '.$conn->error
-    );
+    error_log('dashboard.php: Failed to retrieve today orders result: '.$conn->error);
 
     exit('Unable to load dashboard data.');
 }
@@ -103,10 +110,19 @@ if (!$stmt) {
     exit('Unable to load dashboard revenue.');
 }
 
-$stmt->bind_param('ss', $todayStart, $tomorrowStart);
+if (!$stmt->bind_param('ss', $todayStart, $tomorrowStart)) {
+    error_log('dashboard.php: Failed to bind today revenue query: '.$stmt->error);
+
+    $stmt->close();
+
+    exit('Unable to load dashboard revenue.');
+}
 
 if (!$stmt->execute()) {
-    error_log('dashboard.php: Failed to execute today revenue query: '.$conn->error);
+    error_log('dashboard.php: Failed to execute today revenue query: '.$stmt->error);
+
+    $stmt->close();
+
     exit('Unable to load dashboard revenue.');
 }
 
@@ -171,12 +187,19 @@ if (!$stmt) {
     exit('Unable to load monthly revenue.');
 }
 
-$stmt->bind_param('ss', $monthStart, $nextMonthStart);
+if (!$stmt->bind_param('ss', $monthStart, $nextMonthStart)) {
+    error_log('dashboard.php: Failed to bind monthly revenue query: '.$stmt->error);
+
+    $stmt->close();
+
+    exit('Unable to load monthly revenue.');
+}
 
 if (!$stmt->execute()) {
     $stmt->close();
 
-    error_log('dashboard.php: Failed to execute monthly revenue query: '.$conn->error);
+    error_log('dashboard.php: Failed to execute monthly revenue query: '.$stmt->error);
+
     exit('Unable to load monthly revenue.');
 }
 
@@ -351,12 +374,19 @@ if (!$stmt) {
     exit('Unable to load dashboard sales chart.');
 }
 
-$stmt->bind_param('ss', $rangeStart, $rangeEnd);
+if (!$stmt->bind_param('ss', $rangeStart, $rangeEnd)) {
+    error_log('dashboard.php: Failed to bind sales chart query: '.$stmt->error);
+
+    $stmt->close();
+
+    exit('Unable to load dashboard sales chart.');
+}
 
 if (!$stmt->execute()) {
     $stmt->close();
 
-    error_log('dashboard.php: Failed to execute sales chart query: '.$conn->error);
+    error_log('dashboard.php: Failed to execute sales chart query: '.$stmt->error);
+
     exit('Unable to load dashboard sales chart.');
 }
 

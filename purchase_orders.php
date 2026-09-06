@@ -64,6 +64,9 @@ if (!empty($search)) {
 
     if (!$countStmt) {
         error_log('purchase_orders.php: Failed to prepare purchase order count query: '.$conn->error);
+
+        $stmt->close();
+
         exit('Unable to load purchase orders count.');
     }
 
@@ -77,7 +80,10 @@ if (!empty($search)) {
 
     if (!$countStmt->execute()) {
         error_log('purchase_orders.php: Failed to execute Purchase Order count: '.$countStmt->error);
+
+        $countStmt->close();
         $stmt->close();
+
         exit('Unable to load Purchase Order count.');
     }
 
