@@ -256,7 +256,7 @@ $row = $result->fetch_assoc();
 $outOfStock = (int) ($row['outOfStock'] ?? 0);
 $result->free();
 
-//                                                            INVENTORY VALUE                                                //
+//                                                            INVENTORY VALUE                                     //
 
 $result = $conn->query("SELECT SUM(price * stock) 
     AS inventoryValue 
@@ -273,7 +273,7 @@ $row = $result->fetch_assoc();
 $inventoryValue = (float) ($row['inventoryValue'] ?? 0);
 $result->free();
 
-//                                                             PENDING PURCHASE ORDERS                                                      //
+//                                                             PENDING PURCHASE ORDERS                               //
 
 $result = $conn->query("SELECT COUNT(*) AS pendingPOs 
     FROM purchase_orders WHERE status = 'Pending'
