@@ -4,7 +4,12 @@ require_once 'includes/permissions.php';
 requireRole([ROLE_ADMIN, ROLE_MANAGER]);
 require_once 'includes/db.php';
 
-$id = (int) $_GET['id'];
+$id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+
+if ($id === false || $id === null || $id <= 0) {
+    header('Location: products.php');
+    exit();
+}
 
 $sql = 'SELECT * FROM products WHERE id=?';
 

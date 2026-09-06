@@ -5,7 +5,11 @@ if (!isset($limit)) {
 }
 
 if (!isset($page)) {
-    $page = max(1, (int) ($_GET['page'] ?? 1));
+    $page = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT);
+
+    if ($page === false || $page === null || $page < 1) {
+        $page = 1;
+    }
 }
 
 $offset = ($page - 1) * $limit;
@@ -31,6 +35,10 @@ if ($where === '') {
         ORDER BY created_at 
         DESC LIMIT $limit OFFSET $offset"
     );
+
+    if ($result === false) {
+        error_log('SwiftOrder orders query failed: '.$conn->error);
+    }
 
     $totalResult = $conn->query(
         'SELECT COUNT(*) AS total 

@@ -176,7 +176,10 @@ $poNumber = 'PO-'.date('YmdHis').'-'.str_pad((string) random_int(0, 9999), 4, '0
 $transactionStarted = false;
 
 try {
-    $conn->begin_transaction();
+    if (!$conn->begin_transaction()) {
+        throw new RuntimeException('Failed to begin purchase order transaction: '.$conn->error);
+    }
+
     $transactionStarted = true;
 
     $stmt = $conn->prepare(
@@ -283,7 +286,9 @@ try {
         throw new Exception('Failed to commit purchase order transaction: '.$conn->error);
     }
 } catch (Throwable $e) {
-    $conn->rollback();
+    if ($transactionStarted) {
+        $conn->rollback();
+    }
 
     error_log('save_purchase_order.php: Transaction failed: '.$e->getMessage());
 

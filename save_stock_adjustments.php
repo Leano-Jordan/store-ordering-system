@@ -69,14 +69,20 @@ try {
 
     /*                    GET CURRENT STOCK                      */
 
-    $stmt = $conn->prepare('SELECT stock 
-FROM products 
-WHERE id = ? FOR UPDATE');
+    $stmt = $conn->prepare(
+        'SELECT stock FROM products WHERE id = ? FOR UPDATE'
+    );
+
     if (!$stmt) {
         throw new Exception($conn->error);
     }
 
-    $stmt->bind_param('i', $productId);
+    if (!$stmt->bind_param('i', $productId)) {
+        $error = $stmt->error;
+        $stmt->close();
+
+        throw new RuntimeException('Failed to bind current stock lookup: '.$error);
+    }
 
     if (!$stmt->execute()) {
         throw new Exception($stmt->error);

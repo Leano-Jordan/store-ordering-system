@@ -6,7 +6,17 @@ requireRole([ROLE_ADMIN, ROLE_MANAGER,
 ROLE_CASHIER, ROLE_KITCHEN, ]);
 require_once '../includes/db.php';
 
-$id = (int) ($_GET['id'] ?? 0);
+$id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+
+if ($id === false || $id === null || $id <= 0) {
+    http_response_code(400);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(
+        ['error' => 'Invalid order ID.'],
+        JSON_THROW_ON_ERROR
+    );
+    exit();
+}
 
 $stmt = $conn->prepare('SELECT status FROM orders WHERE id = ?');
 
