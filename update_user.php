@@ -77,7 +77,12 @@ $newProfileImagePath = null;
 $transactionStarted = false;
 
 try {
-    $conn->begin_transaction();
+    if (!$conn->begin_transaction()) {
+        error_log('update_user.php: Failed to begin transaction: '.$conn->error);
+
+        throw new RuntimeException('Unable to begin user update transaction.');
+    }
+
     $transactionStarted = true;
 
     $currentUserStmt = $conn->prepare(
