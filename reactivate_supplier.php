@@ -32,8 +32,11 @@ if ($id === false || $id <= 0) {
     exit();
 }
 
+$transactionStarted = false;
+
 try {
     $conn->begin_transaction();
+    $transactionStarted = true;
 
     $stmt = $conn->prepare(
         "UPDATE suppliers
@@ -93,7 +96,9 @@ try {
     header('Location: suppliers.php');
     exit();
 } catch (Throwable $e) {
-    $conn->rollback();
+    if ($transactionStarted) {
+        $conn->rollback();
+    }
 
     error_log('reactivate_supplier.php: '.$e->getMessage());
 

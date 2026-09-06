@@ -22,8 +22,11 @@ if ($id <= 0) {
     exit();
 }
 
+$transactionStarted = false;
+
 try {
     $conn->begin_transaction();
+    $transactionStarted = true;
 
     $stmt = $conn->prepare(
         'SELECT status 

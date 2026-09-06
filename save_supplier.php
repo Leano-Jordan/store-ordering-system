@@ -61,8 +61,11 @@ $sql = 'INSERT INTO suppliers(
 company_name, contact_person, phone, email, address, notes, status) 
 VALUES(?, ?, ?, ?, ?, ?, ?)';
 
+$transactionStarted = false;
+
 try {
     $conn->begin_transaction();
+    $transactionStarted = true;
 
     if (!executeStatement(
         $conn,
@@ -106,14 +109,13 @@ try {
     header('Location: suppliers.php');
     exit();
 } catch (Throwable $e) {
-    $conn->rollback();
+    if ($transactionStarted) {
+        $conn->rollback();
+    }
 
-    error_log(
-        'save_supplier.php: '.$e->getMessage()
-    );
+    error_log('save_supplier.php: '.$e->getMessage());
 
-    $_SESSION['error'] =
-        'Unable to save supplier. Please try again.';
+    $_SESSION['error'] = 'Unable to save supplier. Please try again.';
 
     header('Location: add_supplier.php');
     exit();

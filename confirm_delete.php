@@ -76,10 +76,14 @@ $productName = $product['name'];
 
 $imageStmt->close();
 
-$conn->begin_transaction();
+$transactionStarted = false;
 
 try {
-    $sql = "UPDATE products SET status = 'Inactive' WHERE id=? AND status = 'Active'";
+    $conn->begin_transaction();
+    $transactionStarted = true;
+
+    $sql = "UPDATE products SET status = 'Inactive' 
+    WHERE id=? AND status = 'Active'";
 
     $stmt = $conn->prepare($sql);
 
@@ -137,7 +141,9 @@ try {
     header('Location: products.php');
     exit();
 } catch (Throwable $e) {
-    $conn->rollback();
+    if ($transactionStarted) {
+        $conn->rollback();
+    }
 
     error_log('confirm_delete.php: '.$e->getMessage());
 

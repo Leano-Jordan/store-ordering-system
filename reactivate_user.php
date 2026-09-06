@@ -90,9 +90,12 @@ if (!$userRecord) {
     exit();
 }
 
-$conn->begin_transaction();
+$transactionStarted = false;
 
 try {
+    $conn->begin_transaction();
+    $transactionStarted = true;
+
     $updateStmt = $conn->prepare(
         "UPDATE users 
     SET status = 'Active' 
@@ -138,12 +141,11 @@ try {
         throw new RuntimeException('reactivate_user.php commit failed: '.$conn->error);
     }
 } catch (\Throwable $exception) {
-    $conn->rollback();
+    if ($transactionStarted) {
+        $conn->rollback();
+    }
 
-    error_log(
-        'reactivate_user.php transaction failed: '
-        .$exception->getMessage()
-    );
+    error_log('reactivate_user.php transaction failed: '.$exception->getMessage());
 
     $_SESSION['error'] = 'Unable to reactivate user.';
     header('Location: users.php');

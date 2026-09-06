@@ -61,8 +61,11 @@ if ($reason === '') {
 
 $userId = $_SESSION['user_id'];
 
+$transactionStarted = false;
+
 try {
     $conn->begin_transaction();
+    $transactionStarted = true;
 
     /*                    GET CURRENT STOCK                      */
 
@@ -174,7 +177,9 @@ INTO stock_adjustments
         throw new Exception('Commit failed: '.$conn->error);
     }
 } catch (Throwable $e) {
-    $conn->rollback();
+    if ($transactionStarted) {
+        $conn->rollback();
+    }
 
     error_log('save_stock_adjustments.php: '.$e->getMessage());
 
