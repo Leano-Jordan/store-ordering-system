@@ -8,9 +8,15 @@ require_once 'includes/csrf.php';
 
 /************ ************** DELETE PRODUCT *********** *****************/
 
-$id = (int) ($_GET['id'] ?? 0);
+$id = filter_var(
+    $_GET['id'] ?? null,
+    FILTER_VALIDATE_INT,
+    [
+        'options' => ['min_range' => 1],
+    ]
+);
 
-if ($id <= 0) {
+if ($id === false) {
     header('Location: products.php');
     exit();
 }

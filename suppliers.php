@@ -63,11 +63,13 @@ if ($search !== '') {
     $result = $stmt->get_result();
 
     if (!$result) {
-        error_log('activity_logs.php: Failed to retrieve search parameters: '.$stmt->error);
+        error_log('suppliers.php: Failed to retrieve supplier search result: '.$stmt->error);
+
         $stmt->close();
+
         $_SESSION['error'] = 'Unable to load suppliers. Please try again.';
         header('Location: suppliers.php');
-        exit('Unable to load suppliers.');
+        exit();
     }
 
     $countStmt = $conn->prepare(

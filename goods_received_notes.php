@@ -23,7 +23,8 @@ $search = trim($searchRaw);
 if ($search !== '') {
     $searchTerm = "%{$search}%";
 
-    $stmt = $conn->prepare('SELECT grn.*,
+    $stmt = $conn->prepare(
+        'SELECT grn.*,
             Po.po_number, s.company_name, u.username
         FROM goods_received_notes grn
         INNER JOIN purchase_orders po
@@ -37,21 +38,28 @@ if ($search !== '') {
             OR s.company_name LIKE ?
         ORDER BY grn.received_at DESC
         LIMIT ? OFFSET ?
-    ');
+    '
+    );
 
     if (!$stmt) {
         error_log('goods_received_notes.php: Failed to prepare search query: '.$conn->error);
         exit('Unable to load goods received notes.');
     }
 
-    $stmt->bind_param(
+    if (!$stmt->bind_param(
         'sssii',
         $searchTerm,
         $searchTerm,
         $searchTerm,
         $limit,
         $offset
-    );
+    )) {
+        error_log('goods_received_notes.php: Failed to bind search parameters: '.$stmt->error);
+
+        $stmt->close();
+
+        exit('Unable to load goods received notes.');
+    }
 
     if (!$stmt->execute()) {
         error_log('goods_received_notes.php: Failed to execute search query: '.$stmt->error);
@@ -81,12 +89,19 @@ if ($search !== '') {
         exit('Unable to load goods received notes.');
     }
 
-    $countStmt->bind_param(
+    if (!$countStmt->bind_param(
         'sss',
         $searchTerm,
         $searchTerm,
         $searchTerm
-    );
+    )) {
+        error_log('goods_received_notes.php: Failed to bind count parameters: '.$countStmt->error);
+
+        $countStmt->close();
+        $stmt->close();
+
+        exit('Unable to load goods received notes.');
+    }
 
     if (!$countStmt->execute()) {
         error_log('goods_received_notes.php: Failed to execute count query: '.$countStmt->error);

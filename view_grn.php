@@ -7,23 +7,28 @@ requireRole([ROLE_ADMIN, ROLE_MANAGER]);
 
 require_once 'includes/db.php';
 
-$id = (int) ($_GET['id'] ?? 0);
+$id = filter_var(
+    $_GET['id'] ?? null,
+    FILTER_VALIDATE_INT,
+    [
+        'options' => ['min_range' => 1],
+    ]
+);
+
+if ($id === false) {
+    $_SESSION['error'] = 'Goods Received Note not found.';
+    header('Location: goods_received_notes.php');
+    exit();
+}
 
 $stmt = $conn->prepare(
     'SELECT grn.*, 
-    po.po_number, 
-    s.company_name, 
-    s.contact_person, 
-    s.phone, 
-    s.email, 
-    u.full_name FROM goods_received_notes grn 
-        INNER JOIN purchase_orders po 
-        ON grn.purchase_order_id = po.id 
-        INNER JOIN suppliers s 
-        ON grn.supplier_id = s.id 
-        INNER JOIN users u 
-        ON grn.received_by = u.id 
-        WHERE grn.id = ?'
+    po.po_number, s.company_name, s.contact_person, s.phone, 
+    s.email, u.full_name FROM goods_received_notes grn 
+    INNER JOIN purchase_orders po ON grn.purchase_order_id = po.id 
+    INNER JOIN suppliers s ON grn.supplier_id = s.id 
+    INNER JOIN users u ON grn.received_by = u.id 
+    WHERE grn.id = ?'
 );
 
 if (!$stmt) {

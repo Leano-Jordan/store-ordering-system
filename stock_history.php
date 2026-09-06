@@ -99,12 +99,21 @@ if (!$stmt->execute()) {
 
 $result = $stmt->get_result();
 
-$countStmt = $conn->prepare("SELECT COUNT(*) AS total
-    FROM stock_adjustments sa
-    INNER JOIN products p ON sa.product_id = p.id
-    INNER JOIN users u ON sa.user_id = u.id
-    $where
-");
+if (!$result) {
+    error_log('stock_history.php: Failed to retrieve stock-history result: '.$stmt->error);
+
+    $stmt->close();
+
+    exit('Unable to load stock history.');
+}
+
+$countStmt = $conn->prepare(
+    "SELECT COUNT(*) AS total 
+    FROM stock_adjustments sa 
+    INNER JOIN products p ON sa.product_id = p.id 
+    INNER JOIN users u ON sa.user_id = u.id $where
+"
+);
 
 if (!$countStmt) {
     error_log('stock_history.php: Failed to prepare stock-history count query: '.$conn->error);

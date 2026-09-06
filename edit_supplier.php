@@ -4,9 +4,15 @@ require_once 'includes/permissions.php';
 requireRole([ROLE_ADMIN, ROLE_MANAGER]);
 require_once 'includes/db.php';
 
-$id = (int) ($_GET['id'] ?? 0);
+$id = filter_var(
+    $_GET['id'] ?? null,
+    FILTER_VALIDATE_INT,
+    [
+        'options' => ['min_range' => 1],
+    ]
+);
 
-if ($id <= 0) {
+if ($id === false) {
     header('Location: suppliers.php');
     exit();
 }
