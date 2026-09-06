@@ -50,6 +50,8 @@ if (!$product) {
 include 'includes/header.php';
 ?>
 
+<?php require 'includes/shared/flash_message.php'; ?>
+
 <h2>Edit Product</h2>
 
 <?php if (isset($_GET['error']) && $_GET['error'] === 'invalid_image') { ?>

@@ -6,8 +6,9 @@ require_once 'includes/db.php';
 require_once 'includes/logger.php';
 
 include 'includes/header.php';
-
 ?>
+
+<?php require 'includes/shared/flash_message.php'; ?>
 
 <h2>Add Product</h2>
 

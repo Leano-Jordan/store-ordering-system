@@ -74,8 +74,17 @@ if (!in_array($status, $allowedStatuses, true)) {
 $newProfileImageUploaded = false;
 $newProfileImagePath = null;
 
+$transactionStarted = false;
+
 try {
-    $currentUserStmt = $conn->prepare('SELECT profile_image, role, status FROM users WHERE id = ? FOR UPDATE');
+    $conn->begin_transaction();
+    $transactionStarted = true;
+
+    $currentUserStmt = $conn->prepare(
+        'SELECT profile_image, 
+        role, status FROM users 
+        WHERE id = ? FOR UPDATE'
+    );
 
     if (!$currentUserStmt) {
         error_log('update_user.php: Failed to prepare current user lookup: '.$conn->error);
@@ -246,12 +255,10 @@ try {
         $newProfileImageUploaded = true;
     }
 
-    $conn->begin_transaction();
-
     $sql = 'UPDATE users SET full_name = ?, 
-    username = ?, profile_image = ?,
-    role = ?, status = ?
-    WHERE id = ?';
+        username = ?, profile_image = ?,
+        role = ?, status = ?
+        WHERE id = ?';
 
     $success = executeStatement(
         $conn,
@@ -305,7 +312,9 @@ try {
         throw new RuntimeException('Commit failed for user ID '.$id.': '.$conn->error);
     }
 } catch (Throwable $e) {
-    $conn->rollback();
+    if ($transactionStarted) {
+        $conn->rollback();
+    }
 
     if ($newProfileImageUploaded && $newProfileImagePath !== null && is_file($newProfileImagePath)) {
         if (!unlink($newProfileImagePath)) {

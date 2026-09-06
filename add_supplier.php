@@ -7,6 +7,8 @@ require_once 'includes/db.php';
 include 'includes/header.php';
 ?>
 
+<?php require 'includes/shared/flash_message.php'; ?>
+
 <div class="page-header">
     <h2>Add Supplier</h2>
 

@@ -63,6 +63,8 @@ if (!$supplier) {
 include 'includes/header.php';
 ?>
 
+<?php require 'includes/shared/flash_message.php'; ?>
+
 <div class="page-header">
 
 <h2>Edit Supplier</h2>
