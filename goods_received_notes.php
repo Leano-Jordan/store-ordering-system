@@ -115,7 +115,11 @@ if ($search !== '') {
         exit('Unable to load goods received notes.');
     }
 
-    $totalRows = $countResult->fetch_assoc()['total'] ?? 0;
+    $countRow = $countResult->fetch_assoc();
+    $countResult->free();
+    $countStmt->close();
+
+    $totalRows = $countRow['total'] ?? 0;
 } else {
     $result = $conn->query("SELECT
             grn.*,
@@ -159,6 +163,7 @@ if (!$totalGrnsResult) {
 }
 
 $totalGrns = $totalGrnsResult->fetch_assoc()['total'] ?? 0;
+$totalGrnsResult->free();
 
 $totalValueResult = $conn->query('SELECT COALESCE(SUM(total),0) total FROM goods_received_notes');
 
@@ -168,6 +173,7 @@ if (!$totalValueResult) {
 }
 
 $totalValue = $totalValueResult->fetch_assoc()['total'] ?? 0;
+$totalValueResult->free();
 
 $todayResult = $conn->query('SELECT COUNT(*) total FROM goods_received_notes WHERE DATE(received_at) = CURDATE()');
 

@@ -47,6 +47,7 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
     }
 
     $purchaseOrder = $purchaseOrderResult->fetch_assoc();
+    $purchaseOrderResult->free();
 
     $stmt->close();
 

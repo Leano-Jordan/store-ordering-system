@@ -60,6 +60,7 @@ if (!$result) {
 }
 
 $order = $result->fetch_assoc();
+$result->free();
 
 $stmt->close();
 

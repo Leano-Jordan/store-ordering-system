@@ -98,6 +98,7 @@ if (!$revenueResult) {
 }
 
 $revenueRow = $revenueResult->fetch_assoc();
+$revenueResult->free();
 
 $totalRevenue = (float) ($revenueRow['revenue'] ?? 0);
 

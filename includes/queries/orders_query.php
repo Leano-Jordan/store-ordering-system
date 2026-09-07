@@ -110,6 +110,7 @@ if ($totalResult === false) {
     $totalRows = 0;
 } else {
     $totalRow = $totalResult->fetch_assoc();
+    $totalResult->free();
 
     if (!is_array($totalRow) || !isset($totalRow['total'])) {
         error_log('SwiftOrder orders query count result was invalid.');

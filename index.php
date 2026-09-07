@@ -20,6 +20,7 @@ if ($vatStmt) {
 
         if ($vatResult) {
             $vatSettings = $vatResult->fetch_assoc();
+            $vatResult->free();
 
             if ($vatSettings) {
                 $vatEnabled = (int) $vatSettings['vat_enabled'] === 1;
@@ -77,6 +78,9 @@ $categories = [];
 while ($cat = $catResult->fetch_assoc()) {
     $categories[] = $cat['category'];
 }
+
+$catResult->free();
+
 include 'includes/header.php';
 ?>
 

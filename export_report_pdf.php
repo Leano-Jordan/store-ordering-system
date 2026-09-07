@@ -35,7 +35,10 @@ if (!$revenueResult) {
     exit('Unable to export report');
 }
 
-$totalRevenue = (float) ($revenueResult->fetch_assoc()['revenue'] ?? 0);
+$revenueRow = $revenueResult->fetch_assoc();
+$revenueResult->free();
+
+$totalRevenue = (float) ($revenueRow['revenue'] ?? 0);
 
 $totalOrdersResult = $conn->query(
     "SELECT COUNT(*) 
