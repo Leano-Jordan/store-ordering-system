@@ -20,7 +20,7 @@
     overflow-x: auto;
     overflow-y: hidden;
     flex-wrap: nowrap;
-    scrollbar-width: thin;
+    scrollbar-width: thin; /*/*not supported by chrome < 121, Safari, etc*/
 }
 
 .top-nav nav > a,
