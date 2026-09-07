@@ -25,7 +25,7 @@
     --field-padding-inline: 12px;
 }
 
-/* Base action control */
+/* Shared action-control foundation. */
 .action-btn {
     min-height: var(--control-height);
     box-sizing: border-box;
@@ -45,128 +45,39 @@
     line-height: 1.2;
     text-decoration: none;
     cursor: pointer;
-    transition: background-color var(--control-transition), border-color var(--control-transition),
-                color var(--control-transition), box-shadow var(--control-transition);
+    transition: background-color var(--control-transition), border-color var(--control-transition), color var(--control-transition), box-shadow var(--control-transition);
 }
 
-.action-btn:hover {
-    background: var(--control-primary-hover);
-    color: #fff;
-}
-
-.action-btn:focus-visible {
-    outline: var(--control-focus-width) solid var(--control-focus);
-    outline-offset: var(--control-focus-offset);
-}
-
-.action-btn:active {
-    transform: translateY(1px);
-}
-
+.action-btn:hover { background: var(--control-primary-hover); color: #fff; }
+.action-btn:focus { outline: var(--control-focus-width) solid var(--control-focus); outline-offset: var(--control-focus-offset); }
+.action-btn:focus-visible { outline: var(--control-focus-width) solid var(--control-focus); outline-offset: var(--control-focus-offset); box-shadow: 0 0 0 1px var(--color-surface); }
+.action-btn:active { transform: translateY(1px); }
 .action-btn:disabled,
-.action-btn[aria-disabled="true"] {
-    opacity: var(--control-disabled-opacity);
-    cursor: not-allowed;
-    pointer-events: none;
-}
+.action-btn[aria-disabled="true"] { opacity: var(--control-disabled-opacity); cursor: not-allowed; pointer-events: none; }
 
-/* Shared variants */
-.edit-btn {
-    background: var(--control-secondary);
-    color: #fff;
-}
-
-.edit-btn:hover {
-    background: var(--control-secondary-hover);
-    color: #fff;
-}
-
-.clear-btn {
-    background: var(--control-secondary);
-    color: #fff;
-    min-width: 40px;
-}
-
-.clear-btn:hover {
-    background: var(--control-secondary-hover);
-    color: #fff;
-}
-
-.delete-btn {
-    background: var(--control-danger);
-    color: #fff;
-}
-
-.delete-btn:hover {
-    background: var(--control-danger-hover);
-    color: #fff;
-}
-
-.pending-btn {
-    background: var(--control-warning);
-    color: #000;
-}
-
-.pending-btn:hover {
-    background: #e0a800;
-    color: #000;
-}
-
-.preparing-btn {
-    background: var(--control-secondary);
-    color: #fff;
-}
-
-.preparing-btn:hover {
-    background: var(--control-secondary-hover);
-    color: #fff;
-}
-
-.ready-btn {
-    background: var(--control-success);
-    color: #fff;
-}
-
-.ready-btn:hover {
-    background: #146c43;
-    color: #fff;
-}
-
-.cancelled-btn {
-    background: var(--control-danger);
-    color: #fff;
-}
-
-.cancelled-btn:hover {
-    background: var(--control-danger-hover);
-    color: #fff;
-}
-
+/* Shared action variants. */
+.edit-btn { background: var(--control-secondary); color: #fff; }
+.edit-btn:hover { background: var(--control-secondary-hover); color: #fff; }
+.clear-btn { background: var(--control-secondary); color: #fff; min-width: 40px; }
+.clear-btn:hover { background: var(--control-secondary-hover); color: #fff; }
+.delete-btn { background: var(--control-danger); color: #fff; }
+.delete-btn:hover { background: var(--control-danger-hover); color: #fff; }
+.pending-btn { background: var(--control-warning); color: #000; }
+.pending-btn:hover { background: #e0a800; color: #000; }
+.preparing-btn { background: var(--control-secondary); color: #fff; }
+.preparing-btn:hover { background: var(--control-secondary-hover); color: #fff; }
+.ready-btn { background: var(--control-success); color: #fff; }
+.ready-btn:hover { background: #146c43; color: #fff; }
+.cancelled-btn { background: var(--control-danger); color: #fff; }
+.cancelled-btn:hover { background: var(--control-danger-hover); color: #fff; }
 .out-of-stock-btn,
-.out-of-stock-btn:hover {
-    min-height: 32px;
-    padding: var(--space-2) 10px;
-    background: #e8e8e8;
-    color: #666;
-    border-color: #d0d0d0;
-    cursor: not-allowed;
-    font-size: 12px;
-    opacity: 1;
-    pointer-events: none;
-}
-
-.reactivate-btn {
-    min-width: 120px;
-}
-
-/* Keep compact POS-specific controls visually subordinate. */
+.out-of-stock-btn:hover { min-height: 32px; padding: var(--space-2) 10px; background: #e8e8e8; color: #666; border-color: #d0d0d0; cursor: not-allowed; font-size: 12px; opacity: 1; pointer-events: none; }
+.reactivate-btn { min-width: 120px; }
 .add-to-cart-btn,
 .place-order-btn,
-.clear-cart-btn {
-    box-sizing: border-box;
-}
+.clear-cart-btn { box-sizing: border-box; }
 
-/* Shared form field foundation. Existing .form-group markup is retained. */
+/* Shared form-field foundation. Native date/time/select/file controls retain browser behaviour. */
 .form-group input[type="text"],
 .form-group input[type="email"],
 .form-group input[type="password"],
@@ -179,7 +90,7 @@
 .form-group input[type="month"],
 .form-group input[type="time"],
 .form-group input[type="week"],
-.form-group input:not([type]) ,
+.form-group input:not([type]),
 .form-group textarea,
 .form-group select {
     width: 100%;
@@ -193,35 +104,13 @@
     font: inherit;
     font-size: var(--font-size-body);
     line-height: 1.4;
-    transition: border-color var(--control-transition), box-shadow var(--control-transition),
-                background-color var(--control-transition);
+    transition: border-color var(--control-transition), box-shadow var(--control-transition), background-color var(--control-transition);
 }
 
 .form-group input[type="checkbox"],
-.form-group input[type="radio"] {
-    width: auto;
-    min-height: 0;
-    padding: 0;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    accent-color: var(--control-primary);
-}
-
-.form-group input[type="file"] {
-    width: 100%;
-    box-sizing: border-box;
-    min-height: var(--field-height);
-    padding: var(--space-2) 0;
-    font: inherit;
-    font-size: var(--font-size-body);
-    color: var(--color-text);
-}
-
-.form-group textarea {
-    min-height: 96px;
-    resize: vertical;
-}
+.form-group input[type="radio"] { width: auto; min-height: 0; padding: 0; border: 0; border-radius: 0; background: transparent; accent-color: var(--control-primary); }
+.form-group input[type="file"] { width: 100%; box-sizing: border-box; min-height: var(--field-height); padding: var(--space-2) 0; font: inherit; font-size: var(--font-size-body); color: var(--color-text); }
+.form-group textarea { min-height: 96px; resize: vertical; }
 
 .form-group input[type="text"]:focus,
 .form-group input[type="email"]:focus,
@@ -237,9 +126,7 @@
 .form-group input[type="week"]:focus,
 .form-group input:not([type]):focus,
 .form-group textarea:focus,
-.form-group select:focus {
-    border-color: var(--control-focus);
-}
+.form-group select:focus { border-color: var(--control-focus); outline: var(--control-focus-width) solid var(--control-focus); outline-offset: var(--control-focus-offset); }
 
 .form-group input[type="text"]:focus-visible,
 .form-group input[type="email"]:focus-visible,
@@ -255,10 +142,7 @@
 .form-group input[type="week"]:focus-visible,
 .form-group input:not([type]):focus-visible,
 .form-group textarea:focus-visible,
-.form-group select:focus-visible {
-    outline: var(--control-focus-width) solid var(--control-focus);
-    outline-offset: var(--control-focus-offset);
-}
+.form-group select:focus-visible { box-shadow: 0 0 0 1px var(--color-surface); }
 
 .form-group input[type="text"]:disabled,
 .form-group input[type="email"]:disabled,
@@ -274,35 +158,17 @@
 .form-group input[type="week"]:disabled,
 .form-group input:not([type]):disabled,
 .form-group textarea:disabled,
-.form-group select:disabled {
-    background: var(--color-background);
-    color: var(--color-text-muted);
-    cursor: not-allowed;
-}
+.form-group select:disabled { background: var(--color-background); color: var(--color-text-muted); cursor: not-allowed; }
 
 .form-group input::placeholder,
 .form-group textarea::placeholder,
 .search-area input::placeholder,
-.search-form input::placeholder {
-    color: var(--color-text-muted);
-    opacity: 1;
-}
+.search-form input::placeholder { color: var(--color-text-muted); opacity: 1; }
+.form-group label { color: var(--color-text); font-size: var(--font-size-body); font-weight: 600; line-height: 1.3; }
 
-.form-group label {
-    color: var(--color-text);
-    font-size: var(--font-size-body);
-    font-weight: 600;
-    line-height: 1.3;
-}
-
-/* Search and filter foundation. Existing IDs/classes remain unchanged. */
+/* Search controls. IDs/classes remain behaviour contracts. */
 .search-form,
-.search-area {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-}
-
+.search-area { display: flex; align-items: center; gap: var(--space-2); }
 .search-area input[type="search"],
 .search-area input[type="text"],
 .search-form input[type="search"],
@@ -320,96 +186,68 @@
     box-sizing: border-box;
 }
 
+#search { width: 100%; max-width: 500px; }
 .search-area input[type="search"],
-.search-area input[type="text"] {
-    flex: 1 1 280px;
-    width: 100%;
-    max-width: 500px;
-}
-
-.search-form select {
-    flex: 0 1 220px;
-}
-
+.search-area input[type="text"] { flex: 1 1 280px; width: 100%; max-width: 500px; }
+.search-form select { flex: 0 1 220px; }
 .search-area input[type="search"]:focus,
 .search-area input[type="text"]:focus,
 .search-form input[type="search"]:focus,
 .search-form input[type="text"]:focus,
-.search-form select:focus {
-    border-color: var(--control-focus);
-}
-
+.search-form select:focus { border-color: var(--control-focus); outline: var(--control-focus-width) solid var(--control-focus); outline-offset: var(--control-focus-offset); }
 .search-area input[type="search"]:focus-visible,
 .search-area input[type="text"]:focus-visible,
 .search-form input[type="search"]:focus-visible,
 .search-form input[type="text"]:focus-visible,
-.search-form select:focus-visible {
-    outline: var(--control-focus-width) solid var(--control-focus);
-    outline-offset: var(--control-focus-offset);
-}
-
-.search-area input[type="search"]::-webkit-search-cancel-button {
-    -webkit-appearance: none;
-    appearance: none;
-    cursor: pointer;
-}
-
+.search-form select:focus-visible { box-shadow: 0 0 0 1px var(--color-surface); }
+.search-area input[type="search"]::-webkit-search-cancel-button { cursor: pointer; }
 .search-area .action-btn,
-.search-form .action-btn {
-    flex-shrink: 0;
-}
+.search-form .action-btn { flex-shrink: 0; }
 
-.category-filter {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    flex-wrap: wrap;
-    margin-bottom: var(--space-4);
-}
-
+/* Category and payment controls preserve their JS state hooks. */
+.category-filter { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-4); }
 .category-filter .category-btn {
     min-height: var(--control-height);
     padding: var(--space-2) var(--control-padding-inline);
     border: 1px solid var(--color-border);
     border-radius: var(--control-radius);
+    background: var(--color-background);
+    color: var(--color-text);
+    font: inherit;
+    font-size: var(--font-size-table);
+    font-weight: 600;
+    line-height: 1.2;
+    cursor: pointer;
 }
+.category-filter .category-btn:hover { background: var(--color-surface); }
+.category-filter .category-btn:focus { outline: var(--control-focus-width) solid var(--control-focus); outline-offset: var(--control-focus-offset); }
+.category-filter .category-btn:focus-visible { box-shadow: 0 0 0 1px var(--color-surface); }
+.category-filter .category-btn.active { background: var(--control-primary); color: #fff; border-color: var(--control-primary); }
 
-.category-filter .category-btn:focus-visible {
-    outline: var(--control-focus-width) solid var(--control-focus);
-    outline-offset: var(--control-focus-offset);
+.payment-method-btn {
+    flex: 1;
+    min-height: var(--control-height);
+    padding: var(--space-2) var(--space-1);
+    border: 1px solid var(--color-border);
+    background: var(--color-background);
+    color: var(--color-text-muted);
+    font: inherit;
+    font-size: var(--font-size-table);
+    font-weight: 600;
+    line-height: 1.2;
+    cursor: pointer;
+    margin: 0;
 }
+.payment-method-btn + .payment-method-btn { border-left: 0; }
+.payment-method-btn:first-child { border-radius: var(--control-radius) 0 0 var(--control-radius); }
+.payment-method-btn:last-child { border-radius: 0 var(--control-radius) var(--control-radius) 0; }
+.payment-method-btn:hover { background: var(--color-surface); color: var(--color-text); }
+.payment-method-btn:focus { outline: var(--control-focus-width) solid var(--control-focus); outline-offset: var(--control-focus-offset); position: relative; z-index: 1; }
+.payment-method-btn:focus-visible { box-shadow: 0 0 0 1px var(--color-surface); }
+.payment-method-btn.active { background: var(--control-success); color: #fff; border-color: var(--control-success); }
 
 @media (max-width: 640px) {
-    .form-group input[type="text"],
-    .form-group input[type="email"],
-    .form-group input[type="password"],
-    .form-group input[type="number"],
-    .form-group input[type="tel"],
-    .form-group input[type="url"],
-    .form-group input[type="search"],
-    .form-group input[type="date"],
-    .form-group input[type="datetime-local"],
-    .form-group input[type="month"],
-    .form-group input[type="time"],
-    .form-group input[type="week"],
-    .form-group input:not([type]),
-    .form-group textarea,
-    .form-group select {
-        min-height: 40px;
-    }
-
-    .search-form,
-    .search-area {
-        flex-wrap: wrap;
-    }
-
-    .search-area input[type="search"],
-    .search-area input[type="text"],
-    .search-form input[type="search"],
-    .search-form input[type="text"],
-    .search-form select {
-        min-height: 40px;
-        flex: 1 1 220px;
-        max-width: none;
-    }
+    .form-group input[type="text"], .form-group input[type="email"], .form-group input[type="password"], .form-group input[type="number"], .form-group input[type="tel"], .form-group input[type="url"], .form-group input[type="search"], .form-group input[type="date"], .form-group input[type="datetime-local"], .form-group input[type="month"], .form-group input[type="time"], .form-group input[type="week"], .form-group input:not([type]), .form-group textarea, .form-group select { min-height: 40px; }
+    .search-form, .search-area { flex-wrap: wrap; }
+    .search-area input[type="search"], .search-area input[type="text"], .search-form input[type="search"], .search-form input[type="text"], .search-form select { min-height: 40px; flex: 1 1 220px; max-width: none; }
 }
