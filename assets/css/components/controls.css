@@ -251,3 +251,50 @@
     .search-form, .search-area { flex-wrap: wrap; }
     .search-area input[type="search"], .search-area input[type="text"], .search-form input[type="search"], .search-form input[type="text"], .search-form select { min-height: 40px; flex: 1 1 220px; max-width: none; }
 }
+/* ==========================================================
+   Accessible focus model
+   Modern browsers use :focus-visible.
+   Legacy fallback remains available without affecting
+   browsers that support :focus-visible.
+   ========================================================== */
+
+.action-btn:focus,
+.category-filter .category-btn:focus,
+.payment-method-btn:focus,
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus,
+.search-area input:focus,
+.search-form input:focus,
+.search-form select:focus {
+    outline: none;
+}
+
+.action-btn:focus-visible,
+.category-filter .category-btn:focus-visible,
+.payment-method-btn:focus-visible,
+.form-group input:focus-visible,
+.form-group textarea:focus-visible,
+.form-group select:focus-visible,
+.search-area input:focus-visible,
+.search-form input:focus-visible,
+.search-form select:focus-visible {
+    outline: var(--control-focus-width) solid var(--control-focus);
+    outline-offset: var(--control-focus-offset);
+    box-shadow: 0 0 0 1px var(--color-surface);
+}
+
+@supports not selector(:focus-visible) {
+    .action-btn:focus,
+    .category-filter .category-btn:focus,
+    .payment-method-btn:focus,
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus,
+    .search-area input:focus,
+    .search-form input:focus,
+    .search-form select:focus {
+        outline: var(--control-focus-width) solid var(--control-focus);
+        outline-offset: var(--control-focus-offset);
+    }
+}

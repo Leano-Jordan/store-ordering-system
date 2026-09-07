@@ -1,0 +1,108 @@
+/* ==========================================================
+    SwiftOrder UI Navigation
+    Shared application-shell navigation layer.
+    Behaviour-linked navigation classes remain unchanged.
+   ========================================================== */
+
+.top-nav {
+    min-height: 56px;
+    box-sizing: border-box;
+    gap: var(--space-4);
+}
+
+.top-nav nav {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: var(--space-2);
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex-wrap: nowrap;
+    scrollbar-width: thin;
+}
+
+.top-nav nav > a,
+.top-nav nav > .logout-form {
+    flex: 0 0 auto;
+}
+
+.top-nav nav > a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+    box-sizing: border-box;
+    padding: 0 var(--space-2);
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+    font-size: var(--font-size-table);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.top-nav nav > a:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.top-nav nav > a.active-nav {
+    text-decoration: none;
+    background: rgba(13, 110, 253, 0.16);
+    color: var(--color-primary);
+}
+
+.top-nav .logout-form {
+    flex: 0 0 auto;
+}
+
+.top-nav .logout-button {
+    min-height: 36px;
+    padding: 0 var(--space-2);
+    border-radius: var(--radius-sm);
+}
+
+.theme-toggle {
+    flex: 0 0 auto;
+    min-height: 36px;
+    box-sizing: border-box;
+    margin-left: var(--space-2);
+    white-space: nowrap;
+}
+
+.top-nav nav:focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+}
+
+@media (max-width: 900px) {
+    .top-nav {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .top-nav nav {
+        order: 3;
+        flex-basis: 100%;
+        width: 100%;
+    }
+}
+
+@media (max-width: 640px) {
+    .top-nav {
+        padding: var(--space-3) var(--space-4);
+    }
+
+    .top-nav h1 {
+        font-size: var(--font-size-section);
+    }
+
+    .top-nav nav {
+        gap: var(--space-1);
+    }
+
+    .top-nav nav > a,
+    .top-nav .logout-button,
+    .theme-toggle {
+        min-height: 40px;
+    }
+}

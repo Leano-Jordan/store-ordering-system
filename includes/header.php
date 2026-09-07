@@ -37,6 +37,7 @@ if (defined('APP_ENV') && APP_ENV === 'production' && isset($_SERVER['HTTPS']) &
     <link rel="stylesheet" href="assets/css/components/status.css">
     <link rel="stylesheet" href="assets/css/components/panels.css">
     <link rel="stylesheet" href="assets/css/theme.css">
+    <link rel="stylesheet" href="assets/css/components/navigation.css">
     <script src="assets/js/theme.js" defer></script>
     <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
 </head>
@@ -46,7 +47,7 @@ if (defined('APP_ENV') && APP_ENV === 'production' && isset($_SERVER['HTTPS']) &
     <nav aria-label="Primary navigation">
         <?php
         if (isset($_SESSION['role']) && $_SESSION['role'] === ROLE_ADMIN) { ?>
-            <a href="index.php" class="<?php echo $currentPage === 'index.php' ? 'active-nav' : ''; ?>">Home</a>
+            <a href="index.php" class="<?php echo $currentPage === 'index.php' ? 'active-nav' : ''; ?>" aria-current="<?php echo $currentPage === 'index.php' ? 'page' : 'false'; ?>">Home</a>
             <a href="dashboard.php" class="<?php echo $currentPage === 'dashboard.php' ? 'active-nav' : ''; ?>">Dashboard</a>
             <a href="orders.php" class="<?php echo $currentPage === 'orders.php' ? 'active-nav' : ''; ?>">Orders</a>
             <a href="products.php" class="<?php echo $currentPage === 'products.php' ? 'active-nav' : ''; ?>">Products</a>
@@ -61,7 +62,7 @@ if (defined('APP_ENV') && APP_ENV === 'production' && isset($_SERVER['HTTPS']) &
             <a href="activity_logs.php" class="<?php echo $currentPage === 'activity_logs.php' ? 'active-nav' : ''; ?>">Activity Logs</a>
             <form method="post" action="logout.php" class="logout-form"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrfToken(), ENT_QUOTES); ?>"><button type="submit" class="logout-button">Logout</button></form>
         <?php } elseif (isset($_SESSION['role']) && $_SESSION['role'] === ROLE_MANAGER) { ?>
-            <a href="index.php" class="<?php echo $currentPage === 'index.php' ? 'active-nav' : ''; ?>">Home</a>
+            <a href="index.php" class="<?php echo $currentPage === 'index.php' ? 'active-nav' : ''; ?>" aria-current="<?php echo $currentPage === 'index.php' ? 'page' : 'false'; ?>">Home</a>
             <a href="dashboard.php" class="<?php echo $currentPage === 'dashboard.php' ? 'active-nav' : ''; ?>">Dashboard</a>
             <a href="orders.php" class="<?php echo $currentPage === 'orders.php' ? 'active-nav' : ''; ?>">Orders</a>
             <a href="products.php" class="<?php echo $currentPage === 'products.php' ? 'active-nav' : ''; ?>">Products</a>
@@ -74,7 +75,7 @@ if (defined('APP_ENV') && APP_ENV === 'production' && isset($_SERVER['HTTPS']) &
             <form method="post" action="logout.php" class="logout-form"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrfToken(), ENT_QUOTES); ?>"><button type="submit" class="logout-button">Logout</button></form>
         <?php }
         if (isset($_SESSION['role']) && $_SESSION['role'] === ROLE_CASHIER) { ?>
-            <a href="index.php" class="<?php echo $currentPage === 'index.php' ? 'active-nav' : ''; ?>">Home</a>
+            <a href="index.php" class="<?php echo $currentPage === 'index.php' ? 'active-nav' : ''; ?>" aria-current="<?php echo $currentPage === 'index.php' ? 'page' : 'false'; ?>">Home</a>
             <a href="dashboard.php" class="<?php echo $currentPage === 'dashboard.php' ? 'active-nav' : ''; ?>">Dashboard</a>
             <a href="orders.php" class="<?php echo $currentPage === 'orders.php' ? 'active-nav' : ''; ?>">Orders</a>
             <form method="post" action="logout.php" class="logout-form"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrfToken(), ENT_QUOTES); ?>"><button type="submit" class="logout-button">Logout</button></form>
@@ -83,7 +84,7 @@ if (defined('APP_ENV') && APP_ENV === 'production' && isset($_SERVER['HTTPS']) &
             <a href="orders.php" class="<?php echo $currentPage === 'orders.php' ? 'active-nav' : ''; ?>">Orders</a>
             <form method="post" action="logout.php" class="logout-form"><input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrfToken(), ENT_QUOTES); ?>"><button type="submit" class="logout-button">Logout</button></form>
         <?php } ?>
-        <button type="button" class="theme-toggle" data-theme-toggle aria-pressed="false">Dark mode</button>
+        <button type="button" class="theme-toggle" data-theme-toggle aria-label="Toggle dark mode" aria-pressed="false">Dark mode</button>
     </nav>
     <?php if (isset($_SESSION['full_name'])) { ?>
     <div class="nav-user">
