@@ -43,7 +43,7 @@ if (defined('APP_ENV') && APP_ENV === 'production' && isset($_SERVER['HTTPS']) &
 <body>
 <header class="top-nav">
     <h1>SwiftOrder</h1>
-    <nav>
+    <nav aria-label="Primary navigation">
         <?php
         if (isset($_SESSION['role']) && $_SESSION['role'] === ROLE_ADMIN) { ?>
             <a href="index.php" class="<?php echo $currentPage === 'index.php' ? 'active-nav' : ''; ?>">Home</a>
