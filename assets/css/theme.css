@@ -1,0 +1,18 @@
+html { background: var(--color-background); }
+body { background: var(--color-background); color: var(--color-text); transition: background-color .15s ease, color .15s ease; }
+:root[data-theme="dark"] .top-nav { background: #0b1220; color: #f3f4f6; }
+:root[data-theme="dark"] .top-nav a, :root[data-theme="dark"] .top-nav .logout-button { color: #e5e7eb; }
+:root[data-theme="dark"] .top-nav a:hover, :root[data-theme="dark"] .top-nav .logout-button:hover { color: #8bb8ff; }
+:root[data-theme="dark"] .top-nav a.active-nav { color: #75a9ff; }
+:root[data-theme="dark"] input, :root[data-theme="dark"] select, :root[data-theme="dark"] textarea { background-color: var(--color-surface); color: var(--color-text); border-color: var(--color-border); }
+:root[data-theme="dark"] input::placeholder, :root[data-theme="dark"] textarea::placeholder { color: var(--color-text-muted); }
+:root[data-theme="dark"] .orders-table th { background: #172033; color: #f3f4f6; }
+:root[data-theme="dark"] .orders-table td { background: var(--color-surface); color: var(--color-text); border-color: var(--color-border); }
+:root[data-theme="dark"] .orders-table tr:nth-child(even) td { background: #243044; }
+:root[data-theme="dark"] .dashboard-card, :root[data-theme="dark"] .form-card, :root[data-theme="dark"] .session-summary-card, :root[data-theme="dark"] .panel { background: var(--color-surface); color: var(--color-text); border-color: var(--color-border); }
+:root[data-theme="dark"] .status.pending { background: #5a4610; color: #ffe69c; }
+:root[data-theme="dark"] .status.draft { background: #3a4048; color: #e2e3e5; }
+.theme-toggle { min-height: 32px; padding: 6px 10px; border: 1px solid rgba(255,255,255,.35); border-radius: var(--radius-sm); background: transparent; color: inherit; font: inherit; font-size: var(--font-size-table); font-weight: 600; line-height: 1.2; cursor: pointer; }
+.theme-toggle:hover { background: rgba(255,255,255,.10); }
+.theme-toggle:focus-visible { outline: 2px solid #75a9ff; outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { body, .action-btn, input, select, textarea { transition: none; } }
