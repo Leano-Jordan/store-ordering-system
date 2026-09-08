@@ -73,6 +73,18 @@
     min-height: 38px;
     padding: 0 11px;
     border-radius: 10px;
+    background: transparent;
+    color: var(--color-text);
+    border: 1px solid transparent;
+    font-size: var(--font-size-table);
+    font-weight: 650;
+    transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+}
+
+.top-nav .logout-button:hover {
+    background: rgba(216, 69, 84, 0.10);
+    color: var(--color-danger);
+    border-color: rgba(216, 69, 84, 0.22);
 }
 
 .theme-toggle {
@@ -166,7 +178,8 @@
 
 @media (prefers-reduced-motion: reduce) {
     .top-nav nav > a,
-    .theme-toggle {
+    .theme-toggle,
+    .top-nav .logout-button {
         transition: none;
     }
 }
