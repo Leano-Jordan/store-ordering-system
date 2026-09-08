@@ -28,8 +28,16 @@
 
         if (toggle instanceof HTMLButtonElement) {
             const dark = theme === 'dark';
+            const nextTheme = dark ? 'light' : 'dark';
+            const icon = toggle.querySelector('.theme-toggle-icon');
+
             toggle.setAttribute('aria-pressed', String(dark));
-            toggle.textContent = dark ? 'Light mode' : 'Dark mode';
+            toggle.setAttribute('aria-label', `Switch to ${nextTheme} mode`);
+            toggle.setAttribute('title', `Switch to ${nextTheme} mode`);
+
+            if (icon instanceof HTMLElement) {
+                icon.textContent = dark ? '☀' : '☾';
+            }
         }
     };
 
