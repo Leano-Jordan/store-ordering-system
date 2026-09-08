@@ -32,12 +32,12 @@
     overflow-x: auto;
     overflow-y: hidden;
     flex-wrap: nowrap;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
-@supports (scrollbar-width: thin) {
-    .top-nav nav {
-        scrollbar-width: thin;
-    }
+.top-nav nav::-webkit-scrollbar {
+    display: none;
 }
 
 .top-nav nav > a,
@@ -81,9 +81,13 @@
 }
 
 .top-nav .logout-button {
-    min-height: 38px;
-    padding: 0 12px;
-    border-radius: 10px;
+    min-height: 34px;
+    box-sizing: border-box;
+    padding: 0 10px;
+    border-radius: 8px;
+    font-size: var(--font-size-table);
+    font-weight: 600;
+    line-height: 1.2;
     transition: background-color .15s ease, color .15s ease;
 }
 
@@ -94,9 +98,9 @@
 
 .theme-toggle {
     flex: 0 0 auto;
-    width: 40px;
-    height: 40px;
-    min-height: 40px;
+    width: 36px;
+    height: 36px;
+    min-height: 36px;
     box-sizing: border-box;
     margin-left: var(--space-2);
     padding: 0;
@@ -108,10 +112,15 @@
     background: rgba(255, 255, 255, 0.10);
     color: #ffffff;
     font-family: system-ui, sans-serif;
-    font-size: 19px;
+    font-size: 16px;
     line-height: 1;
     cursor: pointer;
     transition: background-color .15s ease, transform .15s ease, border-color .15s ease;
+}
+
+.theme-toggle .theme-toggle-icon {
+    font-size: 16px;
+    line-height: 1;
 }
 
 .theme-toggle:hover {
@@ -180,8 +189,8 @@
     }
 
     .theme-toggle {
-        width: 40px;
-        height: 40px;
-        min-height: 40px;
+        width: 36px;
+        height: 36px;
+        min-height: 36px;
     }
 }
