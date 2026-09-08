@@ -20,7 +20,7 @@
     overflow-x: auto;
     overflow-y: hidden;
     flex-wrap: nowrap;
-    scrollbar-width: thin; /*/*not supported by chrome < 121, Safari, etc*/
+    scrollbar-width: thin; /* not supported by chrome < 121, Safari, etc */
 }
 
 .top-nav nav > a,
@@ -34,11 +34,10 @@
     min-height: 36px;
     box-sizing: border-box;
     padding: 0 var(--space-2);
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-md);
     white-space: nowrap;
     font-size: var(--font-size-table);
     font-weight: 600;
-    text-decoration: none;
 }
 
 .top-nav nav > a:hover {
@@ -46,9 +45,14 @@
 }
 
 .top-nav nav > a.active-nav {
-    text-decoration: none;
-    background: rgba(13, 110, 253, 0.16);
-    color: var(--color-primary);
+    text-decoration: underline;
+    text-underline-offset: 5px;
+    background: rgba(255, 152, 0, 0.12);
+    color: #ff9800;
+}
+
+.top-nav nav > a.active-nav:hover {
+    color: #ffb74b;
 }
 
 .top-nav .logout-form {
@@ -58,7 +62,7 @@
 .top-nav .logout-button {
     min-height: 36px;
     padding: 0 var(--space-2);
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-md);
 }
 
 .theme-toggle {
