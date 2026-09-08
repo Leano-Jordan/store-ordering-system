@@ -19,7 +19,7 @@
 }
 
 .system-clock {
-    color: #ffffff;
+    color: #44cf4b;
 }
 
 .top-nav nav {
@@ -50,7 +50,7 @@
     min-height: 38px;
     box-sizing: border-box;
     padding: 0 12px;
-    border-radius: 14px;
+    border-radius: 16px;
     white-space: nowrap;
     font-size: var(--font-size-table);
     font-weight: 600;

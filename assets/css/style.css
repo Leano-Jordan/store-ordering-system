@@ -47,10 +47,12 @@ body {
 .system-clock {
     font-size: 16px;
     font-weight: 600;
-    color: #db9410;
+    color: #44cf4b;
 }
 
 .user-name {
+    color: #ffffff;
+
     font-size: 16px;
 }
 
