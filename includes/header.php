@@ -53,7 +53,7 @@ if (defined('APP_ENV') && APP_ENV === 'production' && isset($_SERVER['HTTPS']) &
             <a href="products.php" class="<?php echo $currentPage === 'products.php' ? 'active-nav' : ''; ?>">Products</a>
             <a href="stock_history.php" class="<?php echo $currentPage === 'stock_history.php' ? 'active-nav' : ''; ?>">Stock History</a>
             <a href="suppliers.php" class="<?php echo $currentPage === 'suppliers.php' ? 'active-nav' : ''; ?>">Suppliers</a>
-            <a href="purchase_orders.php" class="<?php echo $currentPage === 'purchase_orders.php' ? 'active-nav' : ''; ?>">Purchase Orders</a>
+            <a href="purchase_orders.php" class="<?php echo $currentPage === 'purchase_orders.php' ? 'active-nav' : ''; ?>">P/Orders</a>
             <a href="goods_received_notes.php" class="<?php echo $currentPage === 'goods_received_notes.php' ? 'active-nav' : ''; ?>">GRNs</a>
             <a href="users.php" class="<?php echo $currentPage === 'users.php' ? 'active-nav' : ''; ?>">Users</a>
             <a href="business_settings.php" class="<?php echo $currentPage === 'business_settings.php' ? 'active-nav' : ''; ?>">Settings</a>
@@ -68,7 +68,7 @@ if (defined('APP_ENV') && APP_ENV === 'production' && isset($_SERVER['HTTPS']) &
             <a href="products.php" class="<?php echo $currentPage === 'products.php' ? 'active-nav' : ''; ?>">Products</a>
             <a href="stock_history.php" class="<?php echo $currentPage === 'stock_history.php' ? 'active-nav' : ''; ?>">Stock History</a>
             <a href="suppliers.php" class="<?php echo $currentPage === 'suppliers.php' ? 'active-nav' : ''; ?>">Suppliers</a>
-            <a href="purchase_orders.php" class="<?php echo $currentPage === 'purchase_orders.php' ? 'active-nav' : ''; ?>">Purchase Orders</a>
+            <a href="purchase_orders.php" class="<?php echo $currentPage === 'purchase_orders.php' ? 'active-nav' : ''; ?>">P/Orders</a>
             <a href="goods_received_notes.php" class="<?php echo $currentPage === 'goods_received_notes.php' ? 'active-nav' : ''; ?>">GRNs</a>
             <a href="sessions.php" class="<?php echo $currentPage === 'sessions.php' ? 'active-nav' : ''; ?>">Sessions</a>
             <a href="reports.php" class="<?php echo $currentPage === 'reports.php' ? 'active-nav' : ''; ?>">Reports</a>
