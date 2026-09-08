@@ -19,7 +19,11 @@
 }
 
 .system-clock {
-    color: #ffffff;
+    color: #2E8B57;
+}
+
+.user-role {
+    color: #2671c7;
 }
 
 .top-nav nav {
