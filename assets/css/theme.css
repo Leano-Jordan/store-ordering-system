@@ -16,6 +16,9 @@ body { background: var(--color-background); color: var(--color-text); transition
 .theme-toggle { min-height: 32px; padding: 6px 10px; border: 1px solid rgba(255,255,255,.35); border-radius: var(--radius-sm); background: transparent; color: inherit; font: inherit; font-size: var(--font-size-table); font-weight: 600; line-height: 1.2; cursor: pointer; }
 .theme-toggle:hover { background: rgba(255,255,255,.10); }
 .theme-toggle:focus-visible { outline: 2px solid #75a9ff; outline-offset: 2px; }
+.system-clock { color: #2e7d32; }
+.user-role { color: #2671c7; }
+.top-nav { border-radius: 8px; }
 @media (prefers-reduced-motion: reduce) {
     html,
     body,
