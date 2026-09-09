@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 /**
- * CREATE A DATABASE RECORD FOR NEWLY AUTHENTICATED PHP SESSION.
+ * Create a database record for a newly authenticated PHP session.
  *
- * @throws RuntimeException when session created
+ * @throws RuntimeException When the session record cannot be created.
  */
 function createSessionRecord(mysqli $conn, int $userId): int
 {

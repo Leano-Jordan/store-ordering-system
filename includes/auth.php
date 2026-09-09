@@ -96,7 +96,6 @@ if (
         if (!$sessionClosed) {
             error_log(
                 'SwiftOrder timed-out session could not be closed. '
-                .'Session record ID: '.$_SESSION['session_log_id']
             );
         }
     }
