@@ -35,7 +35,14 @@ $notes = trim($notesInput);
 
 $statusInput = $_POST['status'] ?? '';
 
-$status = (is_string($statusInput) && in_array($statusInput, ['Draft', 'Pending'], true)) ? $statusInput : 'Pending';
+if (!is_string($statusInput) || !in_array($statusInput, ['Draft', 'Pending'], true)
+) {
+    $_SESSION['error'] = 'Invalid purchase order status.';
+    header('Location: add_purchase_order.php');
+    exit();
+}
+
+$status = $statusInput;
 
 $productIds = $_POST['product_id'] ?? [];
 $quantities = $_POST['quantity'] ?? [];
@@ -100,16 +107,22 @@ if (!$productStmt) {
 }
 
 for ($i = 0; $i < count($productIds); ++$i) {
-    $productId = (int) $productIds[$i];
+    $productId = filter_var(
+        $productIds[$i],
+        FILTER_VALIDATE_INT, 
+        [
+            'options' => ['min_range' => 1,],
+        ]
+    );
+
+    if ($productId === false) {
+        $productStmt->close();
+        exit('Invalid product selected.');
+    }
 
     if (isset($validateProducts[$productId])) {
         $productStmt->close();
         exit('Duplicate products are not allowed in a purchase order.');
-    }
-
-    if ($productId <= 0) {
-        $productStmt->close();
-        exit('Invalid product selected.');
     }
 
     if (!$productStmt->bind_param('i', $productId)) {
@@ -160,15 +173,16 @@ for ($i = 0; $i < count($productIds); ++$i) {
     }
 
     $qty = filter_var($quantities[$i], FILTER_VALIDATE_INT);
-    $price = (float) $prices[$i];
 
-    if ($qty <= 0 || $price <= 0) {
-        $_SESSION['error'] = 'Invalid quantity or unit cost.';
-        header('Location: add_purchase_order.php');
-        exit();
-    }
+$price = filter_var($prices[$i], FILTER_VALIDATE_FLOAT);
 
-    $grandTotal += ($qty * $price);
+if ($qty === false || $qty <= 0 || $price === false || !is_finite((float) $price) || $price <= 0) {
+    $_SESSION['error'] = 'Invalid quantity or unit cost.';
+    header('Location: add_purchase_order.php');
+    exit();
+}
+
+$grandTotal += ($qty * $price);
 }
 
 $poNumber = 'PO-'.date('YmdHis').'-'.str_pad((string) random_int(0, 9999), 4, '0', STR_PAD_LEFT);
@@ -197,12 +211,9 @@ try {
         throw new Exception('Failed to prepare purchase order insert: '.$conn->error);
     }
 
-    if (!$stmt->bind_param(
-        'isdss',
-        $supplierId,
-        $poNumber,
-        $grandTotal,
-        $status,
+    if (!$stmt->bind_param('isdss',
+        $supplierId, $poNumber,
+        $grandTotal, $status,
         $notes
     )) {
         $error = $stmt->error;
@@ -291,7 +302,6 @@ try {
     }
 
     error_log('save_purchase_order.php: Transaction failed: '.$e->getMessage());
-
     $_SESSION['error'] = 'Unable to save purchase order. Please try again.';
 
     header('Location: add_purchase_order.php');

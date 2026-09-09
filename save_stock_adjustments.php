@@ -125,7 +125,19 @@ try {
         throw new Exception($conn->error);
     }
 
-    $stmt->bind_param('ii', $newStock, $productId);
+    if (!$stmt->bind_param('ii', $newStock, $productId)) {
+    $error = $stmt->error;
+    $stmt->close();
+
+    throw new RuntimeException('Failed to bind stock update parameters: '.$error);
+}
+
+if (!$stmt->execute()) {
+    $error = $stmt->error;
+    $stmt->close();
+
+    throw new RuntimeException('Failed to update product stock: '.$error);
+}
 
     if (!$stmt->execute()) {
         throw new Exception($stmt->error);

@@ -139,9 +139,14 @@ WHERE id = ? AND status = ?',
             [$id]
         );
 
-        if (!$orderItemResult) {
-            throw new Exception('Failed to retrieve order items.');
+    if (!$orderItemResult) {
+        throw new Exception('Failed to retrieve order items.');
+    }
+
+    if ($orderItemResult->num_rows < 1) {
+        throw new RuntimeException('Cannot collect an order with no line items.');
         }
+
         while ($item = $orderItemResult->fetch_assoc()) {
             $qty = filter_var($item['quantity'] ?? null, FILTER_VALIDATE_INT);
 
@@ -179,8 +184,7 @@ WHERE id = ? AND status = ?',
                 throw new Exception('Unable to read updated stock for product ID '.$productId);
             }
 
-            $newStock = (int)
-                $newStockRow['stock'];
+            $newStock = (int) $newStockRow['stock'];
 
             $adjType = 'Decrease';
             $adjReason = 'Order Collected';

@@ -58,9 +58,14 @@ if ($companyName === '' || $contactPerson === '' || $phone === '') {
 }
 
 $sql = 'INSERT INTO suppliers(
-    company_name, contact_person, p
-    hone, email, address, notes, status) 
-    VALUES(?, ?, ?, ?, ?, ?, ?)';
+    company_name,
+    contact_person,
+    phone,
+    email,
+    address,
+    notes,
+    status
+) VALUES(?, ?, ?, ?, ?, ?, ?)';
 
 $transactionStarted = false;
 
@@ -94,7 +99,7 @@ try {
         throw new RuntimeException('Supplier creation returned an invalid ID.');
     }
 
-    recordAudit(
+        recordAudit(
         $conn,
         (int) $_SESSION['user_id'],
         'supplier',
@@ -105,6 +110,13 @@ try {
             'status' => [null, $status],
         ]
     );
+
+    if (!logActivity(
+        $conn,
+        (int) $_SESSION['user_id'], 'Created supplier ID '.$supplierId)
+    ) {
+        throw new RuntimeException('Failed to record supplier activity.');
+    }
 
     if (!$conn->commit()) {
         throw new RuntimeException('Supplier creation commit failed: '.$conn->error);

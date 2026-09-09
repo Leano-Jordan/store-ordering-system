@@ -376,54 +376,41 @@ for ($i = 0; $i < $itemCount; ++$i) {
 
 $itemStmt->close();
 
-recordAudit(
-    $conn,
-    (int) $_SESSION['user_id'],
-    'purchase_order',
-    (int) $purchaseOrderId,
-    'UPDATE',
-    [
-        'supplier_id' => [
-            (string) $originalSupplierId,
-            (string) $supplierId,
-        ],
-        'status' => [
-            $originalStatus,
-            $status,
-        ],
-    'total' => [
-        number_format($originalTotal, 2, '.', ''),
-        number_format((float) $grandTotal, 2, '.', ''),
-        ],
-    ]
-);
-
-require_once 'includes/logger.php';
-
-if (!logActivity(
-    $conn,
-    (int) $_SESSION['user_id'],
-    'Updated Purchase Order ID '.$purchaseOrderId
-)) {
-    $conn->rollback();
-
-    error_log(
-        'update_purchase_order.php: Activity logging failed for purchase order ID '
-        .$purchaseOrderId
+try {
+    recordAudit(
+        $conn,
+        (int) $_SESSION['user_id'],
+        'purchase_order',
+        (int) $purchaseOrderId,
+        'UPDATE',
+        [
+            'supplier_id' => [(string) $originalSupplierId, (string) $supplierId,],
+            'status' => [
+                $originalStatus, $status,
+            ],
+            'total' => [
+                number_format($originalTotal, 2, '.', ''),
+                number_format((float) $grandTotal, 2, '.', ''),
+            ],
+        ]
     );
 
-    exit('Failed to record Purchase Order activity.');
-}
+    require_once 'includes/logger.php';
 
-if (!$conn->commit()) {
-    $commitError = $conn->error;
+    if (!logActivity(
+        $conn,
+        (int) $_SESSION['user_id'], 'Updated Purchase Order ID '.$purchaseOrderId)
+        ) {
+        throw new RuntimeException('Failed to record Purchase Order activity.');
+    }
 
+    if (!$conn->commit()) {
+        throw new RuntimeException('Failed to save Purchase Order changes: '.$conn->error);
+    }
+} catch (Throwable $e) {
     $conn->rollback();
 
-    error_log(
-        'update_purchase_order.php: Failed to commit transaction for purchase order ID '
-        .$purchaseOrderId.': '.$commitError
-    );
+    error_log('update_purchase_order.php: Transaction failed for purchase order ID '.$purchaseOrderId.': '.$e->getMessage());
 
     exit('Failed to save Purchase Order changes. Please try again.');
 }

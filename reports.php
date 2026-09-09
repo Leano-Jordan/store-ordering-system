@@ -138,10 +138,11 @@ if (!$chartResult) {
 $chartLabels = [];
 $chartData = [];
 
-$topProducts = $conn->query("SELECT p.name, 
+$topProducts = $conn->query("SELECT MAX(oi.product_name_at_sale) AS name,
 SUM(oi.quantity) AS quantity_sold FROM order_items oi
-LEFT JOIN products p ON oi.product_id = p.id JOIN orders o ON oi.order_id = o.id
-WHERE $where AND o.status = 'Collected' GROUP BY oi.product_id
+JOIN orders o ON oi.order_id = o.id
+WHERE $where AND o.status = 'Collected'
+GROUP BY oi.product_id
 ORDER BY quantity_sold DESC LIMIT 5");
 
 if (!$topProducts) {

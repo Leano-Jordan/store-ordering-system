@@ -421,11 +421,11 @@ while ($chart = $chartResult->fetch_assoc()) {
 
 //                                                         THE TOP 5 SELLING PRODUCTS
 
-$sql = 'SELECT io.product_name_at_sale AS name,
+$sql = 'SELECT MAX(io.product_name_at_sale) AS name,
         SUM(io.quantity) AS totalSold FROM order_items io
         JOIN orders o ON io.order_id = o.id
         WHERE o.status = "Collected"
-        GROUP BY io.product_id, io.product_name_at_sale
+        GROUP BY io.product_id
         ORDER BY totalSold DESC LIMIT 5';
 
 $topProducts = $conn->query($sql);
