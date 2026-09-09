@@ -107,11 +107,20 @@ if (!$productStmt) {
 }
 
 for ($i = 0; $i < count($productIds); ++$i) {
+    if (!is_string($productIds[$i]) || !is_string($quantities[$i]) || !is_string($prices[$i])
+    ) {
+        $productStmt->close();
+
+        $_SESSION['error'] = 'Invalid purchase order item data.';
+        header('Location: add_purchase_order.php');
+        exit();
+    }
+
     $productId = filter_var(
         $productIds[$i],
-        FILTER_VALIDATE_INT, 
+        FILTER_VALIDATE_INT,
         [
-            'options' => ['min_range' => 1,],
+            'options' => ['min_range' => 1],
         ]
     );
 
@@ -182,10 +191,18 @@ if ($qty === false || $qty <= 0 || $price === false || !is_finite((float) $price
     exit();
 }
 
-$grandTotal += ($qty * $price);
+$grandTotal += round(
+    (float) $qty * (float) $price, 2);
 }
 
-$poNumber = 'PO-'.date('YmdHis').'-'.str_pad((string) random_int(0, 9999), 4, '0', STR_PAD_LEFT);
+$grandTotal = round($grandTotal, 2);
+
+$poNumber = 'PO-'.date('YmdHis').'-'.str_pad(
+    (string) random_int(0, 9999),
+    4,
+    '0',
+    STR_PAD_LEFT
+);
 
 $transactionStarted = false;
 
@@ -238,7 +255,8 @@ try {
             throw new Exception('Invalid purchase order item data.');
         }
 
-        $lineTotal = $qty * $price;
+        $lineTotal = round(
+            (float) $qty * (float) $price, 2);
 
         $itemStmt = $conn->prepare(
             'INSERT INTO purchase_order_items(purchase_order_id,product_id, quantity, cost_price, line_total) 

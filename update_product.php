@@ -108,8 +108,14 @@ if (isset($_FILES['image']) && $_FILES['image']['error'] !== UPLOAD_ERR_NO_FILE)
         exit();
     }
 
-    if (@getimagesize($_FILES['image']['tmp_name']) === false) {
+        if (@getimagesize($_FILES['image']['tmp_name']) === false) {
         $_SESSION['error'] = 'Uploaded file is not a valid image.';
+        header('Location: edit_product.php?id='.$id);
+        exit();
+    }
+
+    if (!validateImageDimensions($_FILES['image']['tmp_name'])) {
+        $_SESSION['error'] = 'Image dimensions are too large.';
         header('Location: edit_product.php?id='.$id);
         exit();
     }

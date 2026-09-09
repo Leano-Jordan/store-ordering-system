@@ -174,7 +174,8 @@ for ($i = 0; $i < count($productIds); ++$i) {
         exit('Invalid quantity or price.');
     }
 
-    $grandTotal += ($qty * $price);
+    $grandTotal += round(
+    (float) $qty * (float) $price, 2);
 }
 
 /* CHECK IF PURCHASE ORDER IS EDIT-ABLE */
@@ -352,7 +353,8 @@ for ($i = 0; $i < $itemCount; ++$i) {
         exit('Invalid product ID during item insert.');
     }
 
-    $lineTotal = $qty * $price;
+    $lineTotal = round(
+        (float) $qty * (float) $price, 2);
 
     if (!$itemStmt->bind_param(
         'iiddd',

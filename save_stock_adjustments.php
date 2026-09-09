@@ -139,11 +139,7 @@ if (!$stmt->execute()) {
     throw new RuntimeException('Failed to update product stock: '.$error);
 }
 
-    if (!$stmt->execute()) {
-        throw new Exception($stmt->error);
-    }
-
-    $stmt->close();
+$stmt->close();
 
     /*           SAVE ADJUSTMENT HISTORY             */
 

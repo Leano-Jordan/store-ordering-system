@@ -35,7 +35,16 @@ if ($id === false || $id <= 0) {
     exit();
 }
 
-$conn->begin_transaction();
+if (!$conn->begin_transaction()) {
+    error_log(
+        'deactivate_user.php: Failed to begin transaction: '
+        .$conn->error
+    );
+
+    $_SESSION['error'] = 'Unable to deactivate user. Please try again.';
+    header('Location: users.php');
+    exit();
+}
 
 /*********                *******  PREVENT DEACTIVATION MYSELF *******       ****************/
 
