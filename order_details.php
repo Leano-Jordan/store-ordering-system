@@ -66,7 +66,7 @@ if (!empty($_SESSION['flash_error'])) { ?>
     <?php unset($_SESSION['flash_error']);
 }
 
-$sql = 'SELECT p.name, oi.quantity, oi.price FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.order_id = ?';
+$sql = 'SELECT product_name_at_sale AS name, quantity, price FROM order_items WHERE order_id = ?';
 
 $stmt = $conn->prepare($sql);
 

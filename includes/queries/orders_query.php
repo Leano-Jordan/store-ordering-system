@@ -40,10 +40,16 @@ if ($where === '') {
         error_log('SwiftOrder orders query failed: '.$conn->error);
     }
 
-    $totalResult = $conn->query(
+        $totalResult = $conn->query(
         'SELECT COUNT(*) AS total 
         FROM orders'
     );
+
+    if ($totalResult === false) {
+        error_log(
+            'SwiftOrder orders count query failed: '.$conn->error
+        );
+    }
 } else {
     $stmt = $conn->prepare(
         "SELECT * FROM orders $where 

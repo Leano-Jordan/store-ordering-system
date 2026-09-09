@@ -313,22 +313,20 @@ try {
                     ? $existingResult->fetch_assoc()
                     : null;
 
+            if ($existingOrder) {
                 $existingStmt->close();
-
-                if ($existingOrder) {
-                    header('Content-Type: application/json');
-
-                    echo json_encode([
-                        'success' => true,
-                        'message' => 'Order already placed.',
-                        'order_number' => $existingOrder['order_number'],
+                
+                header('Content-Type: application/json');
+                
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Order already placed.',
+                    'order_number' => $existingOrder['order_number'],
                     ]);
 
-                    exit();
+                exit();
                 }
-            }
 
-            if ($existingStmt) {
                 $existingStmt->close();
             }
         }
