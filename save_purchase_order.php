@@ -185,6 +185,15 @@ for ($i = 0; $i < count($productIds); ++$i) {
 
 $price = filter_var($prices[$i], FILTER_VALIDATE_FLOAT);
 
+if ($price === false || !is_finite((float) $price)
+    ) {
+    $productStmt->close();
+
+    $_SESSION['error'] = 'Invalid purchase order item data.';
+    header('Location: add_purchase_order.php');
+    exit();
+}
+
 if ($qty === false || $qty <= 0 || $price === false || !is_finite((float) $price) || $price <= 0) {
     $_SESSION['error'] = 'Invalid quantity or unit cost.';
     header('Location: add_purchase_order.php');

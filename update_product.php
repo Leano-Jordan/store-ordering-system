@@ -27,11 +27,17 @@ $category = trim((string) ($_POST['category'] ?? ''));
 $id = filter_var($idRaw, FILTER_VALIDATE_INT);
 $price = filter_var($priceRaw, FILTER_VALIDATE_FLOAT);
 
+if ($price === false || !is_finite((float) $price)
+) {
+    exit('Invalid quantity or price.');
+}
+
 if ($id === false || $id <= 0) {
     exit('Invalid product ID.');
 }
 
-if ($price === false || $price < 0) {
+if (
+    $price === false || !is_finite((float) $price) || $price < 0) {
     exit('Invalid price.');
 }
 
@@ -108,11 +114,15 @@ if (isset($_FILES['image']) && $_FILES['image']['error'] !== UPLOAD_ERR_NO_FILE)
         exit();
     }
 
-        if (@getimagesize($_FILES['image']['tmp_name']) === false) {
-        $_SESSION['error'] = 'Uploaded file is not a valid image.';
-        header('Location: edit_product.php?id='.$id);
-        exit();
-    }
+        $imageInfo = getimagesize($_FILES['image']['tmp_name']);
+
+    if ($imageInfo === false) {
+        error_log('update_product.php: Uploaded file failed image validation.');
+
+    $_SESSION['error'] = 'Uploaded file is not a valid image.';
+    header('Location: edit_product.php?id='.$id);
+    exit();
+}
 
     if (!validateImageDimensions($_FILES['image']['tmp_name'])) {
         $_SESSION['error'] = 'Image dimensions are too large.';

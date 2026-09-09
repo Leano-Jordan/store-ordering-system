@@ -47,7 +47,8 @@ if ($name === '' || $category === '') {
     exit();
 }
 
-if ($price === false || $price <= 0) {
+if (
+    $price === false || !is_finite((float) $price) || $price <= 0) {
     $_SESSION['error'] = 'Please enter valid price.';
     header('Location: add_product.php');
     exit();
@@ -91,7 +92,11 @@ if ($fileMimeType === false || !isset($allowedMimeTypes[$fileMimeType])
     exit();
 }
 
-if (@getimagesize($tempName) === false) {
+$imageInfo = getimagesize($tempName);
+
+if ($imageInfo === false) {
+    error_log('save_product.php: Uploaded file failed image validation.');
+
     $_SESSION['error'] = 'Uploaded file is not a valid image.';
     header('Location: add_product.php');
     exit();
