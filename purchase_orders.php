@@ -21,15 +21,14 @@ if (!empty($search)) {
     $searchTerm = '%'.$search.'%';
 
     $stmt = $conn->prepare(
-        "SELECT purchase_orders.*, 
-    suppliers.company_name
-    FROM purchase_orders
-    INNER JOIN suppliers
-    ON purchase_orders.supplier_id = suppliers.id
-    WHERE purchase_orders.po_number LIKE ? OR suppliers.company_name LIKE ? 
-    ORDER BY purchase_orders.created_at DESC
-    LIMIT $limit OFFSET $offset"
-    );
+        "SELECT purchase_orders.*, suppliers.company_name
+        FROM purchase_orders INNER JOIN suppliers
+        ON purchase_orders.supplier_id = suppliers.id
+        WHERE purchase_orders.po_number LIKE ? 
+        OR suppliers.company_name LIKE ? 
+        ORDER BY purchase_orders.created_at DESC
+        LIMIT $limit OFFSET $offset"
+        );
 
     if (!$stmt) {
         error_log('purchase_orders.php: Failed to prepare search query: '.$conn->error);
@@ -56,7 +55,8 @@ if (!empty($search)) {
         exit('Unable to load Purchase Order.');
     }
 
-    $countStmt = $conn->prepare('SELECT COUNT(*) AS total 
+    $countStmt = $conn->prepare(
+        'SELECT COUNT(*) AS total 
         FROM purchase_orders 
         INNER JOIN suppliers ON purchase_orders.supplier_id = suppliers.id 
         WHERE purchase_orders.po_number LIKE ? OR suppliers.company_name LIKE ?
@@ -91,6 +91,7 @@ if (!empty($search)) {
 
     if (!$countResult) {
         error_log('purchase_orders.php: Failed to retrieve Purchase Order count: '.$countStmt->error);
+        
         $countStmt->close();
         exit('Unable to load Purchase Order count.');
     }
@@ -126,7 +127,11 @@ if (!empty($search)) {
         exit('Unable to load purchase orders.');
     }
 
-    $countResult = $conn->query('SELECT COUNT(*) AS total FROM purchase_orders INNER JOIN suppliers ON purchase_orders.supplier_id = suppliers.id');
+    $countResult = $conn->query(
+        'SELECT COUNT(*) AS total 
+        FROM purchase_orders INNER JOIN suppliers 
+        ON purchase_orders.supplier_id = suppliers.id'
+        );
 
     if (!$countResult) {
         error_log('purchase_orders.php: Failed to count purchase orders: '.$conn->error);
