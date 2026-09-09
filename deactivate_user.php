@@ -20,8 +20,6 @@ require_once 'includes/audit.php';
 $idRaw = $_POST['id'] ?? null;
 
 if (!is_string($idRaw)) {
-    $conn->rollback();
-
     $_SESSION['error'] = 'Invalid user ID.';
     header('Location: users.php');
     exit();
@@ -224,21 +222,27 @@ if ($updateStmt->affected_rows !== 1) {
 
 $updateStmt->close();
 
-recordAudit(
-    $conn,
-    (int) $_SESSION['user_id'],
-    'user',
-    $id,
-    'DEACTIVATE',
-    [
-        'status' => ['Active', 'Inactive'],
+try {
+    recordAudit(
+        $conn,
+        (int) $_SESSION['user_id'],
+        'user',
+        $id,
+        'DEACTIVATE',
+        [
+            'status' => ['Active', 'Inactive'],
         ]
-);
+    );
 
-if (!$conn->commit()) {
+    if (!$conn->commit()) {
+        throw new RuntimeException('deactivate_user.php commit failed: '.$conn->error);
+    }
+} catch (Throwable $exception) {
     $conn->rollback();
 
-    error_log('deactivate_user.php commit failed. ');
+    error_log('deactivate_user.php transaction failed: '.$exception->getMessage()
+    );
+
     $_SESSION['error'] = 'Unable to complete user deactivation.';
     header('Location: users.php');
     exit();
