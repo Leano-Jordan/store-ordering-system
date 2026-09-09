@@ -419,13 +419,15 @@ while ($chart = $chartResult->fetch_assoc()) {
     $chartData[] = $chart['daily_total'];
 }
 
+$chartResult->free();
+
 //                                                         THE TOP 5 SELLING PRODUCTS
 
-$sql = 'SELECT MAX(io.product_name_at_sale) AS name,
+$sql = 'SELECT io.product_name_at_sale AS name,
         SUM(io.quantity) AS totalSold FROM order_items io
         JOIN orders o ON io.order_id = o.id
         WHERE o.status = "Collected"
-        GROUP BY io.product_id
+        GROUP BY io.product_id, io.product_name_at_sale
         ORDER BY totalSold DESC LIMIT 5';
 
 $topProducts = $conn->query($sql);
