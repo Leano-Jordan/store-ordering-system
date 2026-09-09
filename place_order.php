@@ -117,11 +117,12 @@ if (!is_string($cartRaw)) {
 
 $cart = json_decode($cartRaw, true);
 
-if (json_last_error() !== JSON_ERROR_NONE) {
+if (json_last_error() !== JSON_ERROR_NONE || !is_array($cart)
+) {
     jsonError('Invalid cart data. Please try again.');
 }
 
-    $paymentMethodInput = $_POST['payment_method'] ?? 'cash_pmt';
+$paymentMethodInput = $_POST['payment_method'] ?? 'cash_pmt';
 
 if (!is_string($paymentMethodInput)) {
     $_SESSION['error'] = 'Invalid payment method.';
@@ -212,16 +213,26 @@ try {
     }
 
     $productMap = [];
-    while ($p = $result->fetch_assoc()) {
-        $productMap[$p['id']] = $p;
+
+    while ($p = $result->fetch_assoc()
+        ) {
+    $productMap[(int) $p['id']] = $p;
     }
 
     $result->free();
     $productStmt->close();
 
-    $items = '';
-    $total = 0;
-    $dbPrices = [];
+    if (count($productMap) !== count($productIds)) {
+    $conn->rollback();
+
+    error_log('place_order.php: One or more requested products could not be loaded.');
+
+    jsonError('One or more products are unavailable. Please refresh and try again.');
+}
+
+$items = '';
+$total = 0;
+$dbPrices = [];
 
     foreach ($cart as $item) {
         $productId = filter_var($item['id'], FILTER_VALIDATE_INT);
