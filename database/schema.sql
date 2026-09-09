@@ -24,8 +24,7 @@ CREATE TABLE business_settings (
     next_invoice_number int NOT NULL DEFAULT '1',
     created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (id),
-    CONSTRAINT chk_business_settings_singleton CHECK (id = 1)
+    PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE products (
@@ -185,9 +184,14 @@ CREATE TABLE goods_received_note_items (
     quantity decimal(10,2) NOT NULL,
     cost_price decimal(10,2) NOT NULL,
     line_total decimal(10,2) NOT NULL,
-    PRIMARY KEY (id),
-    KEY grn_id (grn_id),
+    PRIMARY KEY (id), KEY grn_id (grn_id),
     KEY product_id (product_id),
+    CONSTRAINT chk_grn_items_quantity_positive
+    CHECK (quantity > 0),
+    CONSTRAINT chk_grn_items_cost_positive
+    CHECK (cost_price > 0),
+    CONSTRAINT chk_grn_items_total_non_negative
+    CHECK (line_total >= 0),
     CONSTRAINT goods_received_note_items_ibfk_1
     FOREIGN KEY (grn_id)
     REFERENCES goods_received_notes (id)
@@ -199,24 +203,24 @@ CREATE TABLE goods_received_note_items (
 
 CREATE TABLE stock_adjustments (
     id int NOT NULL AUTO_INCREMENT,
-    product_id int NOT NULL,
-    user_id int NOT NULL,
+    product_id int NOT NULL, user_id int NOT NULL,
     adjustment_type enum('Increase','Decrease') COLLATE utf8mb4_general_ci NOT NULL,
     quantity int NOT NULL,
     available_stock int NOT NULL,
     reason varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
     notes text COLLATE utf8mb4_general_ci,
     created_at timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id),
-    KEY user_id (user_id),
+    PRIMARY KEY (id), KEY user_id (user_id),
     KEY idx_product_created (product_id,created_at),
     KEY idx_created_at (created_at),
+    CONSTRAINT chk_stock_adjustments_quantity_positive
+    CHECK (quantity > 0),
+    CONSTRAINT chk_stock_adjustments_available_stock_non_negative
+    CHECK (available_stock >= 0),
     CONSTRAINT stock_adjustments_ibfk_1
-    FOREIGN KEY (product_id)
-    REFERENCES products (id),
+    FOREIGN KEY (product_id) REFERENCES products (id),
     CONSTRAINT stock_adjustments_ibfk_2
-    FOREIGN KEY (user_id)
-    REFERENCES users (id)
+    FOREIGN KEY (user_id) REFERENCES users (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE audit_log (
