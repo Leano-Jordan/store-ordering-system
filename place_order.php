@@ -248,8 +248,16 @@ $dbPrices = [];
             jsonError("Product ID $productId not found.");
         }
 
-        $product = $productMap[$productId];
+                $product = $productMap[$productId];
         $productName = (string) $product['name'];
+
+        if ($product['price'] === null) {
+            $conn->rollback();
+
+            error_log('place_order.php: Product has no valid selling price: '.$productId);
+
+            jsonError('One or more products have no valid selling price.');
+        }
 
         if ($quantity > $product['stock']) {
             $conn->rollback();
@@ -259,7 +267,7 @@ $dbPrices = [];
             exit();
         }
 
-        $total += $product['price'] * $quantity;
+        $total += (float) $product['price'] * $quantity;
         $dbPrices[$productId] = $product['price'];
         $items .= $product['name'].' x '.$quantity.', ';
     }
