@@ -98,6 +98,10 @@ CREATE TABLE order_items (
     PRIMARY KEY (id),
     KEY order_id (order_id),
     KEY idx_order_items_product_id (product_id),
+    CONSTRAINT chk_order_items_quantity_positive
+    CHECK (quantity > 0),
+    CONSTRAINT chk_order_items_price_non_negative
+    CHECK (price >= 0),
     CONSTRAINT fk_order_items_product
     FOREIGN KEY (product_id)
     REFERENCES products (id)

@@ -89,18 +89,18 @@ CREATE TABLE orders (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE order_items (
-    id int NOT NULL AUTO_INCREMENT,
-    order_id int NOT NULL,
+    id int NOT NULL AUTO_INCREMENT, order_id int NOT NULL,
     product_id int NOT NULL,
     product_name_at_sale varchar(150) COLLATE utf8mb4_general_ci NOT NULL,
-    quantity int NOT NULL,
-    price decimal(10,2) NOT NULL,
-    PRIMARY KEY (id),
-    KEY order_id (order_id),
+    quantity int NOT NULL, price decimal(10,2) NOT NULL,
+    PRIMARY KEY (id), KEY order_id (order_id),
     KEY idx_order_items_product_id (product_id),
+    CONSTRAINT chk_order_items_quantity_positive
+    CHECK (quantity > 0),
+    CONSTRAINT chk_order_items_price_non_negative
+    CHECK (price >= 0),
     CONSTRAINT fk_order_items_product
-    FOREIGN KEY (product_id)
-    REFERENCES products (id)
+    FOREIGN KEY (product_id) REFERENCES products (id)
     ON DELETE RESTRICT
     ON UPDATE CASCADE,
     CONSTRAINT order_items_ibfk_1
