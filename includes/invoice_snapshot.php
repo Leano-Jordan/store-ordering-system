@@ -142,11 +142,17 @@ function snapshotInvoiceBusinessDetails(
     }
 
     if (!$updateStmt->execute()) {
-        $error = $updateStmt->error;
-        $updateStmt->close();
-
-        throw new RuntimeException('Unable to save invoice business snapshot: '.$error);
-    }
-
+    $error = $updateStmt->error;
     $updateStmt->close();
+
+    throw new RuntimeException('Unable to save invoice business snapshot: '.$error);
+}
+
+if ($updateStmt->affected_rows !== 1) {
+    $updateStmt->close();
+
+    throw new RuntimeException('Invoice business snapshot was not saved for the requested order.');
+}
+
+$updateStmt->close();
 }

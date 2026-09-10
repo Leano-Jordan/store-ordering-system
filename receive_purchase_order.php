@@ -94,14 +94,39 @@ try {
 
     while ($item = $items->fetch_assoc()) {
         // Update product stock
-        $stockStmt = $conn->prepare('UPDATE products SET stock = stock + ? WHERE id = ?');
-        if (!$stockStmt) {
-            throw new Exception($conn->error);
-        }
+        $productCheckStmt = $conn->prepare('SELECT id FROM products WHERE id = ? FOR UPDATE');
 
-        if (!$stockStmt->bind_param('ii', $item['quantity'], $item['product_id'])) {
+    if (!$productCheckStmt) {
+        throw new Exception($conn->error);
+    }
+
+    if (!$productCheckStmt->bind_param('i', $item['product_id'])) {
+        throw new Exception('Failed to bind product existence check parameters.');
+    }
+
+    if (!$productCheckStmt->execute()) {
+        throw new Exception($productCheckStmt->error);
+    }
+
+    $productCheckResult = $productCheckStmt->get_result();
+
+    if (!$productCheckResult || !$productCheckResult->fetch_assoc()) {
+        $productCheckStmt->close();
+
+        throw new Exception('Product ID '.$item['product_id'].' does not exist.');
+    }
+
+    $productCheckStmt->close();
+
+    $stockStmt = $conn->prepare('UPDATE products SET stock = stock + ? WHERE id = ?');
+
+    if (!$stockStmt) {
+        throw new Exception($conn->error);
+    }
+
+    if (!$stockStmt->bind_param('ii', $item['quantity'], $item['product_id'])) {
             throw new Exception('Failed to bind stock update parameters.');
-        }
+    }
 
         if (!$stockStmt->execute()) {
             throw new Exception($stockStmt->error);
@@ -306,15 +331,18 @@ WHERE purchase_order_id = ?
     if (!$conn->commit()) {
         throw new RuntimeException('Transaction commit failed: '.$conn->error);
     }
-} catch (Throwable $e) {
-    if ($transactionStarted) {
-        $conn->rollback();
+        } catch (Throwable $e) {
+            if ($transactionStarted) {
+            $conn->rollback();
+        }
+
+    error_log('receive_purchase_order.php: Failed to receive purchase order: '.$e->getMessage());
+
+    $_SESSION['error'] = 'Failed to receive purchase order. No changes were saved.';
+
+    header('Location: purchase_orders.php');
+    exit();
     }
-
-    error_log('receive_purchase_order.php: '.$e->getMessage());
-
-    exit('Failed to receive purchase order');
-}
 
     header('Location: purchase_orders.php');
     exit();
