@@ -40,7 +40,8 @@ CREATE TABLE products (
     KEY idx_status_stock (status,stock),
     KEY idx_category (category),
     CONSTRAINT chk_products_stock_non_negative CHECK (stock >= 0),
-    CONSTRAINT chk_products_price_non_negative CHECK (price IS NULL OR price >= 0)
+    CONSTRAINT chk_products_price_non_negative CHECK (price >= 0),
+    CONSTRAINT chk_products_status_valid CHECK (status IN ('Active', 'Inactive'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE suppliers (
@@ -82,6 +83,8 @@ CREATE TABLE orders (
     KEY idx_status (status),
     KEY idx_created_at (created_at),
     KEY idx_status_created (status,created_at),
+    CONSTRAINT chk_orders_status_valid
+    CHECK (status IN ('Pending', 'Preparing', 'Ready', 'Collected', 'Cancelled')),
     CONSTRAINT chk_orders_total_non_negative CHECK (total >= 0),
     CONSTRAINT chk_orders_vat_rate_non_negative CHECK (vat_rate_at_sale >= 0),
     CONSTRAINT chk_orders_vat_amount_non_negative CHECK (vat_amount >= 0),
@@ -118,7 +121,7 @@ CREATE TABLE purchase_orders (
     supplier_id int NOT NULL,
     po_number varchar(30) COLLATE utf8mb4_general_ci NOT NULL,
     status enum('Draft','Pending','Received','Cancelled') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'Draft',
-    total decimal(10,2) DEFAULT '0.00',
+    total decimal(10,2) NOT NULL DEFAULT '0.00',
     notes text COLLATE utf8mb4_general_ci,
     created_at timestamp NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
@@ -126,7 +129,9 @@ CREATE TABLE purchase_orders (
     KEY supplier_id (supplier_id),
     CONSTRAINT purchase_orders_ibfk_1
     FOREIGN KEY (supplier_id)
-    REFERENCES suppliers (id)
+    REFERENCES suppliers (id),
+    CONSTRAINT chk_purchase_orders_total_non_negative
+    CHECK (total >= 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE purchase_order_items (
@@ -175,7 +180,9 @@ CREATE TABLE goods_received_notes (
     REFERENCES suppliers (id),
     CONSTRAINT goods_received_notes_ibfk_3
     FOREIGN KEY (received_by)
-    REFERENCES users (id)
+    REFERENCES users (id),
+    CONSTRAINT chk_goods_received_notes_total_non_negative
+    CHECK (total >= 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE goods_received_note_items (
