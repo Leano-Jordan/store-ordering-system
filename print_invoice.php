@@ -211,6 +211,25 @@ foreach ($items as $item) {
     }
 }
 
+$lineTotalCents = 0;
+
+foreach ($items as $item) {
+    $lineTotalCents += (int) round($item['line_total'] * 100);
+}
+
+$subtotalCents = (int) round($subtotal * 100);
+$vatAmountCents = (int) round($vatAmount * 100);
+$totalCents = (int) round($total * 100);
+
+if (
+    $lineTotalCents !== $subtotalCents || ($subtotalCents + $vatAmountCents) !== $totalCents
+) {
+    error_log('print_invoice.php: Historical invoice financial totals are inconsistent '.'for order ID '.$orderId);
+
+    http_response_code(409);
+    exit('This invoice contains inconsistent historical financial data.');
+}
+
 $paymentLabels = [
     'cash_pmt' => 'Cash',
     'card_pmt' => 'Card',
