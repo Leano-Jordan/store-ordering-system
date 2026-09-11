@@ -46,6 +46,10 @@ if (count($productIds) !== count($quantities) || count($productIds) !== count($p
     exit('Purchase order item data is invalid.');
 }
 
+if (count($productIds) < 1) {
+    exit('A Purchase Order must contain at least one item.');
+}
+
 if (count($productIds) !== count(array_unique($productIds, SORT_REGULAR))) {
     exit('Duplicate products are not allowed on purchase order.');
 }

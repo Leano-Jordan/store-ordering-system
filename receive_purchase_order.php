@@ -93,8 +93,14 @@ try {
     }
 
     while ($item = $items->fetch_assoc()) {
-        // Update product stock
-        $productCheckStmt = $conn->prepare('SELECT id FROM products WHERE id = ? FOR UPDATE');
+    $receivedQuantity = filter_var($item['quantity'] ?? null, FILTER_VALIDATE_INT);
+
+    if ($receivedQuantity === false || $receivedQuantity <= 0) {
+        throw new RuntimeException('Invalid quantity for product ID '.$item['product_id']);
+    }
+
+    // Update product stock
+    $productCheckStmt = $conn->prepare('SELECT id FROM products WHERE id = ? FOR UPDATE');
 
     if (!$productCheckStmt) {
         throw new Exception($conn->error);
@@ -124,7 +130,7 @@ try {
         throw new Exception($conn->error);
     }
 
-    if (!$stockStmt->bind_param('ii', $item['quantity'], $item['product_id'])) {
+    if (!$stockStmt->bind_param('ii', $receivedQuantity, $item['product_id'])) {
             throw new Exception('Failed to bind stock update parameters.');
     }
 
@@ -198,7 +204,7 @@ try {
             $item['product_id'],
             $_SESSION['user_id'],
             $type,
-            $item['quantity'],
+            $receivedQuantity,
             $newStock,
             $reason,
             $notes
