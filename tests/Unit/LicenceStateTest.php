@@ -99,4 +99,30 @@ final class LicenseStateTest extends TestCase
     {
         $this->assertFalse(licenseAllowsTrading(LICENSE_SUSPENDED));
     }
+
+    public function testSuspensionBlocksTradingAfterExpiry(): void 
+    {
+        $state = evaluateLicenseState(
+            4_000,
+            2_000,
+            3_000,
+            true
+        );
+        
+        $this->assertSame(LICENSE_SUSPENDED, $state);
+        $this->assertFalse(licenseAllowsTrading($state));
+    }
+
+    public function testGraceAllowsTradingAfterExpiry(): void
+    {
+        $state = evaluateLicenseState(
+            2_500,
+            2_000,
+            3_000,
+            false
+        );
+
+        $this->assertSame(LICENSE_GRACE, $state);
+        $this->assertTrue(licenseAllowsTrading($state));
+    }
 }
