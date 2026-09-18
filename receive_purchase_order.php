@@ -5,13 +5,16 @@ require_once 'includes/permissions.php';
 requireRole([ROLE_ADMIN, ROLE_MANAGER]);
 require_once 'includes/db.php';
 require_once 'includes/logger.php';
+require_once __DIR__.'/includes/licensing/license_gate.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: purchase_orders.php');
     exit();
 }
+
 require_once 'includes/csrf.php';
 verifyCsrfToken();
+requireActiveLicense($conn);
 
 $idRaw = $_POST['id'] ?? null;
 

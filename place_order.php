@@ -9,7 +9,11 @@ require_once 'includes/helpers.php';
 require_once 'includes/shared/errors.php';
 require_once 'includes/audit.php';
 require_once 'includes/logger.php';
+require_once 'includes/licensing/license_gate.php';
 requireRole([ROLE_ADMIN, ROLE_MANAGER, ROLE_CASHIER]);
+
+requireActiveLicense($conn);
+
 
 if (
     $_SERVER['REQUEST_METHOD'] !==
