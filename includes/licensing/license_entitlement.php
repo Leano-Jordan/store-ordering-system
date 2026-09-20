@@ -5,7 +5,7 @@ declare(strict_types=1);
 require_once __DIR__.'/../db.php';
 require_once __DIR__.'/license_state.php';
 
-function loadLicenseEntitlement(mysqli $conn): array
+function loadLicenseEntitlement(mysqli $conn): ?array
 {
     $stmt = $conn->prepare(
         'SELECT license_id, license_key_hash,
@@ -38,7 +38,7 @@ function loadLicenseEntitlement(mysqli $conn): array
     $stmt->close();
 
     if (!is_array($entitlement)) {
-        throw new RuntimeException('Licence entitlement is not configured.');
+        return null;
     }
 
     return $entitlement;
@@ -48,6 +48,10 @@ function currentLicenseState(
     mysqli $conn,
     int $currentTimestamp): string {
     $entitlement = loadLicenseEntitlement($conn);
+
+    if ($entitlement === null) {
+        return LICENSE_NOT_CONFIGURED;
+    }
 
     $expiresAt = strtotime(
         (string) $entitlement['expires_at']

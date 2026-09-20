@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+const LICENSE_NOT_CONFIGURED = 'NOT_CONFIGURED';
 const LICENSE_ACTIVE = 'ACTIVE';
 const LICENSE_GRACE = 'GRACE';
 const LICENSE_EXPIRED = 'EXPIRED';
