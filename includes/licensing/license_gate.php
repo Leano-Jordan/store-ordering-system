@@ -14,11 +14,15 @@ function requireActiveLicense(mysqli $conn): void
     if ($state === LICENSE_NOT_CONFIGURED) {
         error_log('license_gate.php: Licence entitlement is not configured.');
 
-        $_SESSION['flash_error'] = 'SwiftOrder licence entitlement is not configured.';
-
         http_response_code(503);
-        exit('SwiftOrder licence entitlement is not configured.');
-    }
+
+    echo '<script>
+        alert("SwiftOrder licence entitlement is not configured.");
+        window.location.href = "dashboard.php";
+    </script>';
+
+    exit();
+}
 
     if (!licenseAllowsTrading($state)) {
         error_log('license_gate.php: Protected operation blocked by licence state: '.$state);
