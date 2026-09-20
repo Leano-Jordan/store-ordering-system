@@ -87,7 +87,7 @@ declare(strict_types=1);
             <?php foreach ($items as $item) { ?>
                 <tr>
                     <td><?php echo invoiceHtml($item['name']); ?></td>
-                    <td><?php echo (string) $item['quantity']; ?></td>
+                    <td><?php echo invoiceHtml((string) $item['quantity']); ?></td>
                     <td><?php echo invoiceMoney($item['price']); ?></td>
                     <td><?php echo invoiceMoney($item['line_total']); ?></td>
                 </tr>

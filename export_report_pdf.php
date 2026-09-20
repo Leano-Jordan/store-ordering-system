@@ -14,6 +14,12 @@ $dompdf = new Dompdf();
 
 $range = $_GET['range'] ?? '7';
 
+$allowedRanges = ['7', '30', 'month', 'year'];
+
+if (!in_array($range, $allowedRanges, true)) {
+    $range = '7';
+}
+
 if ($range === '30') {
     $where = 'created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)';
 } elseif ($range === 'month') {
