@@ -4,15 +4,17 @@ require_once 'includes/auth.php';
 require_once 'includes/permissions.php';
 requireRole([ROLE_ADMIN]);
 require_once 'includes/db.php';
-require_once 'includes/csrf.php';
 require_once 'includes/audit.php';
+require_once __DIR__.'/includes/licensing/license_gate.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: products.php');
     exit();
 }
 
+require_once 'includes/csrf.php';
 verifyCsrfToken();
+requireActiveLicense($conn);
 
 $idRaw = $_POST['id'] ?? null;
 

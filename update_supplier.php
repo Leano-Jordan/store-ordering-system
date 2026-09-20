@@ -10,6 +10,7 @@ require_once 'includes/db.php';
 require_once 'includes/helpers.php';
 require_once 'includes/csrf.php';
 require_once 'includes/audit.php';
+require_once __DIR__.'/includes/licensing/license_gate.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: suppliers.php');
@@ -17,6 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 verifyCsrfToken();
+requireActiveLicense($conn);
 
 $idRaw = $_POST['id'] ?? null;
 

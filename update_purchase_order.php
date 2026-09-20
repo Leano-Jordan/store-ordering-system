@@ -6,6 +6,7 @@ requireRole([ROLE_ADMIN, ROLE_MANAGER]);
 require_once 'includes/db.php';
 require_once 'includes/logger.php';
 require_once 'includes/audit.php';
+require_once __DIR__.'/includes/licensing/license_gate.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: purchase_orders.php');
@@ -14,6 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 require_once 'includes/csrf.php';
 verifyCsrfToken();
+requireActiveLicense($conn);
 
 $purchaseOrderIdRaw = $_POST['purchase_order_id'] ?? null;
 $supplierIdRaw = $_POST['supplier_id'] ?? null;
@@ -54,20 +56,18 @@ if (count($productIds) !== count(array_unique($productIds, SORT_REGULAR))) {
     exit('Duplicate products are not allowed on purchase order.');
 }
 
-if (!$conn->begin_transaction()) {
-    error_log('update_purchase_order.php: Failed to begin transaction: '.$conn->error);
-
-    exit('Unable to start Purchase Order update. Please try again.');
-}
-
 if ($purchaseOrderId <= 0) {
-    $conn->rollback();
     exit('Invalid Purchase Order.');
 }
 
 if ($supplierId <= 0) {
-    $conn->rollback();
     exit('Please select a supplier.');
+}
+
+if (!$conn->begin_transaction()) {
+    error_log('update_purchase_order.php: Failed to begin transaction: '.$conn->error);
+
+    exit('Unable to start Purchase Order update. Please try again.');
 }
 
 $supplierCheckStmt = $conn->prepare('SELECT id FROM suppliers WHERE id = ? AND status = "Active"');
