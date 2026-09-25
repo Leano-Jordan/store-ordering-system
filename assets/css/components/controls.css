@@ -45,11 +45,11 @@
     line-height: 1.2;
     text-decoration: none;
     cursor: pointer;
+    touch-action: manipulation;
     transition: background-color var(--control-transition), border-color var(--control-transition), color var(--control-transition), box-shadow var(--control-transition);
 }
 
 .action-btn:hover { background: var(--control-primary-hover); color: #fff; }
-.action-btn:focus { outline: var(--control-focus-width) solid var(--control-focus); outline-offset: var(--control-focus-offset); }
 .action-btn:focus-visible { outline: var(--control-focus-width) solid var(--control-focus); outline-offset: var(--control-focus-offset); box-shadow: 0 0 0 1px var(--color-surface); }
 .action-btn:active { transform: translateY(1px); }
 .action-btn:disabled,
@@ -94,6 +94,7 @@
 .form-group textarea,
 .form-group select {
     width: 100%;
+    min-width: 0;
     box-sizing: border-box;
     min-height: var(--field-height);
     padding: var(--space-2) var(--field-padding-inline);
@@ -107,11 +108,31 @@
     transition: border-color var(--control-transition), box-shadow var(--control-transition), background-color var(--control-transition);
 }
 
+/* Keep native checkbox/radio rendering for Chrome, Safari and other browsers. */
 .form-group input[type="checkbox"],
-.form-group input[type="radio"] { width: auto; min-height: 0; padding: 0; border: 0; border-radius: 0; background: transparent; accent-color: var(--control-primary); }
-.form-group input[type="file"] { width: 100%; box-sizing: border-box; min-height: var(--field-height); padding: var(--space-2) 0; font: inherit; font-size: var(--font-size-body); color: var(--color-text); }
+.form-group input[type="radio"] {
+    width: auto;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    accent-color: var(--control-primary);
+}
+
+.form-group input[type="file"] {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: var(--field-height);
+    padding: var(--space-2) 0;
+    font: inherit;
+    font-size: var(--font-size-body);
+    color: var(--color-text);
+}
+
 .form-group textarea { min-height: 96px; resize: vertical; }
 
+/* Focus styling enhances, rather than replaces, the browser fallback. */
 .form-group input[type="text"]:focus,
 .form-group input[type="email"]:focus,
 .form-group input[type="password"]:focus,
@@ -126,7 +147,8 @@
 .form-group input[type="week"]:focus,
 .form-group input:not([type]):focus,
 .form-group textarea:focus,
-.form-group select:focus { border-color: var(--control-focus); outline: var(--control-focus-width) solid var(--control-focus); outline-offset: var(--control-focus-offset); }
+.form-group select:focus,
+.form-group input[type="file"]:focus { border-color: var(--control-focus); }
 
 .form-group input[type="text"]:focus-visible,
 .form-group input[type="email"]:focus-visible,
@@ -142,7 +164,15 @@
 .form-group input[type="week"]:focus-visible,
 .form-group input:not([type]):focus-visible,
 .form-group textarea:focus-visible,
-.form-group select:focus-visible { box-shadow: 0 0 0 1px var(--color-surface); }
+.form-group select:focus-visible,
+.form-group input[type="file"]:focus-visible {
+    outline: var(--control-focus-width) solid var(--control-focus);
+    outline-offset: var(--control-focus-offset);
+    box-shadow: 0 0 0 1px var(--color-surface);
+}
+
+.form-group input[type="checkbox"]:focus-visible,
+.form-group input[type="radio"]:focus-visible { outline: var(--control-focus-width) solid var(--control-focus); outline-offset: var(--control-focus-offset); }
 
 .form-group input[type="text"]:disabled,
 .form-group input[type="email"]:disabled,
@@ -158,7 +188,12 @@
 .form-group input[type="week"]:disabled,
 .form-group input:not([type]):disabled,
 .form-group textarea:disabled,
-.form-group select:disabled { background: var(--color-background); color: var(--color-text-muted); cursor: not-allowed; }
+.form-group select:disabled,
+.form-group input[type="file"]:disabled {
+    background: var(--color-background);
+    color: var(--color-text-muted);
+    cursor: not-allowed;
+}
 
 .form-group input::placeholder,
 .form-group textarea::placeholder,
@@ -175,6 +210,7 @@
 .search-form input[type="text"],
 .search-form select {
     min-height: var(--control-height);
+    min-width: 0;
     padding: var(--space-2) var(--field-padding-inline);
     border: 1px solid var(--color-border);
     border-radius: var(--control-radius);
@@ -194,12 +230,12 @@
 .search-area input[type="text"]:focus,
 .search-form input[type="search"]:focus,
 .search-form input[type="text"]:focus,
-.search-form select:focus { border-color: var(--control-focus); outline: var(--control-focus-width) solid var(--control-focus); outline-offset: var(--control-focus-offset); }
+.search-form select:focus { border-color: var(--control-focus); }
 .search-area input[type="search"]:focus-visible,
 .search-area input[type="text"]:focus-visible,
 .search-form input[type="search"]:focus-visible,
 .search-form input[type="text"]:focus-visible,
-.search-form select:focus-visible { box-shadow: 0 0 0 1px var(--color-surface); }
+.search-form select:focus-visible { outline: var(--control-focus-width) solid var(--control-focus); outline-offset: var(--control-focus-offset); box-shadow: 0 0 0 1px var(--color-surface); }
 .search-area input[type="search"]::-webkit-search-cancel-button { cursor: pointer; }
 .search-area .action-btn,
 .search-form .action-btn { flex-shrink: 0; }
@@ -218,10 +254,10 @@
     font-weight: 600;
     line-height: 1.2;
     cursor: pointer;
+    touch-action: manipulation;
 }
 .category-filter .category-btn:hover { background: var(--color-surface); }
-.category-filter .category-btn:focus { outline: var(--control-focus-width) solid var(--control-focus); outline-offset: var(--control-focus-offset); }
-.category-filter .category-btn:focus-visible { box-shadow: 0 0 0 1px var(--color-surface); }
+.category-filter .category-btn:focus-visible { outline: var(--control-focus-width) solid var(--control-focus); outline-offset: var(--control-focus-offset); box-shadow: 0 0 0 1px var(--color-surface); }
 .category-filter .category-btn.active { background: var(--control-primary); color: #fff; border-color: var(--control-primary); }
 
 .payment-method-btn {
@@ -236,14 +272,15 @@
     font-weight: 600;
     line-height: 1.2;
     cursor: pointer;
+    touch-action: manipulation;
     margin: 0;
 }
 .payment-method-btn + .payment-method-btn { border-left: 0; }
 .payment-method-btn:first-child { border-radius: var(--control-radius) 0 0 var(--control-radius); }
 .payment-method-btn:last-child { border-radius: 0 var(--control-radius) var(--control-radius) 0; }
 .payment-method-btn:hover { background: var(--color-surface); color: var(--color-text); }
-.payment-method-btn:focus { outline: var(--control-focus-width) solid var(--control-focus); outline-offset: var(--control-focus-offset); position: relative; z-index: 1; }
-.payment-method-btn:focus-visible { box-shadow: 0 0 0 1px var(--color-surface); }
+.payment-method-btn:focus { position: relative; z-index: 1; }
+.payment-method-btn:focus-visible { outline: var(--control-focus-width) solid var(--control-focus); outline-offset: var(--control-focus-offset); box-shadow: 0 0 0 1px var(--color-surface); }
 .payment-method-btn.active { background: var(--control-success); color: #fff; border-color: var(--control-success); }
 
 @media (max-width: 640px) {
@@ -251,6 +288,8 @@
     .search-form, .search-area { flex-wrap: wrap; }
     .search-area input[type="search"], .search-area input[type="text"], .search-form input[type="search"], .search-form input[type="text"], .search-form select { min-height: 40px; flex: 1 1 220px; max-width: none; }
 }
+
+
 /* ==========================================================
    Accessible focus model
    Modern browsers use :focus-visible.
