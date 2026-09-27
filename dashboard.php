@@ -3,9 +3,10 @@ require_once 'includes/auth.php';
 require_once 'includes/permissions.php';
 requireRole([ROLE_ADMIN, ROLE_MANAGER, ROLE_CASHIER]);
 require_once 'includes/db.php';
+require_once 'includes/dashboard_context.php';
 
 $loadScript = true;
-$loadChart = true;
+$loadChart = false;
 
 //                                                        TOTAL PRODUCTS
 
@@ -149,20 +150,7 @@ $stmt->close();
 
 //                                                       AVERAGE ORDER VALUE
 
-$sql = "SELECT AVG(total) AS averageOrder FROM orders WHERE status = 'Collected'";
-$result = $conn->query($sql);
-
-if (!$result) {
-    error_log(
-        'dashboard.php: Failed to load average order value: '.$conn->error
-    );
-
-    exit('Unable to load dashboard sales data.');
-}
-$row = $result->fetch_assoc();
-
-$averageOrder = (float) ($row['averageOrder'] ?? 0);
-$result->free();
+$averageOrder = 0.00;
 
 //                                                          THIS MONTH'S ORDERS
 
@@ -174,52 +162,7 @@ $nextMonthStart = (new DateTimeImmutable('First day of next month.'))
 ->setTime(0, 0)
 ->format('Y-m-d H:i:s');
 
-$sql = "SELECT SUM(total) AS monthRevenue 
-FROM orders 
-WHERE created_at >= ? 
-AND created_at < ?
-AND status = 'Collected'";
-
-$stmt = $conn->prepare($sql);
-
-if (!$stmt) {
-    error_log('dashboard.php: Failed to prepare monthly revenue query: '.$conn->error);
-    exit('Unable to load monthly revenue.');
-}
-
-if (!$stmt->bind_param('ss', $monthStart, $nextMonthStart)) {
-    error_log('dashboard.php: Failed to bind monthly revenue query: '.$stmt->error);
-
-    $stmt->close();
-
-    exit('Unable to load monthly revenue.');
-}
-
-if (!$stmt->execute()) {
-    $stmt->close();
-
-    error_log('dashboard.php: Failed to execute monthly revenue query: '.$stmt->error);
-
-    exit('Unable to load monthly revenue.');
-}
-
-$result = $stmt->get_result();
-
-if (!$result) {
-    $stmt->close();
-
-    error_log(
-        'dashboard.php: Failed to retrieve monthly revenue result: '.$stmt->error
-    );
-
-    exit('Unable to load monthly revenue.');
-}
-
-$row = $result->fetch_assoc();
-$monthRevenue = (float) ($row['monthRevenue'] ?? 0);
-
-$result->free();
-$stmt->close();
+$monthRevenue = 0.00;
 
 //                                                     LOW STOCK PRODUCTS               //
 
@@ -314,16 +257,26 @@ $row = $result->fetch_assoc();
 $totalSuppliers = (int) ($row['totalSuppliers'] ?? 0);
 $result->free();
 
-//                                                     LOW STOCK PRODUCT LIST (FOR THE ALERT WIDGETS)                                      //
+//                                                     LOW STOCK PRODUCT LIST (FOR THE ALERT WIDGETS)
 
-$lowStockProducts = $conn->query("SELECT 
-    name, stock FROM products 
-    WHERE status = 'Active' AND stock > 0 AND stock <= 10 ORDER BY stock ASC LIMIT 5");
+$lowStockProducts = null;
+
+if ($dashboardContext['showLowStockAlert']) {
+    $lowStockProducts = $conn->query(
+        "SELECT name, stock
+         FROM products
+         WHERE status = 'Active'
+         AND stock > 0
+         AND stock <= 10
+         ORDER BY stock ASC
+         LIMIT 5"
+    );
 
     if (!$lowStockProducts) {
         error_log('dashboard.php: Failed to load low-stock products: '.$conn->error);
         exit('Unable to load dashboard inventory alerts.');
     }
+}
 
 //                                                                  RECENT ORDERS                                                                 //
 
@@ -337,33 +290,131 @@ if (!$recentOrders) {
     exit('Unable to load recent orders.');
 }
 
-//                                                    SALES FOR THE LAST 7 DAYS - CHART ANALYTICS
+//                                                COLLECTED ORDER HISTORY
 
-$range = $_GET['range'] ?? '7';
-$allowedRanges = ['7', '30', 'month'];
+$result = $conn->query(
+    "SELECT COUNT(*) AS collectedOrders
+     FROM orders
+     WHERE status = 'Collected'"
+);
 
-if (!in_array($range, $allowedRanges, true)) {
-    $range = '7';
+if (!$result) {
+    error_log('dashboard.php: Failed to load collected order count: '.$conn->error);
+    exit('Unable to load dashboard sales history.');
 }
 
-$now = new DateTimeImmutable('now');
+$row = $result->fetch_assoc();
+$collectedOrders = (int) ($row['collectedOrders'] ?? 0);
+$result->free();
 
-switch ($range) {
-    case '30':
-        $rangeStart = $now
-        ->modify('-30 days')
-        ->setTime(0, 0)
-        ->format('Y-m-d H:i:s');
+//                                                ADAPTIVE DASHBOARD CONTEXT
 
-        $rangeEnd = $tomorrowStart;
-        break;
+$dashboardContext = buildDashboardContext(
+    (string) ($_SESSION['role'] ?? ''),
+    [
+        'totalProducts' => $totalProducts,
+        'todayOrders' => $todayOrders,
+        'pendingOrders' => $pendingOrders,
+        'collectedOrders' => $collectedOrders,
+        'lowStock' => $lowStock,
+        'outOfStock' => $outOfStock,
+        'totalSuppliers' => $totalSuppliers,
+        'pendingPOs' => $pendingPOs,
+        'hasRecentOrders' => $recentOrders->num_rows > 0,
+    ]
+);
 
-    case 'month':
-        $rangeStart = $monthStart;
-        $rangeEnd = $nextMonthStart;
-        break;
+if ($dashboardContext['showAverageOrder']) {
+    $sql = "SELECT AVG(total) AS averageOrder
+            FROM orders
+            WHERE status = 'Collected'";
 
-    default:
+    $result = $conn->query($sql);
+
+    if (!$result) {
+        error_log('dashboard.php: Failed to load average order value: '.$conn->error);
+        exit('Unable to load dashboard sales data.');
+    }
+
+    $row = $result->fetch_assoc();
+    $averageOrder = (float) ($row['averageOrder'] ?? 0);
+    $result->free();
+}
+
+if ($dashboardContext['showMonthRevenueMetrics']) {
+    $sql = "SELECT SUM(total) AS monthRevenue
+            FROM orders
+            WHERE created_at >= ?
+            AND created_at < ?
+            AND status = 'Collected'";
+
+    $stmt = $conn->prepare($sql);
+
+    if (!$stmt) {
+        error_log('dashboard.php: Failed to prepare monthly revenue query: '.$conn->error);
+        exit('Unable to load monthly revenue.');
+    }
+
+    if (!$stmt->bind_param('ss', $monthStart, $nextMonthStart)) {
+        error_log('dashboard.php: Failed to bind monthly revenue query: '.$stmt->error);
+        $stmt->close();
+        exit('Unable to load monthly revenue.');
+    }
+
+    if (!$stmt->execute()) {
+        error_log('dashboard.php: Failed to execute monthly revenue query: '.$stmt->error);
+        $stmt->close();
+        exit('Unable to load monthly revenue.');
+    }
+
+    $result = $stmt->get_result();
+
+    if (!$result) {
+        error_log('dashboard.php: Failed to retrieve monthly revenue result: '.$stmt->error);
+        $stmt->close();
+        exit('Unable to load monthly revenue.');
+    }
+
+    $row = $result->fetch_assoc();
+    $monthRevenue = (float) ($row['monthRevenue'] ?? 0);
+
+    $result->free();
+    $stmt->close();
+}
+
+
+
+//                                                    SALES FOR THE LAST 7 DAYS - CHART ANALYTICS
+
+$chartLabels = [];
+$chartData = [];
+
+if ($dashboardContext['showSalesChart']) {
+    $range = $_GET['range'] ?? '7';
+    $allowedRanges = ['7', '30', 'month'];
+
+    if (!in_array($range, $allowedRanges, true)) {
+        $range = '7';
+    }
+
+    $now = new DateTimeImmutable('now');
+
+    switch ($range) {
+        case '30':
+            $rangeStart = $now
+            ->modify('-30 days')
+            ->setTime(0, 0)
+            ->format('Y-m-d H:i:s');
+
+            $rangeEnd = $tomorrowStart;
+            break;
+
+        case 'month':
+            $rangeStart = $monthStart;
+            $rangeEnd = $nextMonthStart;
+            break;
+
+        default:
             $rangeStart = $now
             ->modify('-6 days')
             ->setTime(0, 0)
@@ -371,80 +422,84 @@ switch ($range) {
 
             $rangeEnd = $tomorrowStart;
             break;
-}
+    }
 
-$sql = "SELECT DATE(created_at) AS sale_date, 
-SUM(total) AS daily_total 
-FROM orders WHERE created_at >= ?
-AND created_at < ? AND status = 'Collected'
-GROUP BY DATE(created_at) ORDER BY sale_date";
+    $sql = "SELECT DATE(created_at) AS sale_date,
+            SUM(total) AS daily_total
+            FROM orders
+            WHERE created_at >= ?
+            AND created_at < ?
+            AND status = 'Collected'
+            GROUP BY DATE(created_at)
+            ORDER BY sale_date";
 
-$stmt = $conn->prepare($sql);
+    $stmt = $conn->prepare($sql);
 
-if (!$stmt) {
-    error_log('dashboard.php: Failed to prepare sales chart query: '.$conn->error);
-    exit('Unable to load dashboard sales chart.');
-}
+    if (!$stmt) {
+        error_log('dashboard.php: Failed to prepare sales chart query: '.$conn->error);
+        exit('Unable to load dashboard sales chart.');
+    }
 
-if (!$stmt->bind_param('ss', $rangeStart, $rangeEnd)) {
-    error_log('dashboard.php: Failed to bind sales chart query: '.$stmt->error);
+    if (!$stmt->bind_param('ss', $rangeStart, $rangeEnd)) {
+        error_log('dashboard.php: Failed to bind sales chart query: '.$stmt->error);
+        $stmt->close();
+        exit('Unable to load dashboard sales chart.');
+    }
 
+    if (!$stmt->execute()) {
+        error_log('dashboard.php: Failed to execute sales chart query: '.$stmt->error);
+        $stmt->close();
+        exit('Unable to load dashboard sales chart.');
+    }
+
+    $chartResult = $stmt->get_result();
     $stmt->close();
 
-    exit('Unable to load dashboard sales chart.');
+    if (!$chartResult) {
+        error_log('dashboard.php: Failed to load sales chart data: '.$conn->error);
+        exit('Unable to load dashboard sales chart data.');
+    }
+
+    while ($chart = $chartResult->fetch_assoc()) {
+        $chartLabels[] = date('D', strtotime($chart['sale_date']));
+        $chartData[] = $chart['daily_total'];
+    }
+
+    $chartResult->free();
+    $loadChart = true;
 }
-
-if (!$stmt->execute()) {
-    $stmt->close();
-
-    error_log('dashboard.php: Failed to execute sales chart query: '.$stmt->error);
-
-    exit('Unable to load dashboard sales chart.');
-}
-
-$chartResult = $stmt->get_result();
-
-$stmt->close();
-
-if (!$chartResult) {
-    error_log('dashboard.php: Failed to load sales chart data: '.$conn->error);
-    exit('Unable to load dashboard sales chart data.');
-}
-
-$chartLabels = [];
-$chartData = [];
-
-while ($chart = $chartResult->fetch_assoc()) {
-    $chartLabels[] = date('D', strtotime($chart['sale_date']));
-    $chartData[] = $chart['daily_total'];
-}
-
-$chartResult->free();
 
 //                                                         THE TOP 5 SELLING PRODUCTS
 
-$sql = 'SELECT io.product_name_at_sale AS name,
-        SUM(io.quantity) AS totalSold FROM order_items io
-        JOIN orders o ON io.order_id = o.id
-        WHERE o.status = "Collected"
-        GROUP BY io.product_id, io.product_name_at_sale
-        ORDER BY totalSold DESC LIMIT 5';
+$topProducts = null;
 
-$topProducts = $conn->query($sql);
+if ($dashboardContext['showTopSelling']) {
+    $sql = 'SELECT io.product_name_at_sale AS name,
+            SUM(io.quantity) AS totalSold FROM order_items io
+            JOIN orders o ON io.order_id = o.id
+            WHERE o.status = "Collected"
+            GROUP BY io.product_id, io.product_name_at_sale
+            ORDER BY totalSold DESC LIMIT 5';
 
-if (!$topProducts) {
-    error_log('dashboard.php: Failed to load top-selling products: '.$conn->error);
-    exit('Unable to load dashboard sales data.');
+    $topProducts = $conn->query($sql);
+
+    if (!$topProducts) {
+        error_log('dashboard.php: Failed to load top-selling products: '.$conn->error);
+        exit('Unable to load dashboard sales data.');
+    }
 }
+
+require_once 'includes/header.php';
 
 require_once 'includes/header.php';
 ?>
 
 <div class="page-header">
-    <h2>Dashboard
-    </h2>
+    <h2>Dashboard</h2>
 </div>
 <?php require 'includes/shared/flash_message.php'; ?>
+
+<?php include 'includes/partials/dashboard/dashboard_get_started.php'; ?>
 
 <?php include 'includes/partials/dashboard/dashboard_stats.php'; ?>
 
