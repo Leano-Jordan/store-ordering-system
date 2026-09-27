@@ -6,7 +6,7 @@ require_once __DIR__.'/../../includes/licensing/license_state.php';
 
 use PHPUnit\Framework\TestCase;
 
-final class LicenseStateTest extends TestCase
+final class LicenceStateTest extends TestCase
 {
     public function testActiveBeforeExpiry(): void
     {
