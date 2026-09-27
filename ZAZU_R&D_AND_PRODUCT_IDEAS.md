@@ -1106,10 +1106,421 @@ The immediate goal is discovering the strongest coherent operating model that th
 
 ---
 
+
+---
+
+# 31. JARVIS BOARD DELIBERATION — 27 SEPTEMBER 2026
+
+## Matter
+
+Determine whether the emerging Zazu ideas can produce a genuinely simple business operating experience for novice and experienced users, while remaining technically credible and commercially differentiated.
+
+## Evidence Reviewed
+
+Current research indicates that catering competitors already connect many individual capabilities into one event record. Better Cater currently connects proposals/contracts/invoices, menus, recipes/food costing, BEOs, kitchen reports, packing lists, event timelines, recurring orders, and repeat jobs. This establishes several proposed Zazu capabilities as market expectations rather than automatic differentiators.
+
+Sources:
+- https://www.bettercater.com/
+- https://www.bettercater.com/features/beo/
+- https://www.bettercater.com/features/recipe-costing/
+- https://www.bettercater.com/features/proposals/
+
+Current recurring-catering products explicitly support weekly/daily service patterns, deadlines, changing quantities, and consolidated invoicing:
+- https://catermonkey.com/en/features/menus-general/
+
+Current rental inventory software demonstrates that availability, dispatch, returns, condition, cleaning, repair, and photo evidence are distinct operational states:
+- https://www.inventorymobile.com/industries/event-rental-inventory-app
+
+Current South African receipt-capture products demonstrate that WhatsApp/photo-first expense capture can drastically reduce clerical input:
+- https://www.snapaslip.co.za/how-it-works
+
+Current catering workflow research repeatedly identifies re-keying and disconnected information as major failure points:
+- https://www.caterloom.com/guide/
+- https://www.comfortgrowthai.com/blog/catering-booking-process
+
+## BOARD POSITIONS
+
+### CEO / Product
+
+The ideas are directionally coherent, but scope can explode very quickly.
+
+The product should not compete by matching every feature competitors already expose. The strongest product proposition is a connected operational workflow that makes complexity disappear from the user's view.
+
+The commercial test is whether the product saves meaningful administrative time, prevents avoidable mistakes, exposes costs users otherwise miss, and makes repeat work materially easier.
+
+### CTO / Engineering
+
+The ideas are technically feasible only if the domain is separated correctly.
+
+Do not build a single universal "thing" table with dozens of optional columns.
+
+Preferred conceptual boundaries:
+
+**Offering**
+What the business sells/provides.
+
+**Requirement**
+What a job needs.
+
+**Resource**
+What can be consumed, allocated, hired, delivered, returned, or scheduled.
+
+**Expense**
+What the business spent.
+
+**Job**
+The operational unit tying requirements, resources, people, documents, schedule, and money together.
+
+**Capability configuration**
+What this business actually uses.
+
+Shared concepts should be implemented only where behaviour genuinely remains shared.
+
+### UX / Customer Experience
+
+"Teenager or 50-year-old" should be translated into an explicit usability standard rather than an age stereotype.
+
+Target:
+
+**No specialist knowledge required to complete normal tasks.**
+
+Rules:
+
+1. Use everyday language.
+2. Ask for one decision at a time when complexity is high.
+3. Show consequences before committing important changes.
+4. Prefer defaults based on confirmed business setup.
+5. Let users add missing information without leaving the current task.
+6. Never make the user remember information Zazu already has.
+7. Make recovery obvious.
+8. Keep advanced controls out of the normal path.
+9. Make the current state visible.
+10. Keep terminology stable.
+
+### Operations
+
+The system must survive busy days.
+
+The operator does not care that the database contains twelve beautiful domain abstractions. They care that:
+
+**"What must I do now?"**
+
+has an obvious answer.
+
+The strongest workflow concept is therefore:
+
+**Capture → Plan → Prepare → Execute → Reconcile → Reuse**
+
+### Quality / Security / Reliability
+
+The evidence-ingestion idea has high risk if extracted data is silently treated as truth.
+
+Required distinction:
+
+**Captured**
+→ **Extracted**
+→ **Reviewed**
+→ **Confirmed**
+→ **Applied**
+
+Financial, stock, customer, and operational state must not be mutated from unverified extraction.
+
+Adaptive UI also creates trust risk if the interface moves unexpectedly.
+
+The system may adapt priority and presentation, but critical navigation and controls must remain predictable and discoverable.
+
+### Revenue / Commercial
+
+A large feature list is not a commercial advantage by itself.
+
+Competitors already advertise broad catering functionality. Zazu therefore needs a simpler value proposition:
+
+**Less typing. Less rechecking. Fewer forgotten costs. Fewer repeated setups. Clearer work.**
+
+The strongest commercial proof will come from measurable reduction in admin effort and operational errors rather than feature count.
+
+## DISAGREEMENTS / PRESSURE TEST
+
+### "Adaptive UI should reorganise itself."
+
+**Decision:** Partially accepted.
+
+Do not allow uncontrolled automatic rearrangement.
+
+Use:
+
+**Learn → Suggest → User confirms → Adapt**
+
+Allow:
+- prioritisation
+- pinning
+- workspace customisation
+- contextual shortcuts
+- suggested next actions
+
+Do not silently remove or relocate critical controls.
+
+### "Everything should be a resource."
+
+**Decision:** Rejected as a literal architecture.
+
+Resources have different behaviours.
+
+Examples:
+- consumable
+- reusable
+- rentable
+- service
+- labour
+- scheduled capacity
+- externally supplied
+- controlled/regulated
+
+Reuse the catalogue concept where useful, but preserve behaviour differences.
+
+### "Generate everything automatically."
+
+**Decision:** Rejected.
+
+Automation should produce **drafts and recommendations** where confidence is insufficient to make authoritative changes.
+
+The user confirms consequential output.
+
+### "Support many business types from day one."
+
+**Decision:** Not yet established.
+
+The architecture should avoid dead ends, but product scope should be earned by repeated workflow evidence.
+
+## CORE DIFFERENTIATOR HYPOTHESIS
+
+The strongest emerging Zazu idea is not any individual module.
+
+It is:
+
+> **Zazu turns a business's chosen capabilities into a simple operating workspace, then carries information forward through the work without making the user repeatedly re-enter or reconcile it.**
+
+This can become:
+
+**Business setup**
+→ **Workspace**
+→ **Job**
+→ **Requirements**
+→ **Resources**
+→ **Execution**
+→ **Money**
+→ **Evidence**
+→ **Reusable memory**
+
+## SIMPLE-USER DESIGN STANDARD
+
+A normal user should rarely need to ask:
+
+- Where do I enter this?
+- Which module does this belong to?
+- Do I need to create this somewhere else first?
+- Which version is correct?
+- What else changed because I changed this?
+- Did I forget any major requirement?
+- Where did this expense come from?
+
+A strong Zazu workflow should answer those questions through the interface itself.
+
+## PROPOSED UX PATTERN
+
+### 1. CONTEXT-FIRST
+
+The interface starts from:
+
+**What are you trying to do?**
+
+not:
+
+**Which database module do you want?**
+
+### 2. PROGRESSIVE DISCLOSURE
+
+Simple path first.
+
+Advanced options remain accessible but are not forced into the normal workflow.
+
+### 3. INLINE CREATION
+
+Whenever an expected item is missing:
+
+**+ Add**
+
+Create it without abandoning the current workflow.
+
+### 4. SMART DEFAULTS
+
+Use known business settings, prior confirmed templates, previous jobs, and configured preferences.
+
+Defaults must remain visible and editable.
+
+### 5. IMPACT PREVIEW
+
+When a change affects dependent information:
+
+**This change affects:**
+- quantities
+- schedule
+- staffing
+- cost
+- documents
+
+Show the impact before confirmation.
+
+### 6. READINESS
+
+Replace dashboard decoration with actionable state:
+
+**Ready**
+**Waiting**
+**Blocked**
+**Missing**
+**Overdue**
+
+### 7. ONE SOURCE, MANY VIEWS
+
+The same confirmed job data should generate the views required by:
+
+- owner
+- kitchen/production
+- delivery
+- staff
+- billing
+- reporting
+
+Different readers should not need different manually maintained copies.
+
+## PROPOSED ZAZU "BUSINESS MEMORY"
+
+The system should progressively retain reusable business knowledge:
+
+- common offerings
+- commonly used items
+- common requirement sets
+- common suppliers
+- recurring schedules
+- common templates
+- common expense categories
+- common operational checklists
+- prior confirmed job structures
+
+Do not silently learn sensitive or consequential rules. The user should be able to review, edit, disable, and remove learned preferences.
+
+## R&D PRIORITY
+
+### Highest-value concept
+
+**Job + Requirement + Resource + Evidence + Business Memory**
+
+### High-value supporting concepts
+
+**Capability-driven onboarding**
+
+**Progressive disclosure**
+
+**Inline creation**
+
+**Recurring work**
+
+**Hidden-cost visibility**
+
+**Evidence inbox**
+
+**Change impact**
+
+**Operational readiness**
+
+### Lower priority until validated
+
+- broad multi-industry packaging
+- advanced AI automation
+- elaborate adaptive navigation
+- speculative platform infrastructure
+- complex forecasting
+- large generic configuration frameworks
+
+## CHEAPEST VALIDATION
+
+Before large architectural changes, prototype three complete workflows using the same conceptual model:
+
+### Scenario A — One-off event
+
+**Enquiry → quote → job → requirements → execution → expense capture → closeout**
+
+### Scenario B — Recurring service
+
+**Standing customer → schedule → daily occurrence → exception/change → period close → billing**
+
+### Scenario C — Service/rental business
+
+**Enquiry → availability → booking → fulfilment → return/completion → evidence → settlement**
+
+Measure:
+
+**Steps**
+**Manual fields**
+**Repeated entry**
+**Decision points**
+**Confusion points**
+**Places where users leave the workflow**
+**Places where a wrong entry causes downstream work**
+
+This will reveal whether the proposed abstraction is genuinely simplifying the product.
+
+## JARVIS POSITION
+
+**Proceed with the direction, not with wholesale implementation.**
+
+The ideas have enough coherence to justify architectural investigation.
+
+The next engineering activity should be a **current-source domain/workflow mapping exercise**, not a rewrite.
+
+Inspect the current repository and identify:
+
+**CURRENT ENTITY**
+→ **CURRENT SCREEN**
+→ **CURRENT WORKFLOW**
+→ **CURRENT DEPENDENCIES**
+→ **PROPOSED CONCEPT**
+→ **MIGRATION RISK**
+→ **USER BENEFIT**
+
+Only promote concepts that survive that mapping.
+
+## BOARD CONCLUSION
+
+**SUPPORTED**
+
+The product direction is coherent.
+
+**CONDITION**
+
+The simplicity must come from hiding complexity, not from deleting capability.
+
+**MAIN RISK**
+
+Trying to support every possible business type before the shared workflow model is proven.
+
+**MAIN OPPORTUNITY**
+
+Make Zazu remember the business and carry confirmed information forward automatically.
+
+**NEXT ACTION**
+
+Map the current Zazu implementation against:
+
+**Business setup → Capabilities → Offerings → Jobs → Requirements → Resources → Operations → Expenses → Documents → Money → Completion**
+
+Then test the model against one-off, recurring, and service/rental workflows before changing foundational schema.
+
+
 ## Document Status
 
 **Type:** R&D / Product Discovery Notebook  
 **Authority:** Founder / Owner decisions + verified product evidence  
 **Implementation status:** Ideas only unless separately promoted into the engineering task system  
 **Last research update:** September 2026
-
