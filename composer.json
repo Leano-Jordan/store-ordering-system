@@ -1,7 +1,4 @@
 {
-    "name": "zazu/emp",
-    "description": "Zazu event and catering management platform",
-    "license": "proprietary",
     "require": {
         "dompdf/dompdf": "^3.1"
     },
