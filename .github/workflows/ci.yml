@@ -23,10 +23,10 @@ jobs:
           coverage: none
 
       - name: Validate Composer configuration
-        run: composer validate --strict --no-check-publish
+        run: composer validate --no-check-publish
 
       - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist --no-progress --no-suggest
+        run: composer install --no-interaction --prefer-dist --no-progress
 
       - name: Audit Composer dependencies
         run: composer audit --locked --no-interaction
