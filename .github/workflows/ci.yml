@@ -4,8 +4,11 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
-  tests:
+  quality:
     runs-on: ubuntu-latest
 
     steps:
@@ -20,21 +23,28 @@ jobs:
           coverage: none
 
       - name: Validate Composer configuration
-        run: composer validate --no-check-publish
+        run: composer validate --strict --no-check-publish
 
       - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist --no-progress
+        run: composer install --no-interaction --prefer-dist --no-progress --no-suggest
 
-      - name: Lint changed PHP entry points
+      - name: Audit Composer dependencies
+        run: composer audit --locked --no-interaction
+
+      - name: Lint every tracked PHP file
+        shell: bash
         run: |
-          php -l dashboard.php
-          php -l includes/dashboard_context.php
-          php -l includes/partials/dashboard/dashboard_get_started.php
-          php -l includes/partials/dashboard/dashboard_stats.php
-          php -l includes/partials/dashboard/dashboard_chart.php
-          php -l includes/partials/dashboard/dashboard_recent_orders.php
-          php -l includes/partials/dashboard/dashboard_quick_actions.php
-          php -l includes/partials/dashboard/dashboard_top_selling.php
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            php -l "$file"
+          done < <(git ls-files -z -- '*.php')
+
+      - name: Check tracked generated/dependency artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -e .phpunit.result.cache
+          test ! -e vendor
 
       - name: Run PHPUnit
-        run: vendor/bin/phpunit
+        run: vendor/bin/phpunit --do-not-cache-result
