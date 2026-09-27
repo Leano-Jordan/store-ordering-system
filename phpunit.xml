@@ -2,10 +2,9 @@
 <phpunit
     bootstrap="tests/bootstrap.php"
     colors="true"
-    verbose="true"
 >
     <testsuites>
-        <testsuite name="SwiftOrder Test Suite">
+        <testsuite name="Zazu EMP Test Suite">
             <directory>tests</directory>
         </testsuite>
     </testsuites>
