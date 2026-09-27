@@ -13,7 +13,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
@@ -55,4 +55,4 @@ jobs:
           test -z "$(git ls-files -- 'vendor/*')"
 
       - name: Run PHPUnit
-        run: vendor/bin/phpunit --do-not-cache-result --display-deprecations --display-phpunit-deprecations
+        run: vendor/bin/phpunit --do-not-record-test-run-history --display-deprecations --display-phpunit-deprecations
