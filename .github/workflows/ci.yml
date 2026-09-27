@@ -39,12 +39,12 @@ jobs:
             php -l "$file"
           done < <(git ls-files -z -- '*.php')
 
-      - name: Check tracked generated/dependency artifacts
+      - name: Check forbidden tracked artifacts
         shell: bash
         run: |
           set -euo pipefail
-          test ! -e .phpunit.result.cache
-          test ! -e vendor
+          test -z "$(git ls-files -- '.phpunit.result.cache')"
+          test -z "$(git ls-files -- 'vendor/*')"
 
       - name: Run PHPUnit
         run: vendor/bin/phpunit --do-not-cache-result
