@@ -39,6 +39,14 @@ jobs:
             php -l "$file"
           done < <(git ls-files -z -- '*.php')
 
+      - name: Check every tracked JavaScript file
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            node --check "$file"
+          done < <(git ls-files -z -- '*.js')
+
       - name: Check forbidden tracked artifacts
         shell: bash
         run: |
@@ -47,4 +55,4 @@ jobs:
           test -z "$(git ls-files -- 'vendor/*')"
 
       - name: Run PHPUnit
-        run: vendor/bin/phpunit --do-not-cache-result
+        run: vendor/bin/phpunit --do-not-cache-result --display-deprecations --display-phpunit-deprecations
