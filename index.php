@@ -84,9 +84,9 @@ $catResult->free();
 include 'includes/header.php';
 ?>
 
-<h1>
-    SwiftOrder POS
-</h1>
+<div class="page-header">
+    <h2>Customer Menu</h2>
+</div>
 
 <div class="main-container">
     <div class="left-panel">
@@ -132,16 +132,16 @@ include 'includes/header.php';
                         alt="<?php echo htmlspecialchars($row['name']); ?>" class="product-image">
                 
                 <div class="product-info">
-                    <h2><?php echo htmlspecialchars($row['name']); ?></h2>
-                    <p><?php echo htmlspecialchars($row['description']); ?></p>
+                    <h3 class="product-name"><?php echo htmlspecialchars($row['name']); ?></h3>
+                    <p class="product-desc"><?php echo htmlspecialchars($row['description']); ?></p>
                 </div>
 
                 <div class="product-footer">
-                    <p>R<?php echo number_format($row['price'], 2); ?></p>
+                    <p class="product-price">R<?php echo number_format($row['price'], 2); ?></p>
 
                     <?php if ($row['stock'] > 0) { ?>
 
-                        <button class="add-to-cart" onclick="addToCart(
+                        <button class="add-to-cart-btn" onclick="addToCart(
                         <?php echo (int) $row['id']; ?>,
 
                         <?php echo htmlspecialchars(json_encode(
@@ -202,10 +202,8 @@ include 'includes/header.php';
         
         <div class="summary-row">
             <span>Cart:</span>
-        <strong>
-        <span id="cart-badge">0</span>
+            <strong><span id="cart-badge">0</span></strong>
         </div>
-    </strong>
 
         <div class="summary-row">
                 <span>
