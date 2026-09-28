@@ -18,11 +18,11 @@ if (defined('APP_ENV') && APP_ENV === 'production' && isset($_SERVER['HTTPS']) &
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SwiftOrder POS</title>
+    <title>Zazu EMP</title>
     <script>
         (() => {
             try {
-                const saved = localStorage.getItem('swiftorder-theme');
+                const saved = localStorage.getItem('zazu-theme') || localStorage.getItem('swiftorder-theme');
                 const system = window.matchMedia('(prefers-color-scheme: dark)').matches;
                 document.documentElement.dataset.theme = saved === 'dark' || saved === 'light' ? saved : (system ? 'dark' : 'light');
             } catch (_error) {
@@ -30,15 +30,15 @@ if (defined('APP_ENV') && APP_ENV === 'production' && isset($_SERVER['HTTPS']) &
             }
         })();
     </script>
-    <link rel="stylesheet" href="assets/css/tokens.css">
-    <link rel="stylesheet" href="assets/css/style.css">
-    <link rel="stylesheet" href="assets/css/components/controls.css">
-    <link rel="stylesheet" href="assets/css/components/tables.css">
-    <link rel="stylesheet" href="assets/css/components/status.css">
-    <link rel="stylesheet" href="assets/css/components/panels.css">
-    <link rel="stylesheet" href="assets/css/theme.css">
-    <link rel="stylesheet" href="assets/css/components/navigation.css">
-    <link rel="stylesheet" href="assets/css/zazu-ui-repair.css">
+    <link rel="stylesheet" href="assets/css/tokens.css?v=20260928-ui2">
+    <link rel="stylesheet" href="assets/css/style.css?v=20260928-ui2">
+    <link rel="stylesheet" href="assets/css/components/controls.css?v=20260928-ui2">
+    <link rel="stylesheet" href="assets/css/components/tables.css?v=20260928-ui2">
+    <link rel="stylesheet" href="assets/css/components/status.css?v=20260928-ui2">
+    <link rel="stylesheet" href="assets/css/components/panels.css?v=20260928-ui2">
+    <link rel="stylesheet" href="assets/css/theme.css?v=20260928-ui2">
+    <link rel="stylesheet" href="assets/css/components/navigation.css?v=20260928-ui2">
+    <link rel="stylesheet" href="assets/css/zazu-ui-repair.css?v=20260928-ui2">
     <script src="assets/js/theme.js" defer></script>
     <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
 </head>
