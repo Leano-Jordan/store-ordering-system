@@ -172,15 +172,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <p class="error-message"><?php echo htmlspecialchars($error); ?></p><?php } ?>
 
         <form method="POST" class="login-form">
-            <label>Username</label><br>
-            <input type="text" name="username" autocomplete="off" required><br><br>
+            <div class="form-group">
+                <label for="login-username">Username</label>
+                <input id="login-username" type="text" name="username" autocomplete="username" required>
+            </div>
 
-            <label>Password</label><br>
-            <input type="password" name="password" autocomplete="off" required><br><br>
+            <div class="form-group">
+                <label for="login-password">Password</label>
+                <input id="login-password" type="password" name="password" autocomplete="current-password" required>
+            </div>
 
             <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(csrfToken()); ?>">
-            <button type="submit">Login</button>
-
+            <button type="submit">Sign in</button>
         </form>
 
     </main>
