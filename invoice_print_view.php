@@ -27,10 +27,12 @@ declare(strict_types=1);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo invoiceHtml($invoiceTitle); ?> - <?php echo invoiceHtml($invoiceNumber); ?></title>
+    <link rel="stylesheet" href="assets/css/tokens.css?v=20260928-ui2">
+    <link rel="stylesheet" href="assets/css/zazu-ui-repair.css?v=20260928-ui2">
 </head>
-<body>
+<body class="invoice-print-page">
 
-<div>
+<div class="invoice-print-actions">
     <button type="button" onclick="window.print()">Print Invoice</button>
 </div>
 
