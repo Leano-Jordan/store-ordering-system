@@ -192,6 +192,8 @@ $stmt->close();
 
 </table>
 
+</div>
+
 <div class="page-header">
 
 <?php
