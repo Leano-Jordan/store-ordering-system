@@ -152,14 +152,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SwiftOrder Login</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <title>Zazu EMP Login</title>
+    <link rel="stylesheet" href="assets/css/tokens.css?v=20260928-ui2">
+    <link rel="stylesheet" href="assets/css/style.css?v=20260928-ui2">
+    <link rel="stylesheet" href="assets/css/components/controls.css?v=20260928-ui2">
+    <link rel="stylesheet" href="assets/css/components/panels.css?v=20260928-ui2">
+    <link rel="stylesheet" href="assets/css/theme.css?v=20260928-ui2">
+    <link rel="stylesheet" href="assets/css/zazu-ui-repair.css?v=20260928-ui2">
 </head>
 
-<body>
+<body class="login-page">
 
 
-    <div class="login-container">
+    <main class="login-container">
 
         <h2>Login to SwiftOrder</h2>
 
@@ -178,7 +183,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         </form>
 
-    </div>
+    </main>
 </body>
 
 </html>
