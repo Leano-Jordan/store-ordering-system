@@ -1,0 +1,34 @@
+/* Zazu EMP UI repair layer. Loaded last to neutralize legacy visual conflicts. */
+:root{--zazu-blue:#1769c2;--zazu-blue-dark:#0f4f91;--zazu-page:#eef2f6;--zazu-surface:#fff;--zazu-border:#b8c4d1;--zazu-border-strong:#8fa1b4;--zazu-text:#17212b;--zazu-muted:#5d6b79;}
+html,body{background:var(--zazu-page);color:var(--zazu-text);}
+body{line-height:1.5;}
+.main-container{background:var(--zazu-page);}
+.top-nav{border-radius:0;border-bottom:2px solid var(--zazu-blue-dark);}
+.page-header{gap:16px;}
+.page-header h1,.page-header h2,.page-header h3{color:var(--zazu-text);}
+.form-container,.form-card,.panel,.session-summary-card,.dashboard-card,.dashboard-chart,.grn-details,.document-card,.modal-content{background:var(--zazu-surface);border:1px solid var(--zazu-border);box-shadow:0 2px 8px rgba(15,23,42,.07);}
+.form-container,.form-card,.panel{padding:20px;}
+.form-group{margin-bottom:18px;}
+.form-group label,.form-card label,.panel label{color:var(--zazu-text);font-weight:650;}
+.form-group input:not([type=checkbox]):not([type=radio]),.form-group select,.form-group textarea,.form-card input:not([type=checkbox]):not([type=radio]),.form-card select,.form-card textarea,.panel input:not([type=checkbox]):not([type=radio]),.panel select,.panel textarea{appearance:auto;width:100%;box-sizing:border-box;min-height:40px;padding:10px 12px;background:#fff!important;color:var(--zazu-text)!important;border:2px solid var(--zazu-border-strong)!important;border-radius:6px;box-shadow:none;}
+.form-group textarea,.form-card textarea,.panel textarea{min-height:120px;border-color:#7f94aa!important;background:#fff!important;}
+.form-group input:not([type=checkbox]):not([type=radio]):hover,.form-group select:hover,.form-group textarea:hover,.form-card input:not([type=checkbox]):not([type=radio]):hover,.form-card select:hover,.form-card textarea:hover,.panel input:not([type=checkbox]):not([type=radio]):hover,.panel select:hover,.panel textarea:hover{border-color:var(--zazu-blue)!important;}
+.form-group input:not([type=checkbox]):not([type=radio]):focus,.form-group select:focus,.form-group textarea:focus,.form-card input:not([type=checkbox]):not([type=radio]):focus,.form-card select:focus,.form-card textarea:focus,.panel input:not([type=checkbox]):not([type=radio]):focus,.panel select:focus,.panel textarea:focus{outline:none!important;border-color:var(--zazu-blue)!important;box-shadow:0 0 0 3px rgba(23,105,194,.18)!important;}
+input[type=checkbox],input[type=radio]{accent-color:var(--zazu-blue);}
+.form-actions{padding-top:4px;border-top:1px solid #d6dee7;}
+.table-container{border:1px solid var(--zazu-border);background:var(--zazu-surface);box-shadow:0 1px 4px rgba(15,23,42,.05);}
+.data-table th,.orders-table th,.grn-table th{background:#e4eaf1;color:#243342;border-bottom:2px solid var(--zazu-border-strong);}
+.data-table td,.orders-table td,.grn-table td{border-bottom:1px solid #d6dee7;}
+.data-table tbody tr:hover,.orders-table tbody tr:hover,.grn-table tbody tr:hover{background:#f2f6fa;}
+.empty-state,.empty-state-container{background:#f8fafc;border:2px dashed #aebdcb;border-radius:8px;padding:24px;}
+.filter-bar,.filters,.inventory-toolbar,.activity-toolbar,.report-actions,.search-area{background:#f7f9fb;border:1px solid #cbd5df;border-radius:7px;padding:12px;}
+button.action-btn,.action-btn{border-width:1px;}
+.dashboard-card{background:#fff;}
+.dashboard-card h3{color:#43515e;}
+.dashboard-card p{color:#17212b;}
+:root[data-theme=dark]{--zazu-page:#111827;--zazu-surface:#1f2937;--zazu-border:#465466;--zazu-border-strong:#617188;--zazu-text:#f3f4f6;}
+:root[data-theme=dark] .form-container,:root[data-theme=dark] .form-card,:root[data-theme=dark] .panel,:root[data-theme=dark] .session-summary-card,:root[data-theme=dark] .dashboard-card,:root[data-theme=dark] .dashboard-chart,:root[data-theme=dark] .grn-details,:root[data-theme=dark] .document-card,:root[data-theme=dark] .modal-content{background:var(--zazu-surface);color:var(--zazu-text);border-color:var(--zazu-border);}
+:root[data-theme=dark] .form-group input:not([type=checkbox]):not([type=radio]),:root[data-theme=dark] .form-group select,:root[data-theme=dark] .form-group textarea,:root[data-theme=dark] .form-card input:not([type=checkbox]):not([type=radio]),:root[data-theme=dark] .form-card select,:root[data-theme=dark] .form-card textarea,:root[data-theme=dark] .panel input:not([type=checkbox]):not([type=radio]),:root[data-theme=dark] .panel select,:root[data-theme=dark] .panel textarea{background:#273449!important;color:#f3f4f6!important;border-color:#617188!important;}
+:root[data-theme=dark] .data-table th,:root[data-theme=dark] .orders-table th,:root[data-theme=dark] .grn-table th{background:#273449;color:#f3f4f6;border-color:#617188;}
+:root[data-theme=dark] .filter-bar,:root[data-theme=dark] .filters,:root[data-theme=dark] .inventory-toolbar,:root[data-theme=dark] .activity-toolbar,:root[data-theme=dark] .report-actions,:root[data-theme=dark] .search-area{background:#172033;border-color:#465466;}
+@media(max-width:640px){.form-container,.form-card,.panel{padding:16px;}.filter-bar,.filters,.inventory-toolbar,.activity-toolbar,.report-actions,.search-area{padding:10px;}.form-group textarea,.form-card textarea,.panel textarea{min-height:110px;}}
