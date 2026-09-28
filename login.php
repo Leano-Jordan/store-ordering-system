@@ -1,6 +1,11 @@
 <?php
 
 require_once __DIR__.'/includes/session.php';
+$scriptPath = str_replace('\\', '/', (string) ($_SERVER['SCRIPT_NAME'] ?? '/'));
+$assetBase = rtrim(dirname($scriptPath), '/');
+if ($assetBase === '.' || $assetBase === '') {
+    $assetBase = '';
+}
 
 require_once 'includes/db.php';
 require_once 'includes/session_tracker.php';
@@ -153,12 +158,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zazu EMP Login</title>
-    <link rel="stylesheet" href="assets/css/tokens.css?v=20260928-ui2">
-    <link rel="stylesheet" href="assets/css/style.css?v=20260928-ui2">
-    <link rel="stylesheet" href="assets/css/components/controls.css?v=20260928-ui2">
-    <link rel="stylesheet" href="assets/css/components/panels.css?v=20260928-ui2">
-    <link rel="stylesheet" href="assets/css/theme.css?v=20260928-ui2">
-    <link rel="stylesheet" href="assets/css/zazu-ui-repair.css?v=20260928-ui2">
+    <link rel="stylesheet" href="<?php echo htmlspecialchars($assetBase, ENT_QUOTES, 'UTF-8'); ?>/assets/css/tokens.css?v=20260928-ui3">
+    <link rel="stylesheet" href="<?php echo htmlspecialchars($assetBase, ENT_QUOTES, 'UTF-8'); ?>/assets/css/style.css?v=20260928-ui3">
+    <link rel="stylesheet" href="<?php echo htmlspecialchars($assetBase, ENT_QUOTES, 'UTF-8'); ?>/assets/css/components/controls.css?v=20260928-ui3">
+    <link rel="stylesheet" href="<?php echo htmlspecialchars($assetBase, ENT_QUOTES, 'UTF-8'); ?>/assets/css/components/panels.css?v=20260928-ui3">
+    <link rel="stylesheet" href="<?php echo htmlspecialchars($assetBase, ENT_QUOTES, 'UTF-8'); ?>/assets/css/theme.css?v=20260928-ui3">
+    <link rel="stylesheet" href="<?php echo htmlspecialchars($assetBase, ENT_QUOTES, 'UTF-8'); ?>/assets/css/zazu-ui-repair.css?v=20260928-ui3">
 </head>
 
 <body class="login-page">
