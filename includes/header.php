@@ -38,6 +38,7 @@ if (defined('APP_ENV') && APP_ENV === 'production' && isset($_SERVER['HTTPS']) &
     <link rel="stylesheet" href="assets/css/components/panels.css">
     <link rel="stylesheet" href="assets/css/theme.css">
     <link rel="stylesheet" href="assets/css/components/navigation.css">
+    <link rel="stylesheet" href="assets/css/zazu-ui-repair.css">
     <script src="assets/js/theme.js" defer></script>
     <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
 </head>
