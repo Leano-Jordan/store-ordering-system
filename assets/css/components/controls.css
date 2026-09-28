@@ -298,3 +298,16 @@
         outline-offset: var(--control-focus-offset);
     }
 }
+
+/* ZAZU UI REPAIR — restore visual field separation after interrupted UI pass */
+/* Final shared field treatment. Kept last so legacy style.css rules cannot override it. */
+.form-group label,.form-group > label{display:block;margin-bottom:7px;color:var(--color-text);font-weight:650;}
+.form-group input:not([type="checkbox"]):not([type="radio"]),.form-group select,.form-group textarea,input.form-control,select.form-control,textarea.form-control{width:100%;box-sizing:border-box;min-height:var(--field-height);padding:10px 12px;border:1.5px solid var(--color-border);border-radius:var(--control-radius);background-color:var(--color-surface);color:var(--color-text);font:inherit;line-height:1.4;box-shadow:inset 0 1px 2px rgba(15,23,42,.04);transition:border-color .15s ease,box-shadow .15s ease,background-color .15s ease;}
+.form-group textarea,textarea.form-control{min-height:110px;resize:vertical;}
+.form-group input:not([type="checkbox"]):not([type="radio"]):hover,.form-group select:hover,.form-group textarea:hover,input.form-control:hover,select.form-control:hover,textarea.form-control:hover{border-color:#9aa6b5;}
+.form-group input:not([type="checkbox"]):not([type="radio"]):focus,.form-group select:focus,.form-group textarea:focus,input.form-control:focus,select.form-control:focus,textarea.form-control:focus{border-color:var(--control-focus);outline:none;box-shadow:0 0 0 3px rgba(13,110,253,.16),inset 0 1px 2px rgba(15,23,42,.04);}
+.form-group input:not([type="checkbox"]):not([type="radio"]):disabled,.form-group select:disabled,.form-group textarea:disabled,input.form-control:disabled,select.form-control:disabled,textarea.form-control:disabled{background-color:var(--color-background);color:var(--color-text-muted);border-color:var(--color-border);cursor:not-allowed;}
+.form-group input[type="checkbox"],.form-group input[type="radio"]{accent-color:var(--control-primary);}
+#search,.search-area input[type="search"],.search-area input[type="text"],.search-form input[type="search"],.search-form input[type="text"],.search-form select{border-width:1.5px;border-color:var(--color-border);background-color:var(--color-surface);}
+#search:focus,.search-area input[type="search"]:focus,.search-area input[type="text"]:focus,.search-form input[type="search"]:focus,.search-form input[type="text"]:focus,.search-form select:focus{outline:none;border-color:var(--control-focus);box-shadow:0 0 0 3px rgba(13,110,253,.16);}
+:root[data-theme="dark"] .form-group input:not([type="checkbox"]):not([type="radio"]),:root[data-theme="dark"] .form-group select,:root[data-theme="dark"] .form-group textarea,:root[data-theme="dark"] input.form-control,:root[data-theme="dark"] select.form-control,:root[data-theme="dark"] textarea.form-control{background-color:var(--color-surface);border-color:var(--color-border);box-shadow:inset 0 1px 2px rgba(0,0,0,.18);}
