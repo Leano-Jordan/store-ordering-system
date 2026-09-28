@@ -1,6 +1,11 @@
 <?php
 
 require_once __DIR__.'/session.php';
+$scriptPath = str_replace('\\', '/', (string) ($_SERVER['SCRIPT_NAME'] ?? '/'));
+$assetBase = rtrim(dirname($scriptPath), '/');
+if ($assetBase === '.' || $assetBase === '') {
+    $assetBase = '';
+}
 $currentPage = basename($_SERVER['PHP_SELF']);
 require_once 'includes/permissions.php';
 require_once 'includes/helpers.php';
@@ -30,15 +35,15 @@ if (defined('APP_ENV') && APP_ENV === 'production' && isset($_SERVER['HTTPS']) &
             }
         })();
     </script>
-    <link rel="stylesheet" href="assets/css/tokens.css?v=20260928-ui2">
-    <link rel="stylesheet" href="assets/css/style.css?v=20260928-ui2">
-    <link rel="stylesheet" href="assets/css/components/controls.css?v=20260928-ui2">
-    <link rel="stylesheet" href="assets/css/components/tables.css?v=20260928-ui2">
-    <link rel="stylesheet" href="assets/css/components/status.css?v=20260928-ui2">
-    <link rel="stylesheet" href="assets/css/components/panels.css?v=20260928-ui2">
-    <link rel="stylesheet" href="assets/css/theme.css?v=20260928-ui2">
-    <link rel="stylesheet" href="assets/css/components/navigation.css?v=20260928-ui2">
-    <link rel="stylesheet" href="assets/css/zazu-ui-repair.css?v=20260928-ui2">
+    <link rel="stylesheet" href="<?php echo htmlspecialchars($assetBase, ENT_QUOTES, 'UTF-8'); ?>/assets/css/tokens.css?v=20260928-ui3">
+    <link rel="stylesheet" href="<?php echo htmlspecialchars($assetBase, ENT_QUOTES, 'UTF-8'); ?>/assets/css/style.css?v=20260928-ui3">
+    <link rel="stylesheet" href="<?php echo htmlspecialchars($assetBase, ENT_QUOTES, 'UTF-8'); ?>/assets/css/components/controls.css?v=20260928-ui3">
+    <link rel="stylesheet" href="<?php echo htmlspecialchars($assetBase, ENT_QUOTES, 'UTF-8'); ?>/assets/css/components/tables.css?v=20260928-ui3">
+    <link rel="stylesheet" href="<?php echo htmlspecialchars($assetBase, ENT_QUOTES, 'UTF-8'); ?>/assets/css/components/status.css?v=20260928-ui3">
+    <link rel="stylesheet" href="<?php echo htmlspecialchars($assetBase, ENT_QUOTES, 'UTF-8'); ?>/assets/css/components/panels.css?v=20260928-ui3">
+    <link rel="stylesheet" href="<?php echo htmlspecialchars($assetBase, ENT_QUOTES, 'UTF-8'); ?>/assets/css/theme.css?v=20260928-ui3">
+    <link rel="stylesheet" href="<?php echo htmlspecialchars($assetBase, ENT_QUOTES, 'UTF-8'); ?>/assets/css/components/navigation.css?v=20260928-ui3">
+    <link rel="stylesheet" href="<?php echo htmlspecialchars($assetBase, ENT_QUOTES, 'UTF-8'); ?>/assets/css/zazu-ui-repair.css?v=20260928-ui3">
     <script src="assets/js/theme.js" defer></script>
     <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
 </head>
