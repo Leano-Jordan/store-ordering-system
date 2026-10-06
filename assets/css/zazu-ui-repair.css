@@ -1,5 +1,5 @@
 /* ==========================================================
-   ZAZU EMP APPLICATION UI
+   SwiftOrder APPLICATION UI
    Final visual foundation. Loaded after legacy styles on purpose.
    Behaviour hooks/classes are preserved; this file owns presentation.
    ========================================================== */
@@ -1864,5 +1864,124 @@ button:not(.theme-toggle):not(.logout-button):not(.category-btn):not(.payment-me
     *::after {
         scroll-behavior: auto !important;
         transition: none !important;
+    }
+}
+
+
+/* ----------------------------------------------------------
+   POS MOBILE / ACCESSIBILITY POLISH
+   ---------------------------------------------------------- */
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.customer-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+.customer-field label {
+    color: var(--zazu-text);
+    font-size: 12px;
+    font-weight: 750;
+}
+
+.customer-field label span {
+    color: var(--zazu-text-faint);
+    font-weight: 500;
+}
+
+.customer-field input {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 40px;
+    padding: 8px 12px;
+    border: 1px solid var(--zazu-border);
+    border-radius: 7px;
+    background: var(--zazu-surface);
+    color: var(--zazu-text);
+    font: inherit;
+}
+
+.customer-field input:focus-visible {
+    outline: 3px solid var(--zazu-focus);
+    outline-offset: 2px;
+}
+
+.order-feedback {
+    margin: 0 0 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--zazu-border);
+    border-radius: 7px;
+    background: var(--zazu-surface-subtle);
+    color: var(--zazu-text-soft);
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1.4;
+}
+
+.order-feedback.is-success {
+    background: var(--zazu-success-soft);
+    color: #176634;
+    border-color: #afd8bb;
+}
+
+.order-feedback.is-error {
+    background: var(--zazu-danger-soft);
+    color: var(--zazu-danger);
+    border-color: #efb2ad;
+}
+
+@media (max-width: 640px) {
+    .main-container {
+        display: flex;
+        flex-direction: column;
+        min-height: calc(100vh - 64px);
+        height: auto;
+        overflow: visible;
+    }
+
+    .left-panel {
+        padding: 16px 10px 20px;
+    }
+
+    .cart-section {
+        width: 100%;
+        min-width: 0;
+        height: auto;
+        max-height: none;
+        border-left: 0;
+        border-top: 1px solid var(--zazu-border);
+        border-radius: 0;
+    }
+
+    .cart-body {
+        max-height: 40vh;
+        overflow-y: auto;
+    }
+
+    .cart-item {
+        grid-template-columns: 52px minmax(0, 1fr) auto;
+        gap: 8px;
+    }
+
+    .cart-image {
+        width: 48px;
+        height: 48px;
+    }
+
+    .cart-price {
+        min-width: auto;
     }
 }

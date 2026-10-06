@@ -23,11 +23,11 @@ if (defined('APP_ENV') && APP_ENV === 'production' && isset($_SERVER['HTTPS']) &
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zazu EMP</title>
+    <title>SwiftOrder</title>
     <script>
         (() => {
             try {
-                const saved = localStorage.getItem('zazu-theme') || localStorage.getItem('swiftorder-theme');
+                const saved = localStorage.getItem('swiftorder-theme');
                 const system = window.matchMedia('(prefers-color-scheme: dark)').matches;
                 document.documentElement.dataset.theme = saved === 'dark' || saved === 'light' ? saved : (system ? 'dark' : 'light');
             } catch (_error) {

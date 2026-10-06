@@ -1,15 +1,14 @@
 (() => {
     'use strict';
 
-    const storageKey = 'zazu-theme';
+    const storageKey = 'swiftorder-theme';
     const root = document.documentElement;
     const toggle = document.querySelector('[data-theme-toggle]');
 
     const getStoredTheme = () => {
         try {
             const value =
-                localStorage.getItem(storageKey)
-                || localStorage.getItem('swiftorder-theme');
+                localStorage.getItem(storageKey);
             return value === 'dark' || value === 'light' ? value : null;
         } catch (_error) {
             return null;

@@ -26,6 +26,31 @@ function escapeHtml(value) {
         .replace(/'/g, '&#039;');
 }
 
+function setOrderFeedback(message, isError) {
+    const feedback = document.getElementById('order-feedback');
+
+    if (!feedback) {
+        return;
+    }
+
+    feedback.hidden = false;
+    feedback.textContent = message;
+    feedback.classList.toggle('is-error', isError);
+    feedback.classList.toggle('is-success', !isError);
+}
+
+function clearOrderFeedback() {
+    const feedback = document.getElementById('order-feedback');
+
+    if (!feedback) {
+        return;
+    }
+
+    feedback.hidden = true;
+    feedback.textContent = '';
+    feedback.classList.remove('is-error', 'is-success');
+}
+
 function createOrderRequestId() {
     if (window.crypto && typeof window.crypto.randomUUID === 'function') {
         return window.crypto.randomUUID();
@@ -96,8 +121,11 @@ function setPaymentMethod(method, button) {
 
     document.querySelectorAll('.payment-method-btn').forEach(function(b) {
         b.classList.remove('active');
+        b.setAttribute('aria-pressed', 'false');
     });
+
     button.classList.add('active');
+    button.setAttribute('aria-pressed', 'true');
 }
 
 /* ─────────────────────────────────────────────────────────────────────
@@ -342,8 +370,11 @@ FILTER BY CATEGORY
 function filterProducts(category, button) {
     document.querySelectorAll('.category-btn').forEach(function(b) {
         b.classList.remove('active');
+        b.setAttribute('aria-pressed', 'false');
     });
+
     button.classList.add('active');
+    button.setAttribute('aria-pressed', 'true');
     selectedCategory = category;
     applyFilters();
 }
@@ -384,12 +415,14 @@ function placeOrder() {
     const customer = (customerEl ? customerEl.value : '').trim();
 
     if (cart.length === 0) {
-        alert('Cart is empty.');
+        setOrderFeedback('Your cart is empty. Add a product before placing the order.', true);
         return;
     }
 
     const btn = document.getElementById('placeOrderBtn');
     if (!btn) return;
+
+    clearOrderFeedback();
 
     btn.disabled = true;
     btn.textContent = 'Placing Order…';
@@ -404,7 +437,7 @@ function placeOrder() {
 
     const csrfEl = document.getElementById('csrf_token');
     if (!csrfEl) {
-        alert('Security token is missing.');
+        setOrderFeedback('Security token is missing. Refresh the page and try again.', true);
         window.orderSubmitting = false;
         btn.disabled = false;
         btn.textContent = 'Place Order';
@@ -427,11 +460,20 @@ function placeOrder() {
 
         })
         .then(function(data) {
-            alert(data.message);
+            if (!data || typeof data.success !== 'boolean') {
+                throw new Error('Invalid order response.');
+            }
+
+            const message = typeof data.message === 'string'
+                ? data.message
+                : (data.success
+                    ? 'Order placed successfully.'
+                    : 'Order could not be completed.');
+
+            setOrderFeedback(message, !data.success);
 
             if (data.success) {
-
-                clearCart()
+                clearCart();
                 currentOrderRequestId = null;
             }
 
@@ -441,7 +483,10 @@ function placeOrder() {
         })
         .catch(function(error) {
             console.error(error);
-            alert('Order failed. Please try again.');
+            setOrderFeedback(
+                'Order could not be completed. Check the connection and try again.',
+                true
+            );
             window.orderSubmitting = false;
             btn.disabled = false;
             btn.textContent = 'Place Order';

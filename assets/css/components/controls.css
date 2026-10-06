@@ -299,7 +299,7 @@
     }
 }
 
-/* ZAZU UI REPAIR — restore visual field separation after interrupted UI pass */
+/* SwiftOrder UI REPAIR — restore visual field separation after interrupted UI pass */
 /* Final shared field treatment. Kept last so legacy style.css rules cannot override it. */
 .form-group label,.form-group > label{display:block;margin-bottom:7px;color:var(--color-text);font-weight:650;}
 .form-group input:not([type="checkbox"]):not([type="radio"]),.form-group select,.form-group textarea,input.form-control,select.form-control,textarea.form-control{width:100%;box-sizing:border-box;min-height:var(--field-height);padding:10px 12px;border:1.5px solid var(--color-border);border-radius:var(--control-radius);background-color:var(--color-surface);color:var(--color-text);font:inherit;line-height:1.4;box-shadow:inset 0 1px 2px rgba(15,23,42,.04);transition:border-color .15s ease,box-shadow .15s ease,background-color .15s ease;}
