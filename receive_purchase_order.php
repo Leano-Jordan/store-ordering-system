@@ -4,6 +4,7 @@ require_once 'includes/auth.php';
 require_once 'includes/permissions.php';
 requireRole([ROLE_ADMIN, ROLE_MANAGER]);
 require_once 'includes/db.php';
+require_once 'includes/audit.php';
 require_once 'includes/logger.php';
 require_once __DIR__.'/includes/licensing/license_gate.php';
 
