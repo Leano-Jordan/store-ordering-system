@@ -4,6 +4,7 @@
 
 - Company: Rosscore Labs
 - Project: Swift Order
+- Project Director: **Swifty**
 - Repository: Leano-Jordan/store-ordering-system
 - Implementation target: Swift Order only
 
