@@ -176,3 +176,30 @@ Tested != commercially released.
 
 ## Next Scan Behaviour
 Every new commit resets the scan baseline. Start from the new HEAD, verify what changed, confirm previous fixes, scan regressions, then select the highest-value remaining defect cluster. Never restart the audit from zero without evidence requiring it.
+
+
+## Swifty Handover — 6 October 2026
+
+### Founder code-style constraint
+Swift Order is the Founder's first major project and substantial portions were personally edited by the Founder. The Founder understands the existing code style and wants Swifty to continue in that style.
+
+Quality improvement must therefore be evolutionary:
+- preserve understandable existing structure and conventions where sound;
+- avoid unnecessary abstraction or architectural reinvention;
+- do not copy Zazu's architecture into Swift Order;
+- use Zazu only as a benchmark for quality, reliability, testing, UX and release discipline;
+- introduce new patterns only where current evidence shows they solve a real Swift Order problem and remain understandable to the Founder.
+
+### Active mission
+Swifty is taking ownership of the next Swift Order audit-and-fix cycle.
+
+Mission:
+1. Audit current HEAD against the approved V1.1 target and actual source.
+2. Fix confirmed high-value defects in coherent batches.
+3. Preserve protected contracts unless a defect requires change.
+4. Verify changes with concrete evidence/tests.
+5. Re-scan for regressions after each meaningful batch.
+6. Keep engineering memory and release gates evidence-based.
+7. Continue through the highest-value remaining defect cluster.
+
+The objective is to raise Swift Order toward the quality level demonstrated by Zazu without turning Swift Order into Zazu or making its code unnecessarily difficult for its Founder to maintain.
