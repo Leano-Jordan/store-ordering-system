@@ -2,9 +2,10 @@
 
 ## Identity
 - Company: Rosscore Labs
+- Company Director: **Ross**
 - Project: Swift Order
 - Repository: Leano-Jordan/store-ordering-system
-- Project Director: Swift Order Project Director
+- Project Director: **Swifty**
 
 ## Active-project rule
 
