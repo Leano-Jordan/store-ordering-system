@@ -203,3 +203,11 @@ Mission:
 7. Continue through the highest-value remaining defect cluster.
 
 The objective is to raise Swift Order toward the quality level demonstrated by Zazu without turning Swift Order into Zazu or making its code unnecessarily difficult for its Founder to maintain.
+
+
+### Audit/Fix Batch — 6 October 2026
+- Confirmed defect: `receive_purchase_order.php` called `recordAudit()` without loading `includes/audit.php`, creating a runtime failure on successful receipt flow before audit execution.
+- Fix committed at `d4ccb748d3c2ce53ee8282255aa9dc7f8c102a52`.
+- Verification: current repository source now loads `includes/audit.php` before the receipt transaction and its existing `recordAudit()` call.
+- No architectural rewrite or new abstraction introduced.
+- Next target: continue source audit for confirmed release-impacting defects, prioritising licensing, backup/restore, financial/stock/order invariants, authorization/security, and critical-path evidence.
