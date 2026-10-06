@@ -1,5 +1,28 @@
 # SwiftOrder System Changelog
 
+## 2026-10-06 — Swifty Quality & UI Hardening
+
+### Fixed
+
+- Removed Zazu branding contamination from the shared SwiftOrder shell and login page.
+- Changed theme persistence to use the SwiftOrder-specific swiftorder-theme key only.
+- Added an explicit product search label and improved search input semantics.
+- Added accessible pressed-state semantics to category and payment controls.
+- Replaced routine POS browser alerts with in-surface live feedback.
+- Added mobile POS layout rules so the cart no longer requires a fixed 420px minimum width.
+- Enforced the licence gate on product deactivation.
+- Narrowed update_user.php database transaction scope and retained atomic last-admin protection.
+- Extracted profile-image handling and locked user-update validation into focused helpers.
+
+### Tests Added
+
+- tests/Unit/POSFeedbackTest.js
+- tests/Unit/UserUpdateHelpersTest.php
+
+Runtime execution evidence is still required before commercial V1 release.
+
+---
+
 ## Version 0.5.0-alpha
 
 Initial Alpha Release
