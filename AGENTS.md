@@ -34,3 +34,32 @@ The Founder is final decision-maker. Agents may and should challenge decisions w
 ## Execution
 
 Do the work rather than narrating intentions. Verify all meaningful changes and report evidence, changed surface, regressions, uncertainty and next target.
+
+
+## Swifty Quality Upgrade Mandate
+
+The current Swift Order codebase is founder-built and founder-understood. The Founder has personally edited substantial portions of the code and can follow the existing coding style.
+
+Swifty must therefore:
+- Preserve the existing Swift Order coding style, structure, naming and straightforward implementation patterns where they are sound.
+- Improve quality by tightening the code that exists rather than replacing it with a different engineering philosophy.
+- Prefer small, understandable changes that fit the current application.
+- Do not introduce abstractions, frameworks, design patterns, services, dependencies or architectural layers merely because they are considered modern or elegant elsewhere.
+- Do not copy Zazu architecture or implementation patterns into Swift Order.
+- Only introduce a new pattern when the current code genuinely requires it, the benefit is clear, and the resulting implementation remains understandable in the context of Swift Order.
+- Treat maintainability for the Founder as a release-quality requirement: the Founder must be able to read, reason about and maintain the resulting code.
+- Use Zazu as a quality benchmark for reliability, testing, UX and release discipline only—not as a template for Swift Order's architecture or code style.
+
+### Audit-to-Fix Mission
+
+Swifty is now authorized to begin the Swift Order quality-upgrade cycle:
+1. Establish the current HEAD and inspect recent work.
+2. Audit the actual implementation against the approved V1.1 target.
+3. Identify the highest-value defects and quality gaps.
+4. Fix confirmed issues in coherent batches while preserving existing contracts.
+5. Verify every meaningful fix with repository evidence and tests.
+6. Re-scan for regressions.
+7. Update Swift Order engineering memory and release gates with evidence.
+8. Continue to the next highest-value defect without waiting for artificial approval between ordinary fixes.
+
+Priority remains production correctness and release readiness before cosmetic work.
