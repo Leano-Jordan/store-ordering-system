@@ -20,8 +20,8 @@ Dompdf is present for PDF output. Core trading is intended to work without inter
 
 - Reproducible dedicated tax-invoice workflow is incomplete.
 - Audit/transaction semantics require a final explicit contract and failure tests.
-- `update_user.php` transaction scope remains too broad and has exit paths after `begin_transaction()`.
-- No critical-path automated test suite or CI evidence is present in the supplied project.
+
+- Critical-path tests now have PHPUnit/Node test coverage added; runtime execution and CI evidence are still pending.
 - Clean-install schema/migration path is not yet authoritative and reproducible.
 - Backup/restore evidence is not demonstrated.
 - Business/tax settings need an operational administrator workflow and singleton enforcement.
@@ -31,6 +31,9 @@ Dompdf is present for PDF output. Core trading is intended to work without inter
 ## Important findings resolved in the 20-August targeted batch
 
 - `update_user.php` now reads the `COUNT(*)` scalar instead of `mysqli_result->num_rows`.
+- `update_user.php` now keeps file-system work outside the database transaction and locks the current user/admin set during the final update.
+- Product deactivation now passes through the active licence gate.
+- The POS now uses in-surface feedback instead of routine browser alerts and has explicit mobile/accessibility polish.
 - Dead `save_purchase_order.php` redirects now point to the actual `add_purchase_order.php` endpoint.
 - POS product/category query results are checked before dereference.
 - Dashboard query/result paths were hardened against direct false-result dereferences.
@@ -38,7 +41,7 @@ Dompdf is present for PDF output. Core trading is intended to work without inter
 - Supplier, stock-adjustment, purchase-order and search request values are checked for scalar/string shape before `trim()`.
 - Several read pages now check secondary query results before using them.
 
-These fixes are verified as source edits and syntax-safe; behavioural test evidence remains a separate release requirement.
+The 2026-10-06 Swifty quality batch is source-reviewed and committed. Runtime execution evidence remains a separate release requirement; repository test files cover the new POS feedback and profile-image validation paths.
 
 ## Do not regress
 
