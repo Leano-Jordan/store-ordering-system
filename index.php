@@ -93,23 +93,24 @@ include 'includes/header.php';
 
         <div class="search-area">
 
-            <input type="text" 
+            <label for="search" class="sr-only">Search products</label>
+            <input type="search" 
                 id="search"
                 placeholder="🔍 Search for a product..."
                 autocomplete="off"
-                onkeyup="searchProducts()">
-            <button id="clear-search"
+                oninput="searchProducts()">
+            <button type="button" id="clear-search"
             class="action-btn clear-btn" 
             onclick="clearSearch()">Clear</button>
 
         </div>
 
-        <div class="category-filter" id="category-filter">
-            <button class="category-btn active" onclick="filterProducts('All', this)">
+        <div class="category-filter" id="category-filter" role="group" aria-label="Filter products by category">
+            <button type="button" class="category-btn active" aria-pressed="true" onclick="filterProducts('All', this)">
                 📃 All
             </button>
             <?php foreach ($categories as $cat) { ?>
-                <button class="category-btn" onclick="filterProducts(<?php echo htmlspecialchars(json_encode(
+                <button type="button" class="category-btn" aria-pressed="false" onclick="filterProducts(<?php echo htmlspecialchars(json_encode(
     $cat,
     JSON_HEX_TAG
                     | JSON_HEX_AMP
@@ -183,12 +184,12 @@ include 'includes/header.php';
     <!-- =================== CART PANEL =================== -->
     <div class="cart-section">
 
-<div class="payment-method-tabs">
-    <button class="payment-method-btn active" onclick="setPaymentMethod('cash_pmt', this)">Cash</button>
+<div class="payment-method-tabs" role="group" aria-label="Payment method">
+    <button type="button" class="payment-method-btn active" aria-pressed="true" onclick="setPaymentMethod('cash_pmt', this)">Cash</button>
 
-    <button class="payment-method-btn" onclick="setPaymentMethod('card_pmt', this)">Card</button>
+    <button type="button" class="payment-method-btn" aria-pressed="false" onclick="setPaymentMethod('card_pmt', this)">Card</button>
 
-    <button class="payment-method-btn" onclick="setPaymentMethod('eft_pmt', this)">EFT</button>
+    <button type="button" class="payment-method-btn" aria-pressed="false" onclick="setPaymentMethod('eft_pmt', this)">EFT</button>
 </div>
 <input type="hidden" id="payment-method" value="cash_pmt">
 
@@ -234,12 +235,18 @@ include 'includes/header.php';
         </div>
     </div>
 
-    <input type="text" id="customer" placeholder="Customer name" autocomplete="off">
+    <div class="customer-field">
+    <label for="customer">Customer name <span>(optional)</span></label>
+    <input type="text" id="customer" placeholder="Optional" autocomplete="off">
+</div>
+
+<div id="order-feedback" class="order-feedback" role="status" aria-live="polite" hidden></div>
+
 <div class="cart-actions">
-    <button id="placeOrderBtn" class="place-order-btn" onclick="placeOrder()">
+    <button type="button" id="placeOrderBtn" class="place-order-btn" onclick="placeOrder()">
         Place Order
     </button>
-    <button class="clear-cart-btn" onclick="clearCart()">
+    <button type="button" class="clear-cart-btn" onclick="clearCart()">
         Clear Cart
     </button>
     </div>
