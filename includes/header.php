@@ -1,11 +1,10 @@
 <?php
 
 require_once __DIR__.'/session.php';
-$scriptPath = str_replace('\\', '/', (string) ($_SERVER['SCRIPT_NAME'] ?? '/'));
-$assetBase = rtrim(dirname($scriptPath), '/');
-if ($assetBase === '.' || $assetBase === '') {
-    $assetBase = '';
-}
+require_once __DIR__.'/asset_path.php';
+$assetBase = swiftOrderAssetBaseFromScriptName(
+    (string) ($_SERVER['SCRIPT_NAME'] ?? '/')
+);
 $currentPage = basename($_SERVER['PHP_SELF']);
 require_once 'includes/permissions.php';
 require_once 'includes/helpers.php';
