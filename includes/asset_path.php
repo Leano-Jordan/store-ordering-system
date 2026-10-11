@@ -16,7 +16,7 @@ function swiftOrderAssetBaseFromScriptName(string $scriptName): string
         $scriptPath = '/';
     }
 
-    $scriptPath = str_replace('\\\\', '/', $scriptPath);
+    $scriptPath = str_replace('\\', '/', $scriptPath);
     $directory = dirname($scriptPath);
 
     if ($directory === '.' || $directory === '/') {
