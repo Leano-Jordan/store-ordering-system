@@ -1,0 +1,80 @@
+name: Deploy SwiftOrder pre-launch site
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "prelaunch/**"
+      - ".github/workflows/deploy-swiftorder-prelaunch.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: swiftorder-prelaunch-pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Validate static site
+        run: |
+          set -euo pipefail
+          test -s prelaunch/index.html
+          test -s prelaunch/styles.css
+          test -s prelaunch/script.js
+          test -s prelaunch/favicon.svg
+          node --check prelaunch/script.js
+          python3 - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          html = Path("prelaunch/index.html").read_text(encoding="utf-8")
+          css = Path("prelaunch/styles.css").read_text(encoding="utf-8")
+          class Audit(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.h1 = 0
+                  self.lang = False
+                  self.main = False
+                  self.ids = set()
+                  self.duplicates = []
+                  self.images_without_alt = []
+              def handle_starttag(self, tag, attrs):
+                  a = dict(attrs)
+                  if tag == "h1": self.h1 += 1
+                  if tag == "html" and a.get("lang"): self.lang = True
+                  if tag == "main": self.main = True
+                  if "id" in a:
+                      if a["id"] in self.ids: self.duplicates.append(a["id"])
+                      self.ids.add(a["id"])
+                  if tag == "img" and "alt" not in a: self.images_without_alt.append(a.get("src", "?"))
+          audit = Audit()
+          audit.feed(html)
+          assert audit.h1 == 1, f"Expected one h1, got {audit.h1}"
+          assert audit.lang and audit.main, "Missing language or main landmark"
+          assert not audit.duplicates, f"Duplicate IDs: {audit.duplicates}"
+          assert not audit.images_without_alt, f"Images missing alt: {audit.images_without_alt}"
+          assert css.count("{") == css.count("}"), "Unbalanced CSS braces"
+          assert "overflow-x:clip" in css, "Horizontal overflow guard missing"
+          assert "prefers-reduced-motion:reduce" in css, "Reduced-motion support missing"
+          assert "https://" not in css, "CSS must not depend on remote resources"
+          print("SwiftOrder static-site checks passed.")
+          PY
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Upload site artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: prelaunch
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
