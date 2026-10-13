@@ -14,7 +14,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: swiftorder-prelaunch-pages
+  group: pages
   cancel-in-progress: true
 
 jobs:
@@ -33,6 +33,7 @@ jobs:
           test -s prelaunch/styles.css
           test -s prelaunch/script.js
           test -s prelaunch/favicon.svg
+          test -s prelaunch/assets/swiftorder-dashboard-concept.svg
           node --check prelaunch/script.js
           python3 - <<'PY'
           from html.parser import HTMLParser
@@ -48,6 +49,8 @@ jobs:
                   self.ids = set()
                   self.duplicates = []
                   self.images_without_alt = []
+                  self.local_assets = []
+                  self.anchor_targets = []
               def handle_starttag(self, tag, attrs):
                   a = dict(attrs)
                   if tag == "h1": self.h1 += 1
@@ -57,12 +60,21 @@ jobs:
                       if a["id"] in self.ids: self.duplicates.append(a["id"])
                       self.ids.add(a["id"])
                   if tag == "img" and "alt" not in a: self.images_without_alt.append(a.get("src", "?"))
+                  for attr in ("src", "href"):
+                      value = a.get(attr, "")
+                      if value.startswith("#") and len(value) > 1: self.anchor_targets.append(value[1:])
+                      elif value.startswith("./") and not value.startswith("//"): self.local_assets.append(value.split("?", 1)[0])
           audit = Audit()
           audit.feed(html)
           assert audit.h1 == 1, f"Expected one h1, got {audit.h1}"
           assert audit.lang and audit.main, "Missing language or main landmark"
           assert not audit.duplicates, f"Duplicate IDs: {audit.duplicates}"
           assert not audit.images_without_alt, f"Images missing alt: {audit.images_without_alt}"
+          assert not audit.duplicates, f"Duplicate HTML IDs: {audit.duplicates}"
+          assert not (set(audit.anchor_targets) - audit.ids), f"Broken in-page links: {set(audit.anchor_targets) - audit.ids}"
+          missing = [p for p in audit.local_assets if not (Path("prelaunch") / p[2:]).is_file()]
+          assert not missing, f"Missing local assets: {missing}"
+          assert "\\\\n  <meta" not in html, "Literal escaped newline found in HTML head"
           assert css.count("{") == css.count("}"), "Unbalanced CSS braces"
           assert "overflow-x:clip" in css, "Horizontal overflow guard missing"
           assert "prefers-reduced-motion:reduce" in css, "Reduced-motion support missing"
