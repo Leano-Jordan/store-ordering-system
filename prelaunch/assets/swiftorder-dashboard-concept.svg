@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 820" role="img" aria-labelledby="title desc">
+  <title id="title">SwiftOrder dashboard concept</title>
+  <desc id="desc">An illustrative desktop business dashboard showing an order list, stock indicators and sales summary. This is a design concept, not a screenshot of a live application.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f8f5ee"/><stop offset="1" stop-color="#e7e0d3"/></linearGradient>
+    <filter id="shadow" x="-15%" y="-15%" width="130%" height="140%"><feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#20231f" flood-opacity=".12"/></filter>
+    <style>
+      .ui{font-family:Inter,Arial,sans-serif;fill:#20231f}.muted{fill:#777367}.tiny{font-size:11px}.small{font-size:13px}.medium{font-size:16px;font-weight:600}.bold{font-weight:750}.label{font-size:10px;font-weight:800;letter-spacing:1.2px}.line{stroke:#e5dfd4;stroke-width:1}.blue{fill:#243fc3}.green{fill:#356b4d}.orange{fill:#ed6844}
+    </style>
+  </defs>
+  <rect width="1200" height="820" rx="24" fill="url(#bg)"/>
+  <g filter="url(#shadow)">
+    <rect x="54" y="42" width="1092" height="736" rx="15" fill="#fffdf8" stroke="#d8d1c3"/>
+    <path d="M69 42h1062a15 15 0 0 1 15 15v49H54V57a15 15 0 0 1 15-15Z" fill="#20231f"/>
+    <circle cx="81" cy="76" r="5" fill="#ed6844"/><circle cx="99" cy="76" r="5" fill="#d9d1c3"/><circle cx="117" cy="76" r="5" fill="#356b4d"/>
+    <text x="151" y="81" font-size="13" font-family="Inter,Arial,sans-serif" font-weight="700" fill="#fffdf8">swift</text><text x="185" y="81" font-size="13" font-family="Inter,Arial,sans-serif" font-weight="700" fill="#91a0ff">order</text>
+    <rect x="855" y="62" width="182" height="28" rx="5" fill="#343832"/><circle cx="873" cy="76" r="4" fill="#78b88b"/><text x="885" y="80" font-size="10" font-family="Inter,Arial,sans-serif" fill="#e4e8dc">LOCAL WORKSPACE</text>
+    <circle cx="1080" cy="76" r="14" fill="#ed6844"/><text x="1080" y="80" text-anchor="middle" font-size="10" font-family="Inter,Arial,sans-serif" font-weight="700" fill="#20231f">S</text>
+    <rect x="54" y="106" width="202" height="672" fill="#f4f0e7"/>
+    <text class="ui label muted" x="78" y="145">WORKSPACE</text>
+    <rect x="68" y="166" width="174" height="40" rx="5" fill="#243fc3"/><rect x="82" y="180" width="12" height="12" rx="2" fill="#fffdf8"/><text x="105" y="190" font-family="Inter,Arial,sans-serif" font-size="12" font-weight="700" fill="#fffdf8">Overview</text>
+    <g class="ui small"><rect x="83" y="226" width="13" height="13" rx="2" fill="none" stroke="#777367" stroke-width="1.5"/><text x="105" y="237">Orders</text><rect x="83" y="268" width="13" height="13" rx="2" fill="none" stroke="#777367" stroke-width="1.5"/><text x="105" y="279">Products &amp; stock</text><rect x="83" y="310" width="13" height="13" rx="2" fill="none" stroke="#777367" stroke-width="1.5"/><text x="105" y="321">Sales records</text></g>
+    <line x1="78" y1="349" x2="230" y2="349" class="line"/><text class="ui label muted" x="78" y="375">SYSTEM</text><circle cx="89" cy="400" r="5" fill="#356b4d"/><text class="ui tiny" x="105" y="404">Local host connected</text><text class="ui tiny muted" x="78" y="751">CONCEPT PREVIEW · V1 DIRECTION</text>
+    <g class="ui"><text x="292" y="151" font-size="24" font-weight="750" letter-spacing="-1">Good morning.</text><text class="muted small" x="292" y="176">A clearer view of today’s business.</text><rect x="1000" y="132" width="112" height="34" rx="5" fill="#243fc3"/><text x="1056" y="153" text-anchor="middle" font-size="11" font-weight="700" fill="#fffdf8">+ New order</text></g>
+    <g>
+      <rect x="292" y="202" width="246" height="112" rx="8" fill="#fffdf8" stroke="#e5dfd4"/><text class="ui label muted" x="310" y="228">ORDERS TODAY</text><text class="ui" x="310" y="270" font-size="31" font-weight="750">24</text><rect x="443" y="247" width="70" height="24" rx="12" fill="#e3efe3"/><text x="478" y="263" text-anchor="middle" font-size="10" font-family="Inter,Arial,sans-serif" font-weight="700" fill="#356b4d">IN VIEW</text><text class="ui tiny muted" x="310" y="293">Illustrative count</text>
+      <rect x="553" y="202" width="246" height="112" rx="8" fill="#fffdf8" stroke="#e5dfd4"/><text class="ui label muted" x="571" y="228">PRODUCTS</text><text class="ui" x="571" y="270" font-size="31" font-weight="750">Stock</text><rect x="707" y="247" width="72" height="24" rx="12" fill="#e7eaff"/><text x="743" y="263" text-anchor="middle" font-size="10" font-family="Inter,Arial,sans-serif" font-weight="700" fill="#243fc3">TRACKED</text><text class="ui tiny muted" x="571" y="293">Product records and availability</text>
+      <rect x="814" y="202" width="298" height="112" rx="8" fill="#fffdf8" stroke="#e5dfd4"/><text class="ui label muted" x="832" y="228">SALES RECORDS</text><text class="ui" x="832" y="268" font-size="25" font-weight="750">Together</text><path d="M1010 272l17-15 15 7 22-27 19 10" fill="none" stroke="#ed6844" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><text class="ui tiny muted" x="832" y="293">One place for daily activity</text>
+    </g>
+    <rect x="292" y="337" width="820" height="396" rx="8" fill="#fffdf8" stroke="#e5dfd4"/>
+    <text class="ui medium" x="312" y="370">Recent orders</text><text class="ui tiny muted" x="312" y="391">Example layout · illustrative data only</text>
+    <rect x="312" y="410" width="780" height="36" rx="4" fill="#f4f0e7"/><g class="ui label muted"><text x="328" y="432">ORDER</text><text x="450" y="432">CUSTOMER</text><text x="670" y="432">ITEMS</text><text x="800" y="432">STATUS</text><text x="982" y="432">UPDATED</text></g>
+    <g class="ui small"><text x="328" y="475" font-weight="700">SO-0104</text><text x="450" y="475">Walk-in customer</text><text x="670" y="475">3 items</text><rect x="790" y="458" width="92" height="23" rx="11" fill="#e7eaff"/><text x="836" y="473" text-anchor="middle" font-size="10" font-weight="700" fill="#243fc3">Processing</text><text x="982" y="475" class="muted">Today</text>
+    <line x1="312" y1="494" x2="1092" y2="494" class="line"/><text x="328" y="526" font-weight="700">SO-0103</text><text x="450" y="526">Retail account</text><text x="670" y="526">5 items</text><rect x="790" y="509" width="92" height="23" rx="11" fill="#e3efe3"/><text x="836" y="524" text-anchor="middle" font-size="10" font-weight="700" fill="#356b4d">Recorded</text><text x="982" y="526" class="muted">Today</text>
+    <line x1="312" y1="545" x2="1092" y2="545" class="line"/><text x="328" y="577" font-weight="700">SO-0102</text><text x="450" y="577">Counter sale</text><text x="670" y="577">2 items</text><rect x="790" y="560" width="92" height="23" rx="11" fill="#fce6dc"/><text x="836" y="575" text-anchor="middle" font-size="10" font-weight="700" fill="#a7492c">New</text><text x="982" y="577" class="muted">Yesterday</text>
+    <line x1="312" y1="596" x2="1092" y2="596" class="line"/>
+    <rect x="312" y="618" width="780" height="88" rx="6" fill="#f4f0e7"/><text class="ui label" x="330" y="643" fill="#243fc3">DESIGNED FOR LOCAL OPERATIONS</text><text class="ui small" x="330" y="667">One business installation. Supported devices on the same network.</text><text class="ui tiny muted" x="330" y="688">Concept only — not a live SwiftOrder screenshot or a claim of finished features.</text>
+  </g>
+</svg>
