@@ -77,7 +77,7 @@
         headers: { Accept: "application/json" },
         signal: controller.signal
       });
-      const result = await response.json().catch(() => ({}));
+      const result = await response.json().catch(() => { throw new Error("Invalid response from enquiry service"); });
       if (!response.ok || String(result.success) !== "true") throw new Error("Delivery was not confirmed");
       form.reset();
       setStatus("Thanks — your note was submitted. Rosscore Labs can follow up using the email you provided.");
