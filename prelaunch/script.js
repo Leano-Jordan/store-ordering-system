@@ -82,7 +82,8 @@
       form.reset();
       setStatus("Thanks — your note was submitted. Rosscore Labs can follow up using the email you provided.");
       if (fallback) fallback.hidden = true;
-    } catch {
+    } catch (error) {
+      console.error("SwiftOrder enquiry submission failed:", error instanceof Error ? error.name : "UnknownError");
       setStatus(timedOut ? "The request timed out; delivery could not be confirmed." : "We couldn’t confirm delivery of your note.", true);
       if (fallback) fallback.hidden = false;
     } finally {
