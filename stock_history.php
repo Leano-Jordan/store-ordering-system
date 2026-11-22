@@ -83,12 +83,11 @@ if (!$stmt) {
 }
 
 if (!$stmt->bind_param($queryBindTypes, ...$queryBindValues)) {
-        error_log('stock_history.php: Failed to bind stock-history parameters: '.$stmt->error);
+    error_log('stock_history.php: Failed to bind stock-history parameters: '.$stmt->error);
 
-        $stmt->close();
+    $stmt->close();
 
-        exit('Unable to load stock history.');
-    }
+    exit('Unable to load stock history.');
 }
 
 if (!$stmt->execute()) {
