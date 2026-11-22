@@ -12,7 +12,7 @@ The repository runs the following checks against changes targeting `main` and on
 |---|---|---|
 | PHP syntax | Detect parse errors in tracked PHP files | Blocking |
 | Composer validation | Detect invalid or inconsistent dependency metadata | Blocking |
-| PHPUnit | Execute unit and regression tests | Blocking |
+| PHPUnit | Execute unit and regression tests | Blocking |\n| MySQL/MariaDB schema matrix | Import clean schema and initial migration; compare tables, columns, indexes and foreign keys on MySQL 8.4 and MariaDB 11.4 | Blocking |
 | Composer audit | Identify known dependency vulnerabilities | Blocking |
 | JavaScript syntax | Detect malformed tracked JavaScript | Blocking |
 | Semgrep | Detect risky application-code patterns | Findings require triage; scan job is initially non-blocking |
