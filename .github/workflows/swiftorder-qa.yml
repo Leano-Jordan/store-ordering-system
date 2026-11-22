@@ -52,6 +52,40 @@ jobs:
       - name: Composer vulnerability audit
         run: composer audit --locked --no-interaction
 
+  database-compatibility:
+    name: Database schema compatibility
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        database: [mysql:8.4, mariadb:11.4]
+    services:
+      database:
+        image: ${{ matrix.database }}
+        env:
+          MYSQL_ROOT_PASSWORD: swiftorder-ci-root
+          MARIADB_ROOT_PASSWORD: swiftorder-ci-root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -pswiftorder-ci-root"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install MySQL-compatible client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y default-mysql-client
+
+      - name: Install and compare clean schema and initial migration
+        env:
+          MYSQL_ROOT_PASSWORD: swiftorder-ci-root
+        run: bash tests/database/schema-compatibility.sh
+
   javascript-quality:
     name: JavaScript syntax
     runs-on: ubuntu-latest
