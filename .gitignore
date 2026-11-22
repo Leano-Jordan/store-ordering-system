@@ -2,3 +2,8 @@
 .vscode
 config.local.php
 .env
+/.phpunit.result.cache
+/.phpunit.cache/
+/coverage/
+/node_modules/
+/npm-debug.log*
