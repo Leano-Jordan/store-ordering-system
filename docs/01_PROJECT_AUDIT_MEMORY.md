@@ -49,3 +49,31 @@ The 2026-10-06 Swifty quality batch is source-reviewed and committed. Runtime ex
 - Server-side product price/state validation remains authoritative.
 - `recordAudit()` remains the authoritative audit mechanism where defined.
 - No multi-tenancy, payment gateways, Laravel migration, Redis or AI subsystem is part of V1.
+
+## 2026-11-22 — QA and identity hardening
+
+### Changes committed to GitHub main
+
+- Replaced the legacy stylesheet filename with `assets/css/swiftorder-ui.css`.
+- Renamed the stylesheet design tokens to the SwiftOrder namespace.
+- Updated the shared header, login page and invoice print view to load the SwiftOrder-owned stylesheet.
+- Removed the legacy stylesheet file after updating its consumers.
+- Corrected the PHPUnit base-class import in `tests/Unit/UserUpdateHelpersTest.php`.
+- Added `.github/workflows/swiftorder-qa.yml` for PHP syntax, Composer validation, PHPUnit, JavaScript syntax, dependency audit and Semgrep scanning.
+- Added `.github/workflows/swiftorder-security.yml` for Gitleaks and Trivy.
+- Added `docs/QUALITY_ASSURANCE_AND_SECURITY.md` as the QA, security and release-evidence standard.
+
+### Verification status
+
+- Repository writes are committed on `main`; no feature branch was created.
+- Workflow files and test changes are committed but have NOT yet been confirmed by a completed GitHub Actions run.
+- No runtime PHPUnit result, database-backed integration result, penetration-test result or recovery-drill result is claimed by this commit record.
+- Commercial release remains NO-GO until the automated workflows execute successfully and the critical business/recovery acceptance evidence is recorded.
+
+### Next engineering priorities
+
+1. Inspect and repair CI failures from the first actual workflow runs.
+2. Expand executable tests around order idempotency, stock invariants, transaction rollback, invoice/VAT reconciliation, authorization and CSRF.
+3. Verify schema installation/upgrades and backup/restore against disposable databases.
+4. Complete upload storage isolation and security review.
+5. Re-scan the full current repository for stale product identifiers, filenames, CSS variables and references.
