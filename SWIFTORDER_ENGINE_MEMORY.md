@@ -244,3 +244,38 @@ The objective is to raise Swift Order's quality through its own requirements and
 
 ### Current release decision
 NO-GO until the remaining automated runs complete and the business-critical integration and recovery evidence is recorded.
+
+
+## 2026-11-22 — Verified QA and Security Convergence
+
+### Main-branch evidence
+- PHPUnit: 28 tests, 42 assertions — PASS.
+- PHP syntax — PASS.
+- Composer validate/install/audit — PASS; no known dependency advisories.
+- JavaScript syntax and ESLint — PASS.
+- Semgrep: 53 rules / 213 files / 0 findings; SARIF uploaded — PASS.
+- GitHub CodeQL default setup — PASS.
+- Gitleaks — PASS; no secrets reported in scanned change.
+- Trivy dependency scan — PASS; 0 vulnerabilities.
+- MySQL 8.4 and MariaDB 11.4 schema/migration parity — PASS.
+- Trivy license inventory: LGPL dependencies classified as restricted/high; legal/distribution review remains open.
+
+### Security and source changes
+- Bound pagination limit/offset values in activity logs, goods-received notes, products, purchase orders, stock history and suppliers.
+- Centralized JSON output encoding with HTML-sensitive flags and added JSON encoding regression coverage.
+- Updated the order UI to handle structured HTTP error responses.
+- Removed unnecessary request-derived identifiers from operational error logs.
+- Added regression coverage for pagination attribute encoding.
+- Current source tree and indexed code search contain no active cross-product product-name references or stylesheet filename remnants.
+
+### Release gates still open
+- Database-backed financial/order/stock/invoice integration tests.
+- Invoice/VAT reconciliation and transaction failure semantics.
+- Business settings singleton/operational workflow.
+- Upload storage isolation.
+- Forward upgrade migrations from the V1.1 baseline.
+- Populated-data backup/restore drill.
+- Full penetration test and desktop/mobile/offline acceptance.
+- Coverage threshold remains unmeasured; do not claim 80% coverage.
+
+**Release decision: NO-GO** pending closure of business, recovery and operational acceptance gates.
