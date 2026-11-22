@@ -2,7 +2,7 @@
 
 **Date:** 22 November 2026  
 **Source of truth:** GitHub repository `Leano-Jordan/store-ordering-system`, branch `main`  
-**Verified commit:** `9ea77ecdd7de70832f8aec1c40576a1789d0b9a8`
+**Verified application-source commit:** `9ea77ecdd7de70832f8aec1c40576a1789d0b9a8` (documentation-only updates followed; application source is unchanged).
 
 ## Current automated verification
 
