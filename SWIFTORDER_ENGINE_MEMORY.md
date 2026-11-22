@@ -34,8 +34,8 @@ Never treat discussed, planned, or code-present as verified.
 12. Prefer the existing architecture when it is sound; do not introduce unnecessary frameworks, abstractions, Docker, or dependencies.
 13. Do not modify the repository, commit, or push changes unless the user explicitly authorizes repository modification.
 
-## User Implementation Workflow
-The user manually implements software changes.
+## Repository Modification Workflow
+The Founder retains final authority over repository changes. The assistant may inspect freely and may modify, commit and push directly only when the Founder explicitly authorizes that execution in the active task. Without that authorization, provide exact source changes for the Founder to apply.
 
 Every code fix must use:
 
@@ -60,6 +60,8 @@ Always specify:
 Do NOT tell the user only "test this", "run that", "verify it", or similar vague instructions. Every verification instruction must contain the actual command, SQL, HTTP request, input, expected result, or exact failure condition needed to prove the change.
 
 The user does not want to investigate AI findings or reverse-engineer recommendations. The assistant must do the source investigation first.
+
+When direct execution is authorized, preserve the existing main branch unless the Founder explicitly requests otherwise. Do not create feature branches as a default workflow. Do not claim a fix is verified until the relevant CI/runtime evidence exists.
 
 ## Batch Completion Contract
 After implementation:
@@ -211,3 +213,34 @@ The objective is to raise Swift Order's quality through its own requirements and
 - Verification: current repository source now loads `includes/audit.php` before the receipt transaction and its existing `recordAudit()` call.
 - No architectural rewrite or new abstraction introduced.
 - Next target: continue source audit for confirmed release-impacting defects, prioritising licensing, backup/restore, financial/stock/order invariants, authorization/security, and critical-path evidence.
+
+
+## 2026-11-22 — QA and Security Automation Batch
+
+### Committed changes
+- SwiftOrder-owned stylesheet: `assets/css/swiftorder-ui.css`; legacy stylesheet file removed and all active references migrated.
+- GitHub QA workflow: `.github/workflows/swiftorder-qa.yml`.
+- GitHub security workflow: `.github/workflows/swiftorder-security.yml`.
+- ESLint flat configuration and workflow repair.
+- Composer strict metadata and lock refresh workflow.
+- PHPUnit test import/filename/configuration repairs and additional regression tests.
+- QA/security/release evidence standard added under `docs/QUALITY_ASSURANCE_AND_SECURITY.md`.
+
+### Verified
+- PHP syntax scan passed.
+- PHPUnit passed with 25 tests and 32 assertions.
+- JavaScript syntax passed.
+- ESLint passed.
+- Semgrep passed on a completed run.
+- Gitleaks reported no secrets in the scanned commit.
+- Composer lock now resolves PHPUnit 13.4.8, above the affected 13.4.0 release.
+
+### Pending verification
+- Post-refresh Composer audit for CVE-2026-119193.
+- Corrected Trivy security scan and informational license inventory.
+- Database-backed order/stock/payment/invoice integration tests.
+- Installation/upgrade and backup/restore drills.
+- Manual penetration testing and mobile/desktop acceptance.
+
+### Current release decision
+NO-GO until the remaining automated runs complete and the business-critical integration and recovery evidence is recorded.
