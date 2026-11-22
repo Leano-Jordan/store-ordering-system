@@ -12,16 +12,18 @@ The repository runs the following checks against changes targeting `main` and on
 |---|---|---|
 | PHP syntax | Detect parse errors in tracked PHP files | Blocking |
 | Composer validation | Detect invalid or inconsistent dependency metadata | Blocking |
-| PHPUnit | Execute unit and regression tests | Blocking |\n| MySQL/MariaDB schema matrix | Import clean schema and initial migration; compare tables, columns, indexes and foreign keys on MySQL 8.4 and MariaDB 11.4 | Blocking |
+| PHPUnit | Execute unit and regression tests | Blocking |
+| MySQL/MariaDB schema matrix | Import clean schema and initial migration; compare tables, columns, indexes and foreign keys on MySQL 8.4 and MariaDB 11.4 | Blocking |
 | Composer audit | Identify known dependency vulnerabilities | Blocking |
 | JavaScript syntax | Detect malformed tracked JavaScript | Blocking |
-| Semgrep | Detect risky application-code patterns | Findings require triage; scan job is initially non-blocking |
+| Semgrep | Scan PHP/application code and publish SARIF findings to GitHub Code Scanning | Blocking scan execution; findings reviewed individually |
 | Gitleaks | Detect committed credentials and secrets | Blocking |
-| Trivy filesystem scan | Detect critical/high dependency, secret and configuration findings | Blocking |\n| Trivy license inventory | Identify third-party license obligations for commercial distribution | Informational; legal review required |
+| Trivy filesystem scan | Detect critical/high dependency, secret and configuration findings | Blocking |
+| Trivy license inventory | Identify third-party license obligations for commercial distribution | Informational; legal review required |
 | CodeQL | Analyze supported JavaScript and workflow code | GitHub default code-scanning setup (enabled in repository settings) |
 | ESLint | JavaScript lint and code scanning | Existing workflow; findings require triage |
 
-The PHP codebase is not covered by the configured CodeQL language matrix. Semgrep and Trivy provide additional PHP and filesystem coverage; neither replaces manual review or runtime tests. Open-source license classifications are reported separately from security gates and must be reviewed for distribution obligations rather than treated as vulnerabilities.
+The PHP codebase is not covered by the configured CodeQL language matrix. Semgrep provides PHP/application source analysis and uploads SARIF to GitHub Code Scanning; Trivy scans the dependency manifest and license inventory. Neither replaces manual review or runtime tests. The 22 November 2026 main-branch run completed 53 Semgrep rules across 213 files with zero findings. Open-source license classifications are reported separately from security gates and must be reviewed for distribution obligations rather than treated as vulnerabilities.
 
 ## Test strategy
 
