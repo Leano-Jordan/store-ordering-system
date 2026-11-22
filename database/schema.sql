@@ -76,7 +76,7 @@ CREATE TABLE suppliers (
     email varchar(120) COLLATE utf8mb4_general_ci DEFAULT NULL,
     address text COLLATE utf8mb4_general_ci,
     notes text COLLATE utf8mb4_general_ci,
-    status enum('Active','Inactive') COLLATE utf8mb4_general_ci DEFAULT 'Active',
+    status enum('Active','Inactive') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'Active',
     created_at timestamp NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
