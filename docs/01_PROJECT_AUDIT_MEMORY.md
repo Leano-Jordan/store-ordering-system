@@ -21,7 +21,7 @@ Dompdf is present for PDF output. Core trading is intended to work without inter
 - Reproducible dedicated tax-invoice workflow is incomplete.
 - Audit/transaction semantics require a final explicit contract and failure tests.
 
-- Critical-path unit tests now execute in GitHub Actions; database-backed critical-path integration evidence remains pending.
+- Critical-path unit tests execute in GitHub Actions; database-backed business-flow integration evidence remains pending.
 - Clean-install schema/migration path is not yet authoritative and reproducible.
 - Backup/restore evidence is not demonstrated.
 - Business/tax settings need an operational administrator workflow and singleton enforcement.
@@ -67,16 +67,20 @@ The 2026-10-06 Swifty quality batch is source-reviewed and committed. Runtime ex
 
 ### Verification status
 
-- Repository writes are committed on `main`; no feature branch was created.
+- All changes are committed directly to `main`; no feature branches were created.
 - PHP syntax validation passed across tracked PHP files.
-- PHPUnit passed: 25 tests and 32 assertions on the first full run after correcting the test filename and PHPUnit configuration.
-- JavaScript syntax and ESLint workflows passed; Semgrep completed successfully on an earlier run.
-- Gitleaks completed successfully with no secrets detected in the scanned commit.
-- Composer audit identified CVE-2026-119193 in PHPUnit 13.4.0; the lockfile was refreshed to PHPUnit 13.4.8, a patched version. A post-refresh Composer audit run is still required.
-- Trivy initially reported zero dependency vulnerabilities but flagged three LGPL license classifications as HIGH; the workflow now separates license inventory from blocking security findings. The corrected Trivy workflow still requires a completed run.
-- No database-backed integration result, penetration-test result or recovery-drill result is claimed.
-- Commercial release remains NO-GO until the automated workflows execute successfully and the critical business/recovery acceptance evidence is recorded.
-
+- PHPUnit passed: **28 tests, 42 assertions**.
+- Composer validation, locked install and Composer security audit passed; no known dependency advisories remain.
+- JavaScript syntax and ESLint passed.
+- Semgrep passed: **53 rules, 213 files, zero findings**; SARIF was uploaded to GitHub Code Scanning.
+- GitHub CodeQL default setup passed.
+- Gitleaks passed with no secrets reported in the scanned change.
+- Trivy dependency scan passed with zero vulnerabilities.
+- MySQL 8.4 and MariaDB 11.4 schema compatibility/parity tests passed.
+- Trivy license inventory identified six license records, including LGPL dependencies classified as restricted/high; this requires distribution/legal review, not vulnerability remediation.
+- The latest main-branch SwiftOrder QA and security workflows completed successfully.
+- No full penetration test, populated-data backup/restore drill, or end-to-end financial integration acceptance is claimed.
+- Commercial release remains NO-GO until the remaining business and recovery gates close.
 ### Next engineering priorities
 
 1. Confirm the post-refresh Composer audit and corrected Trivy runs are clean.
