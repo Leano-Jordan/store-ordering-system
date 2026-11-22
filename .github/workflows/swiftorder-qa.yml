@@ -110,21 +110,31 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Run Semgrep security rules
-        uses: semgrep/semgrep-action@v1
-        continue-on-error: true
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          config: >-
-            p/security-audit
-            p/php
+          python-version: "3.12"
 
-      - name: Upload Semgrep SARIF when generated
+      - name: Install Semgrep
+        run: |
+          python -m venv .semgrep-venv
+          . .semgrep-venv/bin/activate
+          python -m pip install --upgrade pip
+          python -m pip install semgrep
+
+      - name: Run PHP and application security rules
+        run: |
+          . .semgrep-venv/bin/activate
+          semgrep scan \
+            --metrics=off \
+            --config p/security-audit \
+            --config p/php \
+            --sarif \
+            --output semgrep.sarif
+
+      - name: Upload Semgrep findings to GitHub Code Scanning
         if: always()
         uses: github/codeql-action/upload-sarif@v4
-        continue-on-error: true
         with:
           sarif_file: semgrep.sarif
-
