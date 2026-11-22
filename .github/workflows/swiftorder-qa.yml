@@ -118,15 +118,13 @@ jobs:
 
       - name: Install Semgrep
         run: |
-          python -m venv .semgrep-venv
-          . .semgrep-venv/bin/activate
-          python -m pip install --upgrade pip
-          python -m pip install semgrep
+          python -m venv "$RUNNER_TEMP/semgrep-venv"
+          "$RUNNER_TEMP/semgrep-venv/bin/python" -m pip install --upgrade pip
+          "$RUNNER_TEMP/semgrep-venv/bin/python" -m pip install semgrep
 
       - name: Run PHP and application security rules
         run: |
-          . .semgrep-venv/bin/activate
-          semgrep scan \
+          "$RUNNER_TEMP/semgrep-venv/bin/semgrep" scan \
             --metrics=off \
             --config p/security-audit \
             --config p/php \
