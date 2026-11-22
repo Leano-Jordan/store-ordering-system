@@ -3,6 +3,9 @@
         "dompdf/dompdf": "^3.1"
     },
     "require-dev": {
-    "phpunit/phpunit": "^13.3"
-}
+        "phpunit/phpunit": "^13.3"
+    },
+    "name": "rosscore-labs/swiftorder",
+    "description": "Local-first point-of-sale, inventory and store operations software built with PHP and MySQL.",
+    "license": "proprietary"
 }
