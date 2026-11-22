@@ -29,20 +29,32 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   filesystem:
-    name: Dependency, misconfiguration and secret scan
+    name: Dependency and configuration security scan
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Trivy filesystem scan
+      - name: Trivy vulnerability, misconfiguration and secret scan
         uses: aquasecurity/trivy-action@v0.36.0
         with:
+          version: v0.76.2
           scan-type: fs
           scan-ref: .
-          scanners: vuln,misconfig,secret,license
+          scanners: vuln,misconfig,secret
           severity: CRITICAL,HIGH
           ignore-unfixed: true
           format: table
           exit-code: "1"
+          skip-dirs: vendor,.git
+
+      - name: Trivy open-source license inventory (review, not security gate)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          version: v0.76.2
+          scan-type: fs
+          scan-ref: .
+          scanners: license
+          format: table
+          exit-code: "0"
           skip-dirs: vendor,.git
