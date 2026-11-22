@@ -67,8 +67,8 @@ Static syntax checks are necessary but are not release assurance. Critical busin
 
 ## Coverage target
 
-The board target is 80% automated coverage with critical-path tests mandatory regardless of percentage. Coverage must be measured by the chosen test runner and stored as release evidence.
+The board target remains 80% automated coverage, with critical-path tests mandatory regardless of percentage. The current GitHub workflow runs PHPUnit without a coverage driver, so the percentage is NOT YET MEASURED OR ENFORCED. Add Xdebug/PCOV coverage collection and a documented threshold gate before commercial release; do not claim the target is met from test counts alone.
 
 ## CI target
 
-Pull requests should run syntax/static checks, automated tests, coverage threshold and dependency/security checks before protected-branch merge.
+Pull requests currently run PHP/JavaScript syntax, PHPUnit, Composer audit, ESLint, Semgrep, Gitleaks, Trivy and clean-schema compatibility checks against MySQL 8.4 and MariaDB 11.4. Coverage enforcement and database-backed business-flow integration tests remain outstanding.
