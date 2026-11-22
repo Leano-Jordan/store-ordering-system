@@ -40,7 +40,7 @@ permissions:
 
 jobs:
   Analysis:
-    if: ${{ secrets.SONAR_TOKEN != '' && vars.SONAR_PROJECT_KEY != '' && vars.SONAR_ORGANIZATION != '' }}
+    if: ${{ vars.SONAR_PROJECT_KEY != '' && vars.SONAR_ORGANIZATION != '' }}
     runs-on: ubuntu-latest
 
     steps:
