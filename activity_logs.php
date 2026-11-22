@@ -43,7 +43,7 @@ if ($search !== '') {
         WHERE ($where) AND (users.username LIKE ?
             OR activity_logs.action LIKE ?)
         ORDER BY activity_logs.created_at 
-            DESC LIMIT $limit OFFSET $offset"
+            DESC LIMIT ? OFFSET ?"
     );
 
     if (!$stmt) {
@@ -59,7 +59,7 @@ if ($search !== '') {
         exit();
     }
 
-    if (!$stmt->bind_param('ss', $term, $term)) {
+    if (!$stmt->bind_param('ssii', $term, $term, $limit, $offset)) {
         error_log('activity_logs.php: Failed to bind search parameters: '.$stmt->error);
         $stmt->close();
         exit('Unable to load activity logs.');
@@ -79,16 +79,37 @@ if ($search !== '') {
         exit('Unable to load activity logs.');
     }
 } else {
-    $result = $conn->query(
-        "SELECT activity_logs.action, 
-        activity_logs.created_at,
-        users.username,
-        users.role FROM activity_logs 
-        JOIN users 
-        ON activity_logs.user_id = users.id WHERE $where
-        ORDER BY activity_logs.created_at 
-        DESC LIMIT $limit OFFSET $offset"
+    $stmt = $conn->prepare(
+        "SELECT activity_logs.action,
+            activity_logs.created_at,
+            users.username,
+            users.role
+        FROM activity_logs
+        JOIN users ON activity_logs.user_id = users.id
+        WHERE $where
+        ORDER BY activity_logs.created_at DESC
+        LIMIT ? OFFSET ?"
     );
+
+    if (!$stmt || !$stmt->bind_param('ii', $limit, $offset) || !$stmt->execute()) {
+        error_log('activity_logs.php: Failed to load activity logs.');
+        if ($stmt) {
+            $stmt->close();
+        }
+        $_SESSION['error'] = 'Unable to load activity logs. Please try again.';
+        header('Location: dashboard.php');
+        exit();
+    }
+
+    $result = $stmt->get_result();
+    if (!$result) {
+        error_log('activity_logs.php: Failed to retrieve activity logs.');
+        $stmt->close();
+        $_SESSION['error'] = 'Unable to load activity logs. Please try again.';
+        header('Location: dashboard.php');
+        exit();
+    }
+    $stmt->close();
 }
 
 if (!$result) {
