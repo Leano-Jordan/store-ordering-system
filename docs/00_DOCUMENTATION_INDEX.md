@@ -1,7 +1,7 @@
 # SwiftOrder V1.1 Documentation Index
 
 Status: **Engineering documentation supplement — not a commercial release approval**
-Date: 20 August 2026
+Date: 22 November 2026
 
 ## Purpose
 
@@ -33,6 +33,6 @@ Older beta documents remain historical unless a later decision explicitly supers
 - `11_DATABASE_RELEASE_BASELINE.md` — schema/migration and transaction-release standard.
 - `12_DOCUMENT_CONTROL.md` — current vs historical document authority.
 - `13_ENGINEERING_GOVERNANCE.md` — Git/PR/CI/change-control standard.
-- `14_BATCH_FIX_RECORD_2026-08-20.md` — this audit's verified targeted fix record.
+- `14_BATCH_FIX_RECORD_2026-08-20.md` — historical verified targeted fix record.\n- `QUALITY_ASSURANCE_AND_SECURITY.md` — active GitHub CI, testing, code scanning, security and release evidence standard.
 
 This pack does not contain application source code.
