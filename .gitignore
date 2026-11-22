@@ -7,3 +7,4 @@ config.local.php
 /coverage/
 /node_modules/
 /npm-debug.log*
+/.semgrep-venv/
