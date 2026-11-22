@@ -22,7 +22,7 @@ Dompdf is present for PDF output. Core trading is intended to work without inter
 - Audit/transaction semantics require a final explicit contract and failure tests.
 
 - Critical-path unit tests execute in GitHub Actions; database-backed business-flow integration evidence remains pending.
-- Clean-install schema/migration path is not yet authoritative and reproducible.
+- Clean schema and initial V1.1 migration parity is verified on MySQL 8.4 and MariaDB 11.4; forward upgrade migrations are not yet published.
 - Backup/restore evidence is not demonstrated.
 - Business/tax settings need an operational administrator workflow and singleton enforcement.
 - Production release packaging must exclude `.git`, development-only material and customer-like data.
@@ -83,8 +83,8 @@ The 2026-10-06 Swifty quality batch is source-reviewed and committed. Runtime ex
 - Commercial release remains NO-GO until the remaining business and recovery gates close.
 ### Next engineering priorities
 
-1. Confirm the post-refresh Composer audit and corrected Trivy runs are clean.
-2. Expand executable tests around order idempotency, stock invariants, transaction rollback, invoice/VAT reconciliation, authorization and CSRF.
-3. Verify schema installation/upgrades and backup/restore against disposable databases.
-4. Complete upload storage isolation and security review.
-5. Add database-backed acceptance tests for money, stock, permissions and recovery.
+1. Add database-backed tests for order idempotency, stock invariants, transaction rollback, invoice/VAT reconciliation, authorization and CSRF.
+2. Complete upload storage isolation and security review.
+3. Publish and test forward database migrations from the V1.1 baseline.
+4. Execute populated-data backup/restore and full installation recovery drills.
+5. Complete penetration testing plus desktop, mobile and offline acceptance.
