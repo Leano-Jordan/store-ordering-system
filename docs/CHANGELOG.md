@@ -1,5 +1,40 @@
 # SwiftOrder System Changelog
 
+## 2026-11-22 — QA, Security and Product Identity Hardening
+
+### Product identity
+- Replaced the legacy application stylesheet with `assets/css/swiftorder-ui.css`.
+- Renamed stylesheet design tokens to the SwiftOrder namespace.
+- Updated shared header, login and invoice print consumers.
+- Removed the old stylesheet after all active consumers were migrated.
+- Removed cross-product references from the current project operating documents.
+
+### QA and security
+- Added GitHub Actions coverage for PHP syntax, Composer validation, PHPUnit, JavaScript syntax and Semgrep.
+- Added Gitleaks secret scanning and Trivy dependency/configuration/secret scanning.
+- Added a separate third-party license inventory so license obligations are reviewed without being misreported as exploitable vulnerabilities.
+- Added automated Composer lock refresh on main when dependency constraints change.
+- Fixed the PHPUnit test namespace import and corrected the licensing test filename.
+- Added regression coverage for licensing fail-closed behaviour and asset path edge cases.
+- Removed deprecated PHPUnit configuration.
+
+### Dependency security
+- CI detected CVE-2026-119193 affecting PHPUnit 13.4.0.
+- Updated the PHPUnit constraint and lockfile to 13.4.8.
+- A final post-update Composer audit and security workflow run remains required.
+
+### Verified test evidence
+- PHP syntax validation passed.
+- PHPUnit: 25 tests, 32 assertions passed.
+- JavaScript syntax validation passed.
+- ESLint passed.
+- Semgrep passed on the completed run.
+- Gitleaks reported no secrets in the scanned commit.
+- Database-backed integration tests, full penetration testing and backup/restore drills remain outstanding.
+
+---
+
+
 ## 2026-10-06 — Swifty Quality & UI Hardening
 
 ### Fixed
