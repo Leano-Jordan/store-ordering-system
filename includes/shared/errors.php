@@ -1,13 +1,22 @@
 <?php
 
+function encodeJsonResponse(array $payload): string
+{
+    return json_encode(
+        $payload,
+        JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+    );
+}
+
 function jsonSuccess(string $message, array $extra = []): void
 {
     header('Content-Type: application/json');
-    echo json_encode(
+    echo encodeJsonResponse(
         array_merge(
             [
-        'success' => true,
-        'message' => $message, ],
+                'success' => true,
+                'message' => $message,
+            ],
             $extra
         )
     );
@@ -17,9 +26,8 @@ function jsonSuccess(string $message, array $extra = []): void
 function jsonError(string $message, int $status = 400, ?string $code = null): void
 {
     http_response_code($status);
-
     header('Content-Type: application/json');
-    echo json_encode([
+    echo encodeJsonResponse([
         'success' => false,
         'message' => $message,
         'code' => $code,
