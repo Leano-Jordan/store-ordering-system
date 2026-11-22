@@ -26,7 +26,7 @@ if ($stockFilter === 'low') {
     AND stock > 0 
     AND stock <= 10 
     ORDER BY category ASC, stock DESC, name ASC 
-    LIMIT $limit OFFSET $offset";
+    LIMIT ? OFFSET ?";
 
     $totalResult = $conn->query("SELECT COUNT(*) AS total 
     FROM products 
@@ -38,7 +38,7 @@ if ($stockFilter === 'low') {
     WHERE status = 'Active' 
     AND stock = 0 
     ORDER BY category, name 
-    LIMIT $limit OFFSET $offset";
+    LIMIT ? OFFSET ?";
 
     $totalResult = $conn->query(
         "SELECT COUNT(*) AS total 
@@ -89,12 +89,27 @@ if ($stockFilter === 'low') {
 }
 
 if (isset($sql) && $sql !== null) {
-    $result = $conn->query($sql);
+    $stmt = $conn->prepare($sql);
 
-    if (!$result) {
-        error_log($conn->error);
-        exit('Unable to load products');
+    if (
+        !$stmt
+        || !$stmt->bind_param('ii', $limit, $offset)
+        || !$stmt->execute()
+    ) {
+        error_log('products.php: Failed to load filtered products.');
+        if ($stmt) {
+            $stmt->close();
+        }
+        exit('Unable to load products.');
     }
+
+    $result = $stmt->get_result();
+    if (!$result) {
+        error_log('products.php: Failed to retrieve filtered products.');
+        $stmt->close();
+        exit('Unable to load products.');
+    }
+    $stmt->close();
 }
 
 if (!isset($totalRows)) {
