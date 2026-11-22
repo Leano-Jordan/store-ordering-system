@@ -200,7 +200,7 @@ if (!$updatedSucceeded) {
             error_log('update_product.php: Failed to clean up new product image after database failure: '.$newImagePath);
         }
     }
-    error_log('update_product.php: Failed to update product ID: '.$id);
+    error_log('update_product.php: Failed to update product.');
 
     $_SESSION['error'] = 'Unable to update product. Please try again.';
     header('Location: edit_product.php?id='.$id);
