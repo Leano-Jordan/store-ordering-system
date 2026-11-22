@@ -1,36 +1,62 @@
 # SwiftOrder V1.1 Current Release Baseline
 
-Date: 20 August 2026
-Source basis: supplied `SwiftOrder-System_v0.9.2.1.zip`, supplied SQL dump, current governing documents.
+**Date:** 22 November 2026  
+**Source of truth:** GitHub repository `Leano-Jordan/store-ordering-system`, branch `main`  
+**Verified commit:** `9ea77ecdd7de70832f8aec1c40576a1789d0b9a8`
 
-## Inventory
+## Current automated verification
 
-- ZIP archive: 1,173 files.
-- Application PHP excluding vendor: 125 files.
-- Application JavaScript: 4 files.
-- Database migrations: 10 files.
-- Composer dependency tree present; Dompdf is the main declared application dependency.
-- `.git` and `.vscode` are present in the engineering archive.
-- Project documentation is present under `docs/`.
-- No PHPUnit configuration, CI workflow, Docker deployment definition or repository README was found in the supplied source.
+The latest completed main-branch GitHub Actions run passed:
 
-## Static verification for the current edited source
+| Gate | Result |
+|---|---|
+| PHP syntax across tracked PHP files | PASS |
+| PHPUnit | PASS — 28 tests, 42 assertions |
+| Composer validation and locked install | PASS |
+| Composer security audit | PASS — no known advisories |
+| JavaScript syntax | PASS |
+| ESLint | PASS |
+| Semgrep | PASS — 53 rules, 213 files, 0 findings |
+| GitHub CodeQL default setup | PASS |
+| Gitleaks | PASS — no secrets reported in scanned change |
+| Trivy dependency scan | PASS — 0 vulnerabilities |
+| MySQL 8.4 schema parity | PASS |
+| MariaDB 11.4 schema parity | PASS |
+| Rosscore Director health report | PASS |
 
-- PHP syntax: 125/125 passed.
-- JavaScript syntax: 4/4 passed.
-- No production PHP/JS/SQL `TODO`, `FIXME` or `HACK` markers were found in the sweep.
-- Redirect verification must resolve paths relative to the including script or project root; a naive relative-to-file scan gives false positives for shared includes.
+SonarCloud is configured as optional and was skipped because its project variables/secrets are not configured. It is not counted as a passing scan.
 
-## Runtime evidence
+## Third-party license inventory
 
-Observed local CLI runtime: PHP 8.4.23.
+Trivy identified six dependency license records requiring review:
+- Dompdf and its supporting libraries include LGPL terms; Dompdf is classified as restricted/high by the scanner.
+- MIT and other permissive notices are also present.
 
-Production runtime is not independently evidenced by the project package and must be recorded in the release acceptance record.
+These are license-compliance classifications, not vulnerability findings. Obtain a distribution/legal review of LGPL obligations before shipping the proprietary package.
 
-## Engineering worktree
+## Engineering changes in this baseline
 
-The supplied checkout is dirty and contains a large pre-existing set of modified entries. Treat the current checkout as an engineering worktree, not as a clean release baseline.
+- Replaced the legacy stylesheet with `assets/css/swiftorder-ui.css`; active references now point to the SwiftOrder-owned file.
+- Removed the old stylesheet and migrated its design tokens to SwiftOrder-specific names.
+- Removed cross-product references from current source and operating documents.
+- Added PHPUnit regression tests for licensing fail-closed behaviour, asset paths, pagination output and safe JSON encoding.
+- Parameterized pagination limits/offsets in activity logs, GRNs, products, purchase orders, stock history and suppliers.
+- Centralized JSON response encoding with HTML-sensitive JSON flags.
+- Added MySQL/MariaDB schema parity checks and corrected supplier status nullability in the clean schema.
+- Added GitHub QA, security, ESLint and Composer lock refresh automation.
 
-## Release rule
+## Remaining release blockers
 
-A static pass does not equal behavioural assurance. Every money, stock, authorization, session, invoice, rollback and recovery path requires executable acceptance evidence before commercial release.
+- Dedicated tax-invoice workflow and reproducible invoice acceptance.
+- Full order/payment/stock/invoice/report transaction and rollback integration tests.
+- Business settings singleton enforcement and operational workflow.
+- Upload storage outside webroot and complete upload security review.
+- Forward database migrations from the released baseline.
+- Backup/restore drill against populated business data.
+- Full security penetration testing and mobile/desktop acceptance.
+- Offline local-operation acceptance and commercial packaging.
+- Coverage percentage is not measured yet; the 80% target is not claimed as met.
+
+## Release decision
+
+**NO-GO for commercial V1.** Automated quality gates are now in place and the latest run passes, but critical business-flow, recovery, upgrade and operational acceptance evidence remains outstanding.
