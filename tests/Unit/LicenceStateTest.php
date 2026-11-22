@@ -125,4 +125,13 @@ final class LicenseStateTest extends TestCase
         $this->assertSame(LICENSE_GRACE, $state);
         $this->assertTrue(licenseAllowsTrading($state));
     }
+    public function testNotConfiguredLicenseDoesNotAllowTrading(): void
+    {
+        $this->assertFalse(licenseAllowsTrading(LICENSE_NOT_CONFIGURED));
+    }
+
+    public function testUnknownLicenseStateDoesNotAllowTrading(): void
+    {
+        $this->assertFalse(licenseAllowsTrading('UNKNOWN_STATE'));
+    }
 }
