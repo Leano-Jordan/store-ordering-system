@@ -121,7 +121,7 @@ if ($search !== '') {
 
     $totalRows = $countRow['total'] ?? 0;
 } else {
-    $result = $conn->query("SELECT
+    $stmt = $conn->prepare("SELECT
             grn.*,
             Po.po_number,
             s.company_name,
@@ -134,13 +134,28 @@ if ($search !== '') {
         INNER JOIN users u
             ON grn.received_by = u.id
         ORDER BY grn.received_at DESC
-        LIMIT $limit OFFSET $offset
+        LIMIT ? OFFSET ?
     ");
 
-    if (!$result) {
-        error_log('goods_received_notes.php: Failed to load GRN list: '.$conn->error);
+    if (
+        !$stmt
+        || !$stmt->bind_param('ii', $limit, $offset)
+        || !$stmt->execute()
+    ) {
+        error_log('goods_received_notes.php: Failed to load GRN list.');
+        if ($stmt) {
+            $stmt->close();
+        }
         exit('Unable to load goods received notes.');
     }
+
+    $result = $stmt->get_result();
+    if (!$result) {
+        error_log('goods_received_notes.php: Failed to retrieve GRN list.');
+        $stmt->close();
+        exit('Unable to load goods received notes.');
+    }
+    $stmt->close();
 
     $countResult = $conn->query('SELECT COUNT(*) total FROM goods_received_notes');
 
