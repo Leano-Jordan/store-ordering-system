@@ -1,0 +1,7 @@
+# Third-party source is maintained by its upstream projects.
+vendor/
+
+# Historical and generated SQL fixtures are not active application code.
+database/migrations_archive/
+database/store-ordering (dev working fake data).sql
+database/swiftorder_release_test.sql
