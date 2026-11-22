@@ -4,7 +4,7 @@
 
 ### Fixed
 
-- Removed Zazu branding contamination from the shared SwiftOrder shell and login page.
+- Removed cross-product stylesheet naming and visual-token contamination from the shared application shell and login page.
 - Changed theme persistence to use the SwiftOrder-specific swiftorder-theme key only.
 - Added an explicit product search label and improved search input semantics.
 - Added accessible pressed-state semantics to category and payment controls.
