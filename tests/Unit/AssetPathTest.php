@@ -35,4 +35,18 @@ final class AssetPathTest extends TestCase
     {
         $this->assertSame('', swiftOrderAssetBaseFromScriptName('login.php'));
     }
+    public function testQueryAndFragmentDoNotChangeAssetBasePath(): void
+    {
+        $this->assertSame(
+            '/SwiftOrder-System',
+            swiftOrderAssetBaseFromScriptName(
+                'https://localhost:8000/SwiftOrder-System/login.php?next=dashboard#top'
+            )
+        );
+    }
+
+    public function testEmptyScriptNameFallsBackToRootAssetPath(): void
+    {
+        $this->assertSame('', swiftOrderAssetBaseFromScriptName(''));
+    }
 }
