@@ -4,7 +4,7 @@ function encodeJsonResponse(array $payload): string
 {
     return json_encode(
         $payload,
-        JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+        JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_THROW_ON_ERROR
     );
 }
 
