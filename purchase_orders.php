@@ -27,7 +27,7 @@ if (!empty($search)) {
         WHERE purchase_orders.po_number LIKE ? 
         OR suppliers.company_name LIKE ? 
         ORDER BY purchase_orders.created_at DESC
-        LIMIT $limit OFFSET $offset"
+        LIMIT ? OFFSET ?"
         );
 
     if (!$stmt) {
@@ -35,7 +35,7 @@ if (!empty($search)) {
         exit('Unable to load purchase orders.');
     }
 
-    if (!$stmt->bind_param('ss', $searchTerm, $searchTerm)) {
+    if (!$stmt->bind_param('ssii', $searchTerm, $searchTerm, $limit, $offset)) {
         error_log('purchase_orders.php: Failed to bind search parameters: '.$stmt->error);
         $stmt->close();
         exit('Unable to load Purchase Order.');
@@ -114,18 +114,33 @@ if (!empty($search)) {
     $countStmt->close();
     $stmt->close();
 } else {
-    $result = $conn->query("SELECT purchase_orders.*, 
-    suppliers.company_name
-    FROM purchase_orders
-    INNER JOIN suppliers
-    ON purchase_orders.supplier_id = suppliers.id
-    ORDER BY purchase_orders.created_at DESC
-    LIMIT $limit OFFSET $offset");
+    $stmt = $conn->prepare("SELECT purchase_orders.*,
+        suppliers.company_name
+        FROM purchase_orders
+        INNER JOIN suppliers
+            ON purchase_orders.supplier_id = suppliers.id
+        ORDER BY purchase_orders.created_at DESC
+        LIMIT ? OFFSET ?");
 
-    if (!$result) {
-        error_log('purchase_orders.php: Failed to load purchase orders: '.$conn->error);
+    if (
+        !$stmt
+        || !$stmt->bind_param('ii', $limit, $offset)
+        || !$stmt->execute()
+    ) {
+        error_log('purchase_orders.php: Failed to load purchase orders.');
+        if ($stmt) {
+            $stmt->close();
+        }
         exit('Unable to load purchase orders.');
     }
+
+    $result = $stmt->get_result();
+    if (!$result) {
+        error_log('purchase_orders.php: Failed to retrieve purchase orders.');
+        $stmt->close();
+        exit('Unable to load purchase orders.');
+    }
+    $stmt->close();
 
     $countResult = $conn->query(
         'SELECT COUNT(*) AS total 
