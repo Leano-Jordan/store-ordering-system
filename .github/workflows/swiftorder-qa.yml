@@ -161,14 +161,14 @@ jobs:
                   region = physical.get("region", {})
                   line = region.get("startLine", "?")
                   rule = item.get("ruleId", "unknown-rule")
-                  message = item.get("message", {}).get("text", "").replace("\\n", " ")
+                  message = item.get("message", {}).get("text", "").replace("\n", " ")
                   results.append((artifact, line, rule, message))
 
           summary = [f"## Semgrep security findings: {len(results)}", ""]
           for artifact, line, rule, message in results:
               summary.append(f"- `{artifact}:{line}` — `{rule}` — {message}")
           with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as stream:
-              stream.write("\\n".join(summary) + "\\n")
+              stream.write("\n".join(summary) + "\n")
           for artifact, line, rule, message in results:
               print(f"{artifact}:{line} | {rule} | {message}")
           PY
