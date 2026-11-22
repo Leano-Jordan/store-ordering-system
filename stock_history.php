@@ -62,6 +62,9 @@ if ($filter === 'increase') {
 
 $where = !empty($whereConditions) ? 'WHERE '.implode(' AND ', $whereConditions) : '';
 
+$queryBindTypes = $bindTypes.'ii';
+$queryBindValues = array_merge($bindValues, [$limit, $offset]);
+
 $stmt = $conn->prepare(
     "SELECT sa.created_at, p.name AS product_name,
     sa.adjustment_type, sa.quantity,
@@ -70,7 +73,7 @@ $stmt = $conn->prepare(
     FROM stock_adjustments sa
     INNER JOIN products p ON sa.product_id = p.id
     INNER JOIN users u ON sa.user_id = u.id $where
-    ORDER BY sa.created_at DESC LIMIT $limit OFFSET $offset"
+    ORDER BY sa.created_at DESC LIMIT ? OFFSET ?"
 );
 
 if (!$stmt) {
@@ -79,9 +82,7 @@ if (!$stmt) {
     exit('Unable to load stock history.');
 }
 
-if ($bindTypes !== '') {
-    if (!$stmt->bind_param($bindTypes, ...$bindValues)
-        ) {
+if (!$stmt->bind_param($queryBindTypes, ...$queryBindValues)) {
         error_log('stock_history.php: Failed to bind stock-history parameters: '.$stmt->error);
 
         $stmt->close();
