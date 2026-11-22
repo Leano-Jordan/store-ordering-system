@@ -261,8 +261,7 @@ if (
 
     if (is_file($oldImagePath) && !unlink($oldImagePath)) {
         error_log(
-            'update_user.php: Failed to delete old profile image: '
-            .$currentImage
+            'update_user.php: Failed to delete old profile image.'
         );
     }
 }
