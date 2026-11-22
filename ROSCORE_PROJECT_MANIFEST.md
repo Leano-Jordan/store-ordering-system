@@ -17,7 +17,7 @@ Before any write verify:
 - active branch/ref is explicitly known
 - requested task is within Swift Order scope
 
-Do not modify Zazu EMP or any other repository from a Swift Order task.
+Do not modify any other repository from a Swift Order task.
 
 ## Cross-project visibility
 
