@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 require_once __DIR__.'/../../includes/user_update_helpers.php';
 
-use PHPUnitFrameworkTestCase;
+use PHPUnit\Framework\TestCase;
 
 final class UserUpdateHelpersTest extends TestCase
 {
