@@ -67,11 +67,6 @@ jobs:
           MARIADB_ROOT_PASSWORD: swiftorder-ci-root
         ports:
           - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -pswiftorder-ci-root"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
