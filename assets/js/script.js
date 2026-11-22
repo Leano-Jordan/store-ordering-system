@@ -452,12 +452,13 @@ function placeOrder() {
             body: formData
         })
         .then(function(response) {
-            if (!response.ok) {
-                throw new Error('Order request failed with HTTP ' + response.status);
-            }
+            return response.json().then(function(data) {
+                if (!response.ok && (!data || data.success !== false)) {
+                    throw new Error('Order request failed with HTTP ' + response.status);
+                }
 
-            return response.json();
-
+                return data;
+            });
         })
         .then(function(data) {
             if (!data || typeof data.success !== 'boolean') {
