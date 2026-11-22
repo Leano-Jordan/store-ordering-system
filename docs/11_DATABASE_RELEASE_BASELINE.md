@@ -32,7 +32,7 @@ Existing data must be assessed before adding a uniqueness constraint.
 
 The current migration sequence begins at `0004` and is incremental. Before commercial release, publish a clean baseline or an explicitly documented clean-schema-plus-migrations installation contract.
 
-## Verification examples
+## Current schema parity finding — 22 November 2026\n\nThe clean schema and initial V1.1 migration were compared. The supplier status column differed: the clean schema allowed NULL while the migration required NOT NULL. The clean schema has been aligned to NOT NULL. A GitHub Actions matrix now imports both files independently on MySQL 8.4 and MariaDB 11.4 and compares table engines, columns, indexes and foreign keys. The first completed matrix run is required before treating parity as verified.\n\n## Verification examples
 
 - Verify all business tables are InnoDB.
 - Verify all expected foreign keys exist.
