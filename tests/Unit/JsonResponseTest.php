@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-require_once __DIR__.'/../../includes/shared/errors.php';
-
 use PHPUnit\Framework\TestCase;
+
+require_once __DIR__.'/../../includes/shared/errors.php';
 
 final class JsonResponseTest extends TestCase
 {
