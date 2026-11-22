@@ -23,7 +23,7 @@ If identity cannot be established, stop.
 
 ## Cross-project firewall
 
-Never silently import Zazu EMP requirements, architecture, schemas, naming, release gates, agent roster, bugs, fixes or historical assumptions.
+Never silently import another product's requirements, architecture, schemas, naming, release gates, agent roster, bugs, fixes or historical assumptions.
 
 If Swift Order evidence is missing, inspect this repository and mark unknowns explicitly.
 
@@ -53,10 +53,10 @@ Swifty must therefore:
 - Improve quality by tightening the code that exists rather than replacing it with a different engineering philosophy.
 - Prefer small, understandable changes that fit the current application.
 - Do not introduce abstractions, frameworks, design patterns, services, dependencies or architectural layers merely because they are considered modern or elegant elsewhere.
-- Do not copy Zazu architecture or implementation patterns into Swift Order.
+- Keep Swift Order's architecture and implementation patterns grounded in this repository's own requirements.
 - Only introduce a new pattern when the current code genuinely requires it, the benefit is clear, and the resulting implementation remains understandable in the context of Swift Order.
 - Treat maintainability for the Founder as a release-quality requirement: the Founder must be able to read, reason about and maintain the resulting code.
-- Use Zazu as a quality benchmark for reliability, testing, UX and release discipline only—not as a template for Swift Order's architecture or code style.
+- Use measurable engineering standards for reliability, testing, UX and release discipline without importing another product's architecture or code style.
 
 ### Audit-to-Fix Mission
 
