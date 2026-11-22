@@ -92,11 +92,14 @@ if ($existingResult && $existingResult->num_rows === 1) {
 
     header('Content-Type: application/json');
 
-    echo json_encode([
-        'success' => true,
-        'message' => 'Order already placed.',
-        'order_number' => $existingOrder['order_number'],
-    ]);
+    echo json_encode(
+        [
+            'success' => true,
+            'message' => 'Order already placed.',
+            'order_number' => $existingOrder['order_number'],
+        ],
+        JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+    );
 
     exit();
 }
@@ -266,8 +269,13 @@ $dbPrices = [];
         if ($quantity > $product['stock']) {
             $conn->rollback();
             header('Content-Type: application/json');
-            echo json_encode(['success' => false,
-            'message' => 'Only '.$product['stock'].' '.$product['name'].'(s) available in stock.', ]);
+            echo json_encode(
+                [
+                    'success' => false,
+                    'message' => 'Only '.$product['stock'].' '.$product['name'].'(s) available in stock.',
+                ],
+                JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+            );
             exit();
         }
 
