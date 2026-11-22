@@ -162,7 +162,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="<?php echo htmlspecialchars($assetBase, ENT_QUOTES, 'UTF-8'); ?>/assets/css/components/controls.css?v=20260928-ui3">
     <link rel="stylesheet" href="<?php echo htmlspecialchars($assetBase, ENT_QUOTES, 'UTF-8'); ?>/assets/css/components/panels.css?v=20260928-ui3">
     <link rel="stylesheet" href="<?php echo htmlspecialchars($assetBase, ENT_QUOTES, 'UTF-8'); ?>/assets/css/theme.css?v=20260928-ui3">
-    <link rel="stylesheet" href="<?php echo htmlspecialchars($assetBase, ENT_QUOTES, 'UTF-8'); ?>/assets/css/zazu-ui-repair.css?v=20260928-ui3">
+    <link rel="stylesheet" href="<?php echo htmlspecialchars($assetBase, ENT_QUOTES, 'UTF-8'); ?>/assets/css/swiftorder-ui.css?v=20260928-ui3">
 </head>
 
 <body class="login-page">
