@@ -269,14 +269,10 @@ $dbPrices = [];
         if ($quantity > $product['stock']) {
             $conn->rollback();
             header('Content-Type: application/json');
-            echo json_encode(
-                [
-                    'success' => false,
-                    'message' => 'Only '.$product['stock'].' '.$product['name'].'(s) available in stock.',
-                ],
-                JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+            jsonError(
+                'Only '.$product['stock'].' '.$product['name'].'(s) available in stock.',
+                409
             );
-            exit();
         }
 
         $total += (float) $product['price'] * $quantity;
