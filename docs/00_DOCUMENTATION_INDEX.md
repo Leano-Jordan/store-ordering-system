@@ -33,6 +33,7 @@ Older beta documents remain historical unless a later decision explicitly supers
 - `11_DATABASE_RELEASE_BASELINE.md` — schema/migration and transaction-release standard.
 - `12_DOCUMENT_CONTROL.md` — current vs historical document authority.
 - `13_ENGINEERING_GOVERNANCE.md` — Git/PR/CI/change-control standard.
-- `14_BATCH_FIX_RECORD_2026-08-20.md` — historical verified targeted fix record.\n- `QUALITY_ASSURANCE_AND_SECURITY.md` — active GitHub CI, testing, code scanning, security and release evidence standard.
+- `14_BATCH_FIX_RECORD_2026-08-20.md` — historical verified targeted fix record.
+- `QUALITY_ASSURANCE_AND_SECURITY.md` — active GitHub CI, testing, code scanning, security and release evidence standard.
 
 This pack does not contain application source code.
