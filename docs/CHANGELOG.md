@@ -16,7 +16,10 @@
 - Added automated Composer lock refresh on main when dependency constraints change.
 - Fixed the PHPUnit test namespace import and corrected the licensing test filename.
 - Added regression coverage for licensing fail-closed behaviour and asset path edge cases.
-- Removed deprecated PHPUnit configuration.\n- Parameterized pagination limits and offsets across activity logs, GRNs, products, purchase orders, stock history and suppliers.\n- Centralized safe JSON response encoding and added a regression test for HTML-sensitive payloads.
+- Removed deprecated PHPUnit configuration.
+- Parameterized pagination limits and offsets across activity logs, GRNs, products, purchase orders, stock history and suppliers.
+- Centralized safe JSON response encoding and added a regression test for HTML-sensitive payloads.
+- Added a MySQL 8.4 and MariaDB 11.4 schema/migration parity matrix.
 
 ### Dependency security
 - CI detected CVE-2026-119193 affecting PHPUnit 13.4.0.
