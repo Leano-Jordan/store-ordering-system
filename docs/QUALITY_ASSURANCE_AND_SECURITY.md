@@ -18,7 +18,7 @@ The repository runs the following checks against changes targeting `main` and on
 | Semgrep | Detect risky application-code patterns | Findings require triage; scan job is initially non-blocking |
 | Gitleaks | Detect committed credentials and secrets | Blocking |
 | Trivy filesystem scan | Detect critical/high dependency, secret and configuration findings | Blocking |\n| Trivy license inventory | Identify third-party license obligations for commercial distribution | Informational; legal review required |
-| CodeQL | Analyze supported JavaScript and workflow code | Existing repository workflow |
+| CodeQL | Analyze supported JavaScript and workflow code | GitHub default code-scanning setup (enabled in repository settings) |
 | ESLint | JavaScript lint and code scanning | Existing workflow; findings require triage |
 
 The PHP codebase is not covered by the configured CodeQL language matrix. Semgrep and Trivy provide additional PHP and filesystem coverage; neither replaces manual review or runtime tests. Open-source license classifications are reported separately from security gates and must be reviewed for distribution obligations rather than treated as vulnerabilities.
