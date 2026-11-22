@@ -16,21 +16,23 @@
 - Added automated Composer lock refresh on main when dependency constraints change.
 - Fixed the PHPUnit test namespace import and corrected the licensing test filename.
 - Added regression coverage for licensing fail-closed behaviour and asset path edge cases.
-- Removed deprecated PHPUnit configuration.
+- Removed deprecated PHPUnit configuration.\n- Parameterized pagination limits and offsets across activity logs, GRNs, products, purchase orders, stock history and suppliers.\n- Centralized safe JSON response encoding and added a regression test for HTML-sensitive payloads.
 
 ### Dependency security
 - CI detected CVE-2026-119193 affecting PHPUnit 13.4.0.
 - Updated the PHPUnit constraint and lockfile to 13.4.8.
-- A final post-update Composer audit and security workflow run remains required.
+- The post-update Composer audit and security workflow now pass on main.
 
 ### Verified test evidence
 - PHP syntax validation passed.
-- PHPUnit: 25 tests, 32 assertions passed.
-- JavaScript syntax validation passed.
-- ESLint passed.
-- Semgrep passed on the completed run.
-- Gitleaks reported no secrets in the scanned commit.
-- Database-backed integration tests, full penetration testing and backup/restore drills remain outstanding.
+- PHPUnit: 28 tests, 42 assertions passed.
+- JavaScript syntax validation and ESLint passed.
+- Semgrep: 53 rules across 213 files, zero findings; SARIF uploaded to GitHub Code Scanning.
+- GitHub CodeQL default setup passed.
+- Gitleaks reported no secrets in the scanned change.
+- Trivy dependency scan reported zero vulnerabilities.
+- MySQL 8.4 and MariaDB 11.4 clean-schema/migration parity tests passed.
+- Database-backed financial workflow integration tests, full penetration testing and backup/restore drills remain outstanding.
 
 ---
 
