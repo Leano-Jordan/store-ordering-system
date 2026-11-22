@@ -136,3 +136,47 @@ jobs:
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: semgrep.sarif
+
+      - name: Summarize Semgrep findings
+        if: always()
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          import os
+
+          sarif_path = Path("semgrep.sarif")
+          if not sarif_path.exists():
+              print("Semgrep SARIF was not generated.")
+              raise SystemExit(0)
+
+          data = json.loads(sarif_path.read_text(encoding="utf-8"))
+          results = []
+          for run in data.get("runs", []):
+              for item in run.get("results", []):
+                  locations = item.get("locations", [])
+                  physical = locations[0].get("physicalLocation", {}) if locations else {}
+                  artifact = physical.get("artifactLocation", {}).get("uri", "unknown")
+                  region = physical.get("region", {})
+                  line = region.get("startLine", "?")
+                  rule = item.get("ruleId", "unknown-rule")
+                  message = item.get("message", {}).get("text", "").replace("\\n", " ")
+                  results.append((artifact, line, rule, message))
+
+          summary = [f"## Semgrep security findings: {len(results)}", ""]
+          for artifact, line, rule, message in results:
+              summary.append(f"- `{artifact}:{line}` — `{rule}` — {message}")
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as stream:
+              stream.write("\\n".join(summary) + "\\n")
+          for artifact, line, rule, message in results:
+              print(f"{artifact}:{line} | {rule} | {message}")
+          PY
+
+      - name: Archive Semgrep SARIF
+        if: always() && hashFiles('semgrep.sarif') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: swiftorder-semgrep-sarif
+          path: semgrep.sarif
+          retention-days: 14
