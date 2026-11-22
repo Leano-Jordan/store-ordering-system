@@ -207,7 +207,7 @@ WHERE id = ? AND status = ?',
             );
 
             if (!$histStmt) {
-                throw new Exception("Failed to create stock history for product ID $productId");
+                throw new Exception('Failed to create stock history for an order item.');
             }
         }
 
