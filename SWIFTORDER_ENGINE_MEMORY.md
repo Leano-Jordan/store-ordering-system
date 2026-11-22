@@ -186,8 +186,8 @@ Swift Order is the Founder's first major project and substantial portions were p
 Quality improvement must therefore be evolutionary:
 - preserve understandable existing structure and conventions where sound;
 - avoid unnecessary abstraction or architectural reinvention;
-- do not copy Zazu's architecture into Swift Order;
-- use Zazu only as a benchmark for quality, reliability, testing, UX and release discipline;
+- do not copy another product's architecture into Swift Order;
+- use another product only as a benchmark for quality, reliability, testing, UX and release discipline;
 - introduce new patterns only where current evidence shows they solve a real Swift Order problem and remain understandable to the Founder.
 
 ### Active mission
@@ -202,7 +202,7 @@ Mission:
 6. Keep engineering memory and release gates evidence-based.
 7. Continue through the highest-value remaining defect cluster.
 
-The objective is to raise Swift Order toward the quality level demonstrated by Zazu without turning Swift Order into Zazu or making its code unnecessarily difficult for its Founder to maintain.
+The objective is to raise Swift Order's quality through its own requirements and evidence, without importing external product architecture or making its code unnecessarily difficult for its Founder to maintain.
 
 
 ### Audit/Fix Batch — 6 October 2026
