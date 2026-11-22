@@ -306,7 +306,7 @@ if (!$delete->bind_param('i', $purchaseOrderId)) {
 
 if (!$delete->execute()) {
     $conn->rollback();
-    error_log('update_purchase_order.php: Failed to delete old purchase order items for purchase order ID '.$purchaseOrderId.': '.$delete->error);
+    error_log('update_purchase_order.php: Failed to delete old purchase order items.');
     exit('Failed to update Purchase Order items. Please try again');
 }
 
@@ -375,7 +375,7 @@ for ($i = 0; $i < $itemCount; ++$i) {
 
     if (!$itemStmt->execute()) {
         $conn->rollback();
-        error_log('update_purchase_order.php: Failed to insert purchase order item for product ID '.$productId.': '.$itemStmt->error);
+        error_log('update_purchase_order.php: Failed to insert purchase order item.');
         exit('Failed to save Purchase Order items. Please try again.');
     }
 }
