@@ -14,6 +14,25 @@ mysql_cmd() {
         "$@"
 }
 
+ready=0
+for attempt in $(seq 1 60); do
+    if mysqladmin --protocol=tcp \
+        --host="$MYSQL_HOST" \
+        --port="$MYSQL_PORT" \
+        --user=root \
+        --password="$MYSQL_ROOT_PASSWORD" \
+        ping --silent >/dev/null 2>&1; then
+        ready=1
+        break
+    fi
+    sleep 2
+done
+
+if [ "$ready" -ne 1 ]; then
+    echo "Database did not become ready within 120 seconds." >&2
+    exit 1
+fi
+
 mysql_cmd -e "
 CREATE DATABASE swiftorder_schema CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 CREATE DATABASE swiftorder_migration CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
