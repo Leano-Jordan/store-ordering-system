@@ -32,7 +32,7 @@ if ($search !== '') {
     OR phone LIKE ? 
     OR email LIKE ? 
     ORDER BY company_name ASC 
-    LIMIT $limit OFFSET $offset");
+    LIMIT ? OFFSET ?");
 
     if (!$stmt) {
         error_log('SwiftOrder suppliers query failed: '.$conn->error);
@@ -42,11 +42,13 @@ if ($search !== '') {
     }
 
     if (!$stmt->bind_param(
-        'ssss',
+        'ssssii',
         $searchTerm,
         $searchTerm,
         $searchTerm,
-        $searchTerm
+        $searchTerm,
+        $limit,
+        $offset
     )
         ) {
         error_log('suppliers.php: Failed to bind search parameters: '.$stmt->error);
@@ -135,21 +137,38 @@ if ($search !== '') {
         exit();
     }
 } else {
-    $result = $conn->query(
-        "SELECT id, company_name, 
-        contact_person, phone, 
-        email, status 
-        FROM suppliers 
-        ORDER BY company_name ASC 
-        LIMIT $limit OFFSET $offset"
+    $stmt = $conn->prepare(
+        "SELECT id, company_name,
+            contact_person, phone,
+            email, status
+        FROM suppliers
+        ORDER BY company_name ASC
+        LIMIT ? OFFSET ?"
     );
 
-    if (!$result) {
-        error_log('Failed to load suppliers query: '.$conn->error);
-        $_SESSION['error'] = 'Unable to load suppliers count. Please try again.';
+    if (
+        !$stmt
+        || !$stmt->bind_param('ii', $limit, $offset)
+        || !$stmt->execute()
+    ) {
+        error_log('suppliers.php: Failed to load supplier list.');
+        if ($stmt) {
+            $stmt->close();
+        }
+        $_SESSION['error'] = 'Unable to load suppliers. Please try again.';
         header('Location: suppliers.php');
         exit();
     }
+
+    $result = $stmt->get_result();
+    if (!$result) {
+        error_log('suppliers.php: Failed to retrieve supplier list.');
+        $stmt->close();
+        $_SESSION['error'] = 'Unable to load suppliers. Please try again.';
+        header('Location: suppliers.php');
+        exit();
+    }
+    $stmt->close();
 
     $totalResult = $conn->query('SELECT COUNT(*) AS total FROM suppliers');
 
