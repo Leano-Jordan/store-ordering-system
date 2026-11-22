@@ -47,7 +47,7 @@ jobs:
           done < <(git ls-files -z '*.php' | tr '\0' '\n' | while IFS= read -r file; do printf '%s\0' "$file"; done)
 
       - name: PHPUnit
-        run: vendor/bin/phpunit --configuration phpunit.xml
+        run: vendor/bin/phpunit --configuration phpunit.xml --display-phpunit-deprecations
 
       - name: Composer vulnerability audit
         run: composer audit --locked --no-interaction
