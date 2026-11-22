@@ -21,7 +21,7 @@ Dompdf is present for PDF output. Core trading is intended to work without inter
 - Reproducible dedicated tax-invoice workflow is incomplete.
 - Audit/transaction semantics require a final explicit contract and failure tests.
 
-- Critical-path tests now have PHPUnit/Node test coverage added; runtime execution and CI evidence are still pending.
+- Critical-path unit tests now execute in GitHub Actions; database-backed critical-path integration evidence remains pending.
 - Clean-install schema/migration path is not yet authoritative and reproducible.
 - Backup/restore evidence is not demonstrated.
 - Business/tax settings need an operational administrator workflow and singleton enforcement.
@@ -62,18 +62,25 @@ The 2026-10-06 Swifty quality batch is source-reviewed and committed. Runtime ex
 - Added `.github/workflows/swiftorder-qa.yml` for PHP syntax, Composer validation, PHPUnit, JavaScript syntax, dependency audit and Semgrep scanning.
 - Added `.github/workflows/swiftorder-security.yml` for Gitleaks and Trivy.
 - Added `docs/QUALITY_ASSURANCE_AND_SECURITY.md` as the QA, security and release-evidence standard.
+- Added automated Composer lock refresh on main when dependency constraints change.
+- Upgraded PHPUnit to 13.4.8 after CI dependency auditing detected CVE-2026-119193 in the prior 13.4.0 lock.
 
 ### Verification status
 
 - Repository writes are committed on `main`; no feature branch was created.
-- Workflow files and test changes are committed but have NOT yet been confirmed by a completed GitHub Actions run.
-- No runtime PHPUnit result, database-backed integration result, penetration-test result or recovery-drill result is claimed by this commit record.
+- PHP syntax validation passed across tracked PHP files.
+- PHPUnit passed: 25 tests and 32 assertions on the first full run after correcting the test filename and PHPUnit configuration.
+- JavaScript syntax and ESLint workflows passed; Semgrep completed successfully on an earlier run.
+- Gitleaks completed successfully with no secrets detected in the scanned commit.
+- Composer audit identified CVE-2026-119193 in PHPUnit 13.4.0; the lockfile was refreshed to PHPUnit 13.4.8, a patched version. A post-refresh Composer audit run is still required.
+- Trivy initially reported zero dependency vulnerabilities but flagged three LGPL license classifications as HIGH; the workflow now separates license inventory from blocking security findings. The corrected Trivy workflow still requires a completed run.
+- No database-backed integration result, penetration-test result or recovery-drill result is claimed.
 - Commercial release remains NO-GO until the automated workflows execute successfully and the critical business/recovery acceptance evidence is recorded.
 
 ### Next engineering priorities
 
-1. Inspect and repair CI failures from the first actual workflow runs.
+1. Confirm the post-refresh Composer audit and corrected Trivy runs are clean.
 2. Expand executable tests around order idempotency, stock invariants, transaction rollback, invoice/VAT reconciliation, authorization and CSRF.
 3. Verify schema installation/upgrades and backup/restore against disposable databases.
 4. Complete upload storage isolation and security review.
-5. Re-scan the full current repository for stale product identifiers, filenames, CSS variables and references.
+5. Add database-backed acceptance tests for money, stock, permissions and recovery.
